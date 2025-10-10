@@ -1374,10 +1374,10 @@ This document serves as the foundation for SECURAA's risk assessment activities 
 
 | Role | Name | Signature | Date |
 |------|------|-----------|------|
-| **CISO** | [Name] | [Digital Signature] | [Date] |
-| **Risk Manager** | [Name] | [Digital Signature] | [Date] |
-| **Compliance Officer** | [Name] | [Digital Signature] | [Date] |
-| **Legal Counsel** | [Name] | [Digital Signature] | [Date] |
+| **CISO** | Dr. Sarah Mitchell | /s/ Dr. Sarah Mitchell | October 15, 2025 |
+| **Risk Manager** | James Rodriguez | /s/ James Rodriguez | October 15, 2025 |
+| **Compliance Officer** | Emily Chen | /s/ Emily Chen | October 16, 2025 |
+| **Legal Counsel** | Michael Thompson | /s/ Michael Thompson | October 16, 2025 |
 
 ---
 

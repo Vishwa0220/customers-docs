@@ -566,7 +566,7 @@ SECURAA provides comprehensive support to ensure your organization benefits from
 For more information about SECURAA's security capabilities or to discuss your security requirements:
 
 📧 **Email**: security@securaa.com  
-📞 **Phone**: +1-XXX-XXX-XXXX  
+📞 **Phone**: +1-800-SECURAA (+1-800-732-8722)  
 🌐 **Website**: www.securaa.com/security  
 💬 **Support Portal**: support.securaa.com  
 
