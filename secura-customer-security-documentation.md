@@ -336,6 +336,34 @@ mongoAuthDb = admin
 - Connection pooling with security controls
 - Backup encryption and secure storage
 
+### AWS Cloud Security Posture Assessment
+
+SECURAA's AWS infrastructure implements comprehensive security best practices to maintain compliance and reduce risk exposure.
+
+#### Current Security Posture
+
+AWS security best practices are implemented to maintain compliance and reduce risk exposure.
+
+| **Area**                   | **Current Controls Implemented**                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **AWS Config**             | Config rules detect any inbound/outbound ports open to the world and notify respective team members.   |
+| **S3 Buckets**             | Segregated into *private* (critical data) and *public* (installers/patches). Access policies reviewed. |
+| **IAM Access Control**     | Follows *least privilege* principle.                                                                   |
+| **ECR**                    | Private repositories with restricted access; automated vulnerability scanning.                         |
+| **CodeBuild / CodeCommit** | Role-based IAM access; isolated build environments.                                                    |
+| **ECS / Lambda**           | Task and execution roles with scoped permissions.                                                      |
+| **SNS**                    | Limited topic access for internal notifications.                                                       |
+
+#### Identified Gaps & Improvement Areas
+
+| **Area**                              | **Improvement Opportunity**             | **Recommended Solution**                                                                  |
+| ------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Centralized Compliance Monitoring** | Config rules limited in scope.          | Implement **AWS Security Hub + Conformance Packs** for CIS/NIST benchmarks.               |
+| **Remediation Automation**            | Manual review of Config findings.       | Add **Lambda auto-remediation** via **EventBridge triggers**.                             |
+| **S3 Data Protection**                | Partial public access for distribution. | Enforce **Block Public Access**, use **S3 Object Lock**, and **Macie** for PII detection. |
+| **Network Threat Detection**          | Limited to Config checks.               | Enable **GuardDuty** and **VPC Flow Logs** for anomaly detection.                         |
+| **IAM Governance**                    | Manual access reviews.                  | Use **IAM Access Analyzer**, enforce **MFA**, deploy **SCPs** for guardrails.             |
+
 ---
 
 ## Compliance Readiness
