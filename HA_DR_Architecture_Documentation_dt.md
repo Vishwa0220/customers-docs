@@ -37,24 +37,24 @@ Both approaches use the existing three-server MongoDB replica set design locally
 graph TB
     subgraph DC["<b>SOAR DC Site</b>"]
         subgraph DC_HA["<b>SOAR DC HA Setup</b>"]
-            DC_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 192.0.2.10"]
-            DC_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 192.0.2.11"]
-            DC_SEC2["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 192.0.2.12"]
+            DC_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 192.0.2.10<br/>✓ Data Master"]
+            DC_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 192.0.2.11<br/>✓ Data Replica"]
+            DC_SEC2["<b>SECONDARY (Arbiter)</b><br/>Port: 27017<br/>IP: 192.0.2.12<br/>✗ No Data<br/>✓ Voting Only"]
             
-            DC_PRI ---|"Replication"| DC_SEC1
-            DC_PRI ---|"Replication"| DC_SEC2
+            DC_PRI ---|"Data Replication"| DC_SEC1
+            DC_PRI -.->|"Heartbeat Only"| DC_SEC2
             DC_SEC1 -.->|"Heartbeat"| DC_SEC2
         end
     end
 
     subgraph DR["<b>SOAR DR Site</b>"]
         subgraph DR_HA["<b>SOAR DR HA Setup</b>"]
-            DR_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 203.0.113.10"]
-            DR_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 203.0.113.11"]
-            DR_SEC2["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 203.0.113.12"]
+            DR_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 203.0.113.10<br/>✓ Data Master"]
+            DR_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 203.0.113.11<br/>✓ Data Replica"]
+            DR_SEC2["<b>SECONDARY (Arbiter)</b><br/>Port: 27017<br/>IP: 203.0.113.12<br/>✗ No Data<br/>✓ Voting Only"]
             
-            DR_PRI ---|"Replication"| DR_SEC1
-            DR_PRI ---|"Replication"| DR_SEC2
+            DR_PRI ---|"Data Replication"| DR_SEC1
+            DR_PRI -.->|"Heartbeat Only"| DR_SEC2
             DR_SEC1 -.->|"Heartbeat"| DR_SEC2
         end
     end
@@ -70,11 +70,13 @@ graph TB
 
     classDef primaryStyle fill:#4169e1,stroke:#1e3a8a,stroke-width:3px,color:#fff,font-weight:bold
     classDef secondaryStyle fill:#10b981,stroke:#047857,stroke-width:3px,color:#fff,font-weight:bold
+    classDef arbiterStyle fill:#6b7280,stroke:#374151,stroke-width:3px,color:#fff,font-weight:bold
     classDef userStyle fill:#f59e0b,stroke:#b45309,stroke-width:3px,color:#fff,font-weight:bold
     classDef siteStyle fill:#e5e7eb,stroke:#6b7280,stroke-width:2px,color:#000
     
     class DC_PRI,DR_PRI primaryStyle
-    class DC_SEC1,DC_SEC2,DR_SEC1,DR_SEC2 secondaryStyle
+    class DC_SEC1,DR_SEC1 secondaryStyle
+    class DC_SEC2,DR_SEC2 arbiterStyle
     class USER userStyle
     class DC_HA,DR_HA siteStyle
 ```
