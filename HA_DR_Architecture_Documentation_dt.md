@@ -601,6 +601,12 @@ graph TB
         M --> N{"✓ DC Available?"}
         N -->|"Yes"| J
         N -->|"No"| O["⚡ Activate DR Services"]
+        O --> P["🔄 Promote to Active<br/>Accept Writes"]
+    end
+    
+    subgraph FILES["<b>📁 File/Directory Sync - Periodic</b>"]
+        Q["📂 DC File System"] --> R["🔄 rsync/SCP<br/>Configurable Interval"]
+        R --> S["📂 DR File System"]
     end
     
     classDef dcStyle fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
@@ -610,18 +616,8 @@ graph TB
     
     class A,B,C,D,E dcStyle
     class F,G,H,I streamStyle
-    class J,K,L,M drStyle
+    class J,K,L,M,P drStyle
     class O alertStyle
-```
-        N -->|Yes| J
-        N -->|No| O[Health Check<br/>Triggers Activation]
-        O --> P[Promote to Active<br/>Accept Writes]
-    end
-    
-    subgraph "File/Directory Sync - Periodic"
-        Q[DC File System] --> R[rsync/SCP<br/>Configurable Interval]
-        R --> S[DR File System]
-    end
     
     style A fill:#90EE90
     style F fill:#FFE4B5
