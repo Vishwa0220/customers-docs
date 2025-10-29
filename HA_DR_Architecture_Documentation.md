@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The Zona Services solution implements a comprehensive High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document provides a detailed description of how these components function, including failover mechanisms, data synchronization processes, and the overall architectural framework.
+The Securaa SOAR solution implements a comprehensive High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document provides a detailed description of how these components function, including failover mechanisms, data synchronization processes, and the overall architectural framework.
 
 ## Table of Contents
 
@@ -23,21 +23,20 @@ The Zona Services solution implements a comprehensive High Availability (HA) and
 
 ### System-Wide HA/DR Design
 
-The Zona Services platform implements a multi-tiered HA/DR strategy that encompasses:
+The Securaa platform implements a multi-tiered HA/DR strategy that encompasses:
 
 - **Application Layer HA**: Multiple service instances with load balancing
 - **Database Layer HA**: MongoDB replica sets and sharding
 - **Cache Layer HA**: Redis master-slave configurations with Sentinel
 - **Message Queue HA**: Kafka clusters with Zookeeper coordination
 - **Cross-Site DR**: Automated backup and restore mechanisms
-- **Network Layer HA**: Load balancers and SSL termination
+- **Network Layer HA**: Nginx web server and SSL termination
 
 ```mermaid
 graph TB
     subgraph "Primary Site (DC)"
-        subgraph "Load Balancer Tier"
-            LB1[Primary Load Balancer<br/>HAProxy/Nginx]
-            LB2[Secondary Load Balancer<br/>Backup Instance]
+        subgraph "Web Server"
+            LB1[Web Server/Proxy<br/>HAProxy/Nginx]
         end
         
         subgraph "Application Tier"
