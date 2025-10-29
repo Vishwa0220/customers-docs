@@ -1,8 +1,8 @@
-# High Availability and Disaster Recovery (HA/DR) Architecture Documentation
+# High Availability and Disaster Recovery (HA/DR) Architecture
 
 ## Executive Summary
 
-The Securaa SOAR solution implements a comprehensive High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document provides a detailed description of how these components function, including failover mechanisms, data synchronization processes, and the overall architectural framework.
+The Zona Services solution implements a robust High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document provides a comprehensive overview of the HA/DR architecture, component interactions, failover mechanisms, and data synchronization processes for customer understanding.
 
 ## Table of Contents
 
@@ -11,474 +11,646 @@ The Securaa SOAR solution implements a comprehensive High Availability (HA) and 
 3. [Disaster Recovery Setup](#disaster-recovery-setup)
 4. [Failover Mechanisms](#failover-mechanisms)
 5. [Data Synchronization](#data-synchronization)
-6. [Component-Level HA/DR Details](#component-level-hadr-details)
-7. [Monitoring and Health Checks](#monitoring-and-health-checks)
-8. [Recovery Procedures](#recovery-procedures)
-9. [Performance Characteristics](#performance-characteristics)
-10. [Operational Procedures](#operational-procedures)
+6. [Monitoring and Health Checks](#monitoring-and-health-checks)
+7. [Performance Characteristics](#performance-characteristics)
+8. [Operational Excellence](#operational-excellence)
 
 ---
 
 ## Architecture Overview
 
-### System-Wide HA/DR Design
+### High-Level HA/DR Architecture
 
-The Securaa platform implements a multi-tiered HA/DR strategy that encompasses:
+The Zona Services platform implements a multi-tiered HA/DR strategy designed for enterprise-grade reliability and business continuity:
 
-- **Application Layer HA**: Multiple service instances with load balancing
-- **Database Layer HA**: MongoDB replica sets and sharding
-- **Cache Layer HA**: Redis master-slave configurations with Sentinel
-- **Message Queue HA**: Kafka clusters with Zookeeper coordination
-- **Cross-Site DR**: Automated backup and restore mechanisms
-- **Network Layer HA**: Nginx web server and SSL termination
+- **Application Layer HA**: Docker Swarm orchestrated service deployment with automatic failover
+- **Database Layer HA**: MongoDB replica sets with automatic election and failover
+- **Message Queue HA**: Kafka clusters with Zookeeper coordination for reliable messaging
+- **Cross-Site DR**: Automated backup and restore mechanisms between Primary and DR sites
+- **Container Orchestration**: Docker Swarm for service management and scaling
 
 ```mermaid
 graph TB
     subgraph "Primary Site (DC)"
-        subgraph "Web Server"
-            LB1[Web Server/Proxy<br/>HAProxy/Nginx]
+        subgraph "Docker Swarm Cluster"
+            SWARM_MGR1[Swarm Manager 1]
+            SWARM_MGR2[Swarm Manager 2]
+            SWARM_MGR3[Swarm Manager 3]
         end
         
-        subgraph "Application Tier"
-            APP1[Service Instance 1<br/>Active]
-            APP2[Service Instance 2<br/>Active]
-            APP3[Service Instance 3<br/>Active]
+        subgraph "Application Services"
+            APP_SVC1[Zona Custom Service<br/>3 Replicas]
+            APP_SVC2[Zona User Service<br/>3 Replicas]
+            APP_SVC3[Zona APIs Manager<br/>3 Replicas]
+            APP_SVC4[Zona SIEM Service<br/>3 Replicas]
         end
         
-        subgraph "Database Tier"
+        subgraph "Database Cluster"
             MONGO_P[MongoDB Primary<br/>Read/Write Operations]
             MONGO_S1[MongoDB Secondary 1<br/>Read Operations]
-            MONGO_S2[MongoDB Secondary 2<br/>Read Operations]
-        end
-        
-        subgraph "Cache Tier"
-            REDIS_M[Redis Master<br/>Write Operations]
-            REDIS_S[Redis Slave<br/>Read Operations]
+            MONGO_S2[MongoDB Secondary 2<br/>Backup/Failover]
         end
         
         subgraph "Message Queue"
             KAFKA1[Kafka Broker 1]
             KAFKA2[Kafka Broker 2]
-            ZK1[Zookeeper 1]
-            ZK2[Zookeeper 2]
+            ZK1[Zookeeper Ensemble]
+        end
+        
+        subgraph "Backup System"
+            BACKUP_SVC[Backup Service<br/>Automated Scheduling]
         end
     end
     
     subgraph "Disaster Recovery Site (DR)"
-        subgraph "DR Application Tier"
-            DR_APP1[DR Service Instance 1<br/>Standby]
-            DR_APP2[DR Service Instance 2<br/>Standby]
+        subgraph "DR Docker Swarm"
+            DR_SWARM[DR Swarm Cluster<br/>Standby Mode]
         end
         
-        subgraph "DR Database Tier"
+        subgraph "DR Services"
+            DR_APPS[Application Services<br/>Ready for Activation]
+        end
+        
+        subgraph "DR Database"
             DR_MONGO_P[DR MongoDB Primary<br/>Restored from Backup]
             DR_MONGO_S[DR MongoDB Secondary<br/>Backup Instance]
         end
         
-        subgraph "DR Cache Tier"
-            DR_REDIS[DR Redis<br/>Restored from Backup]
+        subgraph "DR Message Queue"
+            DR_KAFKA[DR Kafka Cluster<br/>Standby Configuration]
+        end
+        
+        subgraph "Restore System"
+            RESTORE_SVC[Restore Service<br/>Automated Recovery]
         end
     end
     
-    subgraph "Backup & Sync"
-        BACKUP[Automated Backup Service<br/>securaa_backup]
-        RESTORE[Automated Restore Service<br/>securaa_restore]
-        SYNC[Data Synchronization<br/>Cross-Site Replication]
+    subgraph "Cross-Site Synchronization"
+        SYNC_NETWORK[Secure Network Connection<br/>SSH/SCP Transfer]
+        MONITORING[Health Monitoring<br/>Cross-Site Validation]
     end
     
-    %% Primary Site Connections
-    LB1 --> APP1
-    LB1 --> APP2
-    LB1 --> APP3
+    %% Primary Site Internal Connections
+    SWARM_MGR1 --> APP_SVC1
+    SWARM_MGR1 --> APP_SVC2
+    SWARM_MGR2 --> APP_SVC3
+    SWARM_MGR3 --> APP_SVC4
     
-    APP1 --> MONGO_P
-    APP2 --> MONGO_S1
-    APP3 --> MONGO_S2
+    APP_SVC1 --> MONGO_P
+    APP_SVC2 --> MONGO_S1
+    APP_SVC3 --> MONGO_S2
+    APP_SVC4 --> MONGO_P
     
-    APP1 --> REDIS_M
-    APP2 --> REDIS_M
-    APP3 --> REDIS_M
+    APP_SVC1 --> KAFKA1
+    APP_SVC2 --> KAFKA2
+    APP_SVC3 --> KAFKA1
+    APP_SVC4 --> KAFKA2
     
     %% Database Replication
     MONGO_P --> MONGO_S1
     MONGO_P --> MONGO_S2
-    REDIS_M --> REDIS_S
     
-    %% Cross-Site DR
-    BACKUP --> DR_MONGO_P
-    RESTORE --> DR_MONGO_P
-    SYNC --> DR_MONGO_P
-    
-    %% Message Queue
-    APP1 --> KAFKA1
-    APP2 --> KAFKA2
+    %% Message Queue Coordination
     KAFKA1 --> ZK1
-    KAFKA2 --> ZK2
+    KAFKA2 --> ZK1
+    
+    %% Cross-Site DR Connections
+    BACKUP_SVC --> SYNC_NETWORK
+    SYNC_NETWORK --> RESTORE_SVC
+    BACKUP_SVC --> DR_MONGO_P
+    
+    %% Monitoring
+    MONITORING --> MONGO_P
+    MONITORING --> DR_MONGO_P
+    MONITORING --> SWARM_MGR1
+    MONITORING --> DR_SWARM
+    
+    %% Styling
+    classDef primarySite fill:#e1f5fe
+    classDef drSite fill:#fff3e0
+    classDef syncSite fill:#f3e5f5
+    
+    class SWARM_MGR1,SWARM_MGR2,SWARM_MGR3,APP_SVC1,APP_SVC2,APP_SVC3,APP_SVC4,MONGO_P,MONGO_S1,MONGO_S2,KAFKA1,KAFKA2,ZK1,BACKUP_SVC primarySite
+    class DR_SWARM,DR_APPS,DR_MONGO_P,DR_MONGO_S,DR_KAFKA,RESTORE_SVC drSite
+    class SYNC_NETWORK,MONITORING syncSite
 ```
 
 ---
 
 ## High Availability Components
 
-### 1. Application Layer High Availability
+### 1. Docker Swarm Orchestration
 
-#### Service Deployment Strategy
-- **Multiple Instances**: 3+ service instances deployed per microservice
-- **Load Balancing**: HAProxy/Nginx for traffic distribution
-- **Health Checks**: Application-level health endpoints for intelligent routing
-- **Session Management**: Sticky sessions support for WebSocket connections
+The platform leverages Docker Swarm for container orchestration and high availability:
 
-#### Implementation Details
-```go
-// Health check implementation across all services
-go cache.CacheHealthCheck("test")
-```
+#### Swarm Cluster Architecture
+- **Manager Nodes**: 3 manager nodes for quorum and leader election
+- **Worker Nodes**: Multiple worker nodes for service distribution
+- **Service Replicas**: Each microservice runs with 3+ replicas for redundancy
+- **Health Monitoring**: Built-in health checks and automatic container restart
+- **Rolling Updates**: Zero-downtime deployments with gradual service updates
 
-Each service implements:
-- **Cache Health Checks**: Continuous Redis connection monitoring
-- **Database Health Checks**: MongoDB connection pool monitoring
-- **Service Discovery**: Dynamic service registration and discovery
+#### Key Benefits
+- **Automatic Failover**: Failed containers are automatically restarted on healthy nodes
+- **Load Distribution**: Services are distributed across available nodes
+- **Service Discovery**: Built-in DNS-based service discovery
+- **Scaling**: Dynamic scaling based on resource utilization
 
 ### 2. Database High Availability
 
-#### MongoDB Replica Set Configuration
-```yaml
-# MongoDB Replica Set Configuration (mongod.conf)
-replication:
-  replSetName: myReplicaSet
+#### MongoDB Replica Set Architecture
 
-security:
-  authorization: enabled
-  keyFile: /etc/testkey
-
-net:
-  port: 27017
-  bindIp: 0.0.0.0
-```
-
-**Replica Set Architecture:**
-- **Primary Node**: Handles all write operations
-- **Secondary Nodes**: Handle read operations and serve as failover candidates
-- **Arbiter Node**: Participates in elections without storing data
-- **Automatic Failover**: Sub-second failover detection and promotion
-
-#### MongoDB Sharding (for large deployments)
 ```mermaid
 graph LR
-    subgraph "MongoDB Sharded Cluster"
-        MONGOS[MongoDB Router<br/>mongos]
-        CONFIG[Config Servers<br/>Metadata Storage]
-        
-        SHARD1[Shard 1<br/>Tenant Range: A-G]
-        SHARD2[Shard 2<br/>Tenant Range: H-N]
-        SHARD3[Shard 3<br/>Tenant Range: O-U]
-        SHARD4[Shard 4<br/>Tenant Range: V-Z]
+    subgraph "MongoDB Replica Set"
+        PRIMARY[Primary Node<br/>✓ Read/Write Operations<br/>✓ Accepts all writes<br/>✓ Oplog generation]
+        SECONDARY1[Secondary Node 1<br/>✓ Read Operations<br/>✓ Replication target<br/>✓ Failover candidate]
+        SECONDARY2[Secondary Node 2<br/>✓ Read Operations<br/>✓ Backup operations<br/>✓ Failover candidate]
     end
     
-    MONGOS --> CONFIG
-    MONGOS --> SHARD1
-    MONGOS --> SHARD2
-    MONGOS --> SHARD3
-    MONGOS --> SHARD4
+    subgraph "Client Applications"
+        APP1[Application Service 1]
+        APP2[Application Service 2]
+        APP3[Application Service 3]
+    end
+    
+    APP1 --> PRIMARY
+    APP2 --> SECONDARY1
+    APP3 --> SECONDARY2
+    
+    PRIMARY -->|Async Replication| SECONDARY1
+    PRIMARY -->|Async Replication| SECONDARY2
+    
+    SECONDARY1 -.->|Election Process| PRIMARY
+    SECONDARY2 -.->|Election Process| PRIMARY
 ```
 
-### 3. Cache Layer High Availability
+#### Replica Set Features
+- **Primary Node**: Handles all write operations and serves as the authoritative data source
+- **Secondary Nodes**: Serve read operations and act as failover candidates
+- **Automatic Elections**: Immediate leader election when primary becomes unavailable
+- **Data Consistency**: Strong consistency for writes, eventual consistency for reads
+- **Replication Lag**: Typically less than 10ms for local network deployments
 
-#### Redis Master-Slave Configuration
-```properties
-# Redis Configuration (redis.conf)
-port 4380
-requirepass X#hK5dU$5qA2p#V4
-maxmemory 300mb
-maxmemory-policy allkeys-lru
+### 3. Message Queue High Availability
+
+#### Kafka Cluster Architecture
+
+```mermaid
+graph TB
+    subgraph "Kafka Cluster"
+        subgraph "Zookeeper Ensemble"
+            ZK1[Zookeeper Node 1]
+            ZK2[Zookeeper Node 2]
+            ZK3[Zookeeper Node 3]
+        end
+        
+        subgraph "Kafka Brokers"
+            BROKER1[Kafka Broker 1<br/>Partition Leadership]
+            BROKER2[Kafka Broker 2<br/>Partition Replicas]
+            BROKER3[Kafka Broker 3<br/>Partition Replicas]
+        end
+    end
+    
+    subgraph "Applications"
+        PRODUCER[Message Producers<br/>Security Events<br/>Audit Logs]
+        CONSUMER[Message Consumers<br/>SIEM Processing<br/>Analytics]
+    end
+    
+    PRODUCER --> BROKER1
+    PRODUCER --> BROKER2
+    BROKER1 --> CONSUMER
+    BROKER2 --> CONSUMER
+    
+    BROKER1 --> ZK1
+    BROKER2 --> ZK2
+    BROKER3 --> ZK3
+    
+    ZK1 --> ZK2
+    ZK2 --> ZK3
+    ZK3 --> ZK1
 ```
 
-**Redis HA Features:**
-- **Master-Slave Replication**: Asynchronous data replication
-- **Sentinel Monitoring**: Automatic failover detection
-- **Connection Pooling**: Optimized connection management
-- **Cache Warming**: Automatic cache population on failover
-
-### 4. Message Queue High Availability
-
-#### Kafka Cluster Configuration
-```properties
-# Kafka Server Configuration (server.properties)
-broker.id=0
-num.partitions=1
-offsets.topic.replication.factor=1
-log.retention.ms=259200000
-log.retention.bytes=1073741824
-zookeeper.connect=zookeeper:2181
-```
-
-**Kafka HA Features:**
-- **Multi-Broker Setup**: Distributed message processing
-- **Partition Replication**: Data redundancy across brokers
-- **Zookeeper Coordination**: Cluster management and leader election
-- **Producer/Consumer Resilience**: Automatic retry and failover
+#### Kafka HA Features
+- **Distributed Brokers**: Multiple brokers for fault tolerance
+- **Partition Replication**: Each partition replicated across multiple brokers
+- **Leader Election**: Automatic leader selection for each partition
+- **Zookeeper Coordination**: Cluster metadata and configuration management
 
 ---
 
 ## Disaster Recovery Setup
 
-### 1. Automated Backup System
+### 1. DR Architecture Overview
 
-#### Backup Service Architecture (`securaa_backup`)
+The Zona Services platform implements a comprehensive disaster recovery solution with automated backup and restore capabilities between the primary data center (DC) and disaster recovery (DR) site.
 
-The automated backup system performs comprehensive data protection:
-
-```go
-// Core backup functionality
-func main() {
-    // Multi-tenant database backup
-    for i := 0; i < len(tenantsList); i++ {
-        userName := tenantsList[i].Username
-        password := tenantsList[i].Password
+```mermaid
+graph TB
+    subgraph "Primary Data Center (DC)"
+        subgraph "Production Environment"
+            DC_SWARM[Docker Swarm Cluster<br/>Active Services]
+            DC_MONGO[MongoDB Replica Set<br/>Primary Data Store]
+            DC_KAFKA[Kafka Cluster<br/>Message Queue]
+        end
         
-        // Decrypt credentials
-        userName, err = utils.CredentialsDecrypt(userName, config["zonaCredentialsEncryptDecryptKey"])
-        password, err = utils.CredentialsDecrypt(password, config["zonaCredentialsEncryptDecryptKey"])
-        
-        // Execute mongodump for each tenant
-        dbDumpCommand := "mongodump --host " + tenantsList[i].DBHost + " --port 27017 -d " + tenantsList[i].DBName + " " + excludeCollectionNames + " --out " + RemoteServerData.BackupSaveFilePath + "/db_dump_" + currentVersion + "_" + curentTimeString + "/" + tenantsList[i].DBName + "_" + curentTimeString + " -u " + userName + " -p " + password + " --authenticationDatabase " + config["mongoAuthDb"]
-    }
-}
-```
-
-#### Backup Components
-1. **Database Backups**: MongoDB dumps for all tenant databases
-2. **Git Repository Backups**: Playbook, dashboard, report, and custom utilities
-3. **Configuration Backups**: System configurations and secrets
-4. **Cross-Site Transfer**: Secure backup transfer to DR site
-
-#### Backup Schedule and Retention
-- **Frequency**: Configurable cron-based scheduling
-- **Retention**: 5 most recent backups retained locally
-- **Compression**: ZIP compression for efficient storage
-- **Encryption**: Credential encryption for security
-
-### 2. Automated Restore System
-
-#### Restore Service Architecture (`securaa_restore`)
-
-The automated restore system provides rapid recovery capabilities:
-
-```go
-// Core restore functionality
-func main() {
-    // Version compatibility check
-    DRversion, err := CheckForVersion(configObject)
-    DCversion := name[2] // Extract from backup filename
+        subgraph "Backup System"
+            BACKUP_SERVICE[Automated Backup Service<br/>Daily Scheduled Backups]
+            BACKUP_STORAGE[Local Backup Storage<br/>5 Recent Backups Retained]
+        end
+    end
     
-    if DRversion == DCversion {
-        // Backup existing data before restore
-        err = BackupExistingDB(configObject, RemoteServerData)
+    subgraph "Disaster Recovery Site (DR)"
+        subgraph "Standby Environment"
+            DR_SWARM[Docker Swarm Cluster<br/>Standby Services]
+            DR_MONGO[MongoDB Replica Set<br/>Restored Data Store]
+            DR_KAFKA[Kafka Cluster<br/>Standby Message Queue]
+        end
         
-        // Unzip and restore databases
-        for _, file := range files1 {
-            mongoRestoreCommand := `mongorestore --host ` + config["mongoDbHost"] + ` --db ` + collectionName + ` --verbose ` + dbBackupDir + "/" + dbBackupName[0] + "/" + collectionZipName + "/" + collectionName + ` -u "root" -p "S3cur@A_b3st" --authenticationDatabase "admin"`
-        }
-    }
-}
+        subgraph "Restore System"
+            RESTORE_SERVICE[Automated Restore Service<br/>Version-Compatible Restore]
+            RESTORE_STORAGE[DR Backup Storage<br/>Synchronized Backups]
+        end
+    end
+    
+    subgraph "Cross-Site Connectivity"
+        NETWORK[Secure Network Connection<br/>SSH/SCP with Authentication]
+        MONITORING[Health Monitoring<br/>Cross-Site Validation]
+    end
+    
+    %% Backup Flow
+    DC_MONGO --> BACKUP_SERVICE
+    DC_SWARM --> BACKUP_SERVICE
+    BACKUP_SERVICE --> BACKUP_STORAGE
+    BACKUP_STORAGE --> NETWORK
+    
+    %% Cross-Site Transfer
+    NETWORK --> RESTORE_STORAGE
+    RESTORE_STORAGE --> RESTORE_SERVICE
+    
+    %% DR Restore Flow
+    RESTORE_SERVICE --> DR_MONGO
+    RESTORE_SERVICE --> DR_SWARM
+    
+    %% Monitoring
+    MONITORING --> DC_MONGO
+    MONITORING --> DR_MONGO
+    MONITORING --> NETWORK
+    
+    %% Styling
+    classDef dcSite fill:#e8f5e8
+    classDef drSite fill:#fff2e8
+    classDef connectivity fill:#e8f2ff
+    
+    class DC_SWARM,DC_MONGO,DC_KAFKA,BACKUP_SERVICE,BACKUP_STORAGE dcSite
+    class DR_SWARM,DR_MONGO,DR_KAFKA,RESTORE_SERVICE,RESTORE_STORAGE drSite
+    class NETWORK,MONITORING connectivity
 ```
 
-#### Restore Features
-1. **Version Compatibility**: Ensures backup/restore version matching
-2. **Selective Restore**: Option to retain specific collections
-3. **Pre-Restore Backup**: Creates safety backup before restore
-4. **Tenant Host Update**: Updates database connection strings
-5. **Cache Invalidation**: Clears Redis cache post-restore
+### 2. Automated Backup System
+
+#### Backup Components and Process
+
+**Data Backup Coverage:**
+- **Multi-Tenant Databases**: Complete MongoDB database dumps for all active tenants
+- **System Configurations**: Application configurations and system settings
+- **Git Repositories**: Playbooks, dashboards, reports, and custom utilities
+- **Metadata**: License information and tenant configuration data
+
+**Backup Process Flow:**
+1. **Tenant Database Backup**: Automated mongodump for each active tenant database
+2. **Core Database Backup**: System database backup with exclusions for runtime collections
+3. **Configuration Backup**: Git repository snapshots (playbooks, dashboards, reports)
+4. **Compression and Packaging**: ZIP compression for efficient storage and transfer
+5. **Cross-Site Transfer**: Secure SCP/SSH transfer to DR site
+6. **Backup Validation**: Checksum verification and transfer confirmation
+
+#### Backup Scheduling and Retention
+- **Schedule**: Configurable cron-based execution (typically daily)
+- **Retention Policy**: 5 most recent backups retained at both sites
+- **Incremental Cleanup**: Automatic purging of older backup files
+- **Transfer Security**: Encrypted credential handling and secure file transfer
+
+### 3. Automated Restore System
+
+#### Restore Process Architecture
+
+**Restore Capabilities:**
+- **Version Compatibility Check**: Ensures backup version matches DR environment
+- **Selective Restore Options**: Ability to retain specific collections during restore
+- **Pre-Restore Backup**: Safety backup of existing DR data before restore
+- **Configuration Updates**: Automatic host IP and connection string updates
+- **Service Coordination**: Integration with Docker Swarm for service management
+
+**Restore Process Flow:**
+1. **Backup Validation**: Verify backup file integrity and version compatibility
+2. **Environment Preparation**: Backup existing DR data as safety measure
+3. **Database Restoration**: Multi-tenant database restore with dependency handling
+4. **Configuration Update**: Update connection strings and host configurations
+5. **Service Activation**: Docker Swarm service deployment and health validation
+6. **System Validation**: End-to-end functionality testing and monitoring activation
+
+### 4. Cross-Site Data Synchronization
+
+#### Synchronization Methods
+
+**Primary to DR Synchronization:**
+- **Backup-Based Sync**: Regular scheduled backup transfers (4-6 hour intervals)
+- **Secure Transfer**: SSH key-based or password-authenticated SCP transfers
+- **Network Resilience**: Automatic retry mechanisms for failed transfers
+- **Data Integrity**: Checksum validation and transfer confirmation
+
+**Synchronization Monitoring:**
+- **Transfer Status Tracking**: Real-time monitoring of backup transfer progress
+- **Failure Detection**: Automated alerting for failed transfers or corruptions
+- **Bandwidth Management**: Optimized transfer scheduling to minimize impact
+- **Recovery Metrics**: RTO/RPO tracking and reporting
 
 ---
 
 ## Failover Mechanisms
 
-### 1. Database Failover
+### 1. Application Layer Failover
 
-#### MongoDB Replica Set Failover
+#### Docker Swarm Service Failover
+
 ```mermaid
 sequenceDiagram
-    participant Client as Application
-    participant Primary as MongoDB Primary
-    participant Secondary1 as MongoDB Secondary 1
-    participant Secondary2 as MongoDB Secondary 2
+    participant Client as Client Applications
+    participant Swarm as Docker Swarm
+    participant Node1 as Healthy Node
+    participant Node2 as Failed Node
+    participant Service as Application Service
     
-    Client->>Primary: Write Operation
+    Client->>Swarm: Service Request
+    Swarm->>Node2: Route to Service Instance
+    
+    Note over Node2: Node/Container Failure
+    
+    Swarm->>Swarm: Detect Service Failure
+    Swarm->>Node1: Schedule New Service Instance
+    Node1->>Service: Start New Container
+    Service->>Swarm: Health Check Success
+    Swarm->>Client: Route to New Instance
+```
+
+**Swarm Failover Characteristics:**
+- **Detection Time**: 10-30 seconds (configurable health check interval)
+- **Recovery Time**: 30-60 seconds (container startup time)
+- **Service Continuity**: Automatic rescheduling on healthy nodes
+- **Zero Configuration**: Built-in service discovery and load balancing
+
+### 2. Database Failover
+
+#### MongoDB Replica Set Election Process
+
+```mermaid
+sequenceDiagram
+    participant App as Applications
+    participant Primary as MongoDB Primary
+    participant Secondary1 as Secondary Node 1
+    participant Secondary2 as Secondary Node 2
+    
+    App->>Primary: Write Operations
     Primary->>Secondary1: Replicate Data
     Primary->>Secondary2: Replicate Data
     
     Note over Primary: Primary Node Failure
     
-    Secondary1->>Secondary2: Election Process
-    Secondary1->>Secondary1: Promote to Primary
+    Secondary1->>Secondary2: Initiate Election
+    Secondary2->>Secondary1: Vote Response
+    Secondary1->>Secondary1: Become New Primary
     
-    Client->>Secondary1: Reconnect (New Primary)
-    Secondary1->>Client: Continue Operations
+    App->>Secondary1: Reconnect (Auto-discovery)
+    Secondary1->>App: Resume Operations
+    
+    Note over Primary: Original Primary Recovery
+    Primary->>Secondary1: Rejoin as Secondary
 ```
+
+**MongoDB Failover Process:**
+1. **Failure Detection**: Heartbeat monitoring between replica set members
+2. **Election Trigger**: Automatic election when primary becomes unreachable
+3. **Majority Quorum**: Election requires majority of replica set members
+4. **Primary Selection**: Highest priority eligible member becomes primary
+5. **Client Reconnection**: Automatic driver reconnection to new primary
 
 **Failover Characteristics:**
-- **Detection Time**: < 10 seconds
-- **Election Time**: < 30 seconds
-- **Total Failover Time**: < 40 seconds
-- **Data Loss**: Zero (with majority write concern)
+- **Detection Time**: 10-15 seconds (default heartbeat interval)
+- **Election Time**: 10-30 seconds (network and load dependent)
+- **Total Failover**: 20-45 seconds end-to-end
+- **Data Consistency**: Zero data loss with proper write concerns
 
-#### MongoDB Sharding Failover
-For sharded deployments, failover occurs at the shard level:
-- **mongos Routers**: Multiple routers provide connection redundancy
-- **Config Server Replica Sets**: Metadata availability during failover
-- **Per-Shard Failover**: Independent failover for each shard
+### 3. Message Queue Failover
 
-### 2. Cache Failover
+#### Kafka Broker and Partition Leadership Failover
 
-#### Redis Master-Slave Failover
-```go
-// Redis health check implementation
-func CacheHealthCheck(testValue string) {
-    for {
-        // Test Redis connection
-        err := redisClient.Ping()
-        if err != nil {
-            // Trigger failover to slave
-            switchToSlave()
-        }
-        time.Sleep(healthCheckInterval)
-    }
-}
+```mermaid
+graph TB
+    subgraph "Before Failover"
+        LEADER1[Broker 1<br/>Partition Leader]
+        FOLLOWER1[Broker 2<br/>Partition Follower]
+        FOLLOWER2[Broker 3<br/>Partition Follower]
+        
+        LEADER1 --> FOLLOWER1
+        LEADER1 --> FOLLOWER2
+    end
+    
+    subgraph "After Failover"
+        FAILED[Broker 1<br/>Failed/Unavailable]
+        NEWLEADER[Broker 2<br/>New Partition Leader]
+        NEWFOLLOWER[Broker 3<br/>Partition Follower]
+        
+        NEWLEADER --> NEWFOLLOWER
+    end
+    
+    LEADER1 -.->|Failure Event| FAILED
+    FOLLOWER1 -.->|Promotion| NEWLEADER
 ```
 
-**Redis Failover Process:**
-1. **Health Check Detection**: Continuous connection monitoring
-2. **Slave Promotion**: Automatic promotion of slave to master
-3. **Connection Redirection**: Application reconnection to new master
-4. **Data Consistency**: Eventual consistency during transition
-
-### 3. Application Layer Failover
-
-#### Load Balancer Health Checks
-```nginx
-# HAProxy/Nginx Configuration
-upstream zona_services {
-    server app1:8080 check inter=5s;
-    server app2:8080 check inter=5s;
-    server app3:8080 check inter=5s;
-}
-
-server {
-    location /health {
-        proxy_pass http://zona_services;
-        proxy_next_upstream error timeout http_500;
-    }
-}
-```
-
-**Application Failover Features:**
-- **Health Endpoint Monitoring**: `/health` endpoint checks
-- **Circuit Breaker Pattern**: Prevents cascade failures
-- **Graceful Degradation**: Service-level fault isolation
-- **Automatic Recovery**: Self-healing service restart
+**Kafka Failover Features:**
+- **Automatic Leader Election**: Zookeeper-coordinated leader selection
+- **Partition Availability**: Continued operation with available brokers
+- **Producer/Consumer Resilience**: Client-side retry and failover logic
+- **Message Durability**: Replication ensures no message loss
 
 ### 4. Cross-Site Disaster Recovery Failover
 
-#### DR Site Activation Process
+#### DR Site Activation Workflow
+
 ```mermaid
-sequenceDiagram
-    participant Ops as Operations Team
-    participant Monitor as Monitoring System
-    participant DR as DR Site
-    participant Primary as Primary Site
+graph TD
+    A[Primary Site Failure Detected] --> B{Assess Failure Scope}
+    B -->|Site-Wide Outage| C[Initiate DR Activation]
+    B -->|Partial Failure| D[Local Recovery Procedures]
     
-    Monitor->>Ops: Primary Site Failure Alert
-    Ops->>DR: Initiate DR Activation
-    DR->>DR: Start Restore Process
-    DR->>DR: Update DNS/Load Balancer
-    DR->>Ops: DR Site Active
+    C --> E[Validate Latest Backup]
+    E --> F[Execute Restore Process]
+    F --> G[Start DR Services]
+    G --> H[Update DNS/Routing]
+    H --> I[Validate DR Operations]
+    I --> J[Notify Stakeholders]
     
-    Note over Primary: Primary Site Recovery
-    Ops->>Primary: Validate Primary Site
-    Primary->>DR: Sync Data Changes
-    Ops->>Primary: Initiate Failback
+    D --> K[Service Restart/Failover]
+    K --> L[Monitor Recovery]
+    L --> M{Recovery Successful?}
+    M -->|Yes| N[Resume Normal Operations]
+    M -->|No| C
+    
+    subgraph "DR Activation Timeline"
+        E --> |2-5 minutes| F
+        F --> |5-10 minutes| G
+        G --> |2-3 minutes| H
+        H --> |1-2 minutes| I
+    end
 ```
+
+**DR Failover Process:**
+1. **Failure Assessment**: Determine scope and impact of primary site failure
+2. **DR Decision**: Evaluate if DR activation is required
+3. **Backup Validation**: Verify latest backup integrity and completeness
+4. **Restore Execution**: Automated restore of databases and configurations
+5. **Service Startup**: Docker Swarm service deployment in DR environment
+6. **Network Routing**: DNS updates or load balancer reconfiguration
+7. **Operational Validation**: End-to-end testing and monitoring activation
 
 ---
 
 ## Data Synchronization
 
-### 1. Real-Time Data Synchronization
+### 1. Primary Site Data Replication
 
 #### MongoDB Replica Set Synchronization
-```javascript
-// MongoDB Oplog-based replication
-{
-  "ts": {"$timestamp": {"t": 1640995200, "i": 1}},
-  "t": NumberLong(1),
-  "h": NumberLong("1234567890123456789"),
-  "v": 2,
-  "op": "i",
-  "ns": "zona_db.incidents",
-  "o": { /* document data */ }
-}
+
+```mermaid
+graph LR
+    subgraph "Data Flow Within Primary Site"
+        CLIENT[Client Applications<br/>Write Operations]
+        PRIMARY[Primary Node<br/>✓ Receives all writes<br/>✓ Generates oplog entries<br/>✓ Confirms write operations]
+        
+        SECONDARY1[Secondary Node 1<br/>✓ Async replication<br/>✓ Read operations<br/>✓ Oplog replay]
+        
+        SECONDARY2[Secondary Node 2<br/>✓ Async replication<br/>✓ Backup operations<br/>✓ Oplog replay]
+    end
+    
+    CLIENT --> PRIMARY
+    PRIMARY -->|Oplog Stream| SECONDARY1
+    PRIMARY -->|Oplog Stream| SECONDARY2
+    
+    SECONDARY1 -.->|Read Operations| CLIENT
+    SECONDARY2 -.->|Read Operations| CLIENT
 ```
 
 **Synchronization Characteristics:**
-- **Mechanism**: Oplog-based asynchronous replication
-- **Lag**: Typically < 1ms in local network
-- **Consistency**: Eventually consistent
-- **Conflict Resolution**: Primary-authoritative
+- **Replication Method**: Asynchronous oplog-based replication
+- **Replication Lag**: Typically < 10ms in local network environments
+- **Consistency Model**: Strong consistency for writes, eventual consistency for reads
+- **Write Acknowledgment**: Configurable write concerns for durability guarantees
 
-#### Redis Synchronization
-```properties
-# Redis replication configuration
-slaveof master-redis 6379
-slave-read-only yes
-slave-serve-stale-data yes
-```
-
-**Redis Sync Features:**
-- **Full Synchronization**: Initial complete data transfer
-- **Incremental Sync**: Continuous command replication
-- **Backlog Buffer**: Handles temporary disconnections
-- **Partial Resync**: Efficient recovery from network issues
+#### Oplog-Based Replication Process
+1. **Write Operation**: Client writes data to primary node
+2. **Oplog Entry**: Primary creates operation log entry with timestamp
+3. **Replication Stream**: Secondary nodes continuously read oplog from primary
+4. **Local Application**: Secondary nodes apply operations to their local data
+5. **Consistency Check**: Periodic validation of data consistency across nodes
 
 ### 2. Cross-Site Data Synchronization
 
-#### Backup-Based DR Synchronization
-```go
-// Cross-site backup transfer
-func TransferBackupToDR() {
-    if RemoteServerData.ScptoRemoteServer {
-        if RemoteServerData.PemFilePath != "" {
-            // SCP with SSH key
-            dbScpPemCommand := "cd " + RemoteServerData.BackupSaveFilePath + " ; sudo scp -i " + RemoteServerData.PemFilePath + " db_dump_" + currentVersion + "_" + curentTimeString + ".zip " + RemoteServerData.User + "@" + RemoteServerData.RemoteHost + ":" + RemoteServerData.RemoteSaveFilePath
-        } else {
-            // SCP with password
-            dbWithoutPemScpCommand := "cd " + RemoteServerData.BackupSaveFilePath + " ; sudo sshpass -p '" + remoteServerPassword + "' scp -r db_dump_" + currentVersion + "_" + curentTimeString + ".zip " + RemoteServerData.User + "@" + RemoteServerData.RemoteHost + ":" + RemoteServerData.RemoteSaveFilePath
-        }
-    }
-}
+#### Backup-Based DR Synchronization Architecture
+
+```mermaid
+sequenceDiagram
+    participant DC as Primary Data Center
+    participant BACKUP as Backup System
+    participant NETWORK as Secure Network
+    participant DR as DR Site
+    participant RESTORE as Restore System
+    
+    Note over DC,DR: Daily Synchronization Cycle
+    
+    DC->>BACKUP: Trigger Scheduled Backup
+    BACKUP->>BACKUP: Create Database Dumps
+    BACKUP->>BACKUP: Compress and Package
+    BACKUP->>NETWORK: Secure Transfer (SSH/SCP)
+    NETWORK->>DR: Deliver Backup Package
+    DR->>RESTORE: Validate Backup Integrity
+    RESTORE->>RESTORE: Store for Future Restore
+    
+    Note over DC,DR: During DR Activation
+    
+    RESTORE->>RESTORE: Execute Restore Process
+    RESTORE->>DR: Restore Databases
+    RESTORE->>DR: Update Configurations
+    DR->>DC: Confirm DR Readiness
 ```
 
-#### Synchronization Schedule
-- **Primary to DR**: Automated backup transfer every 4-6 hours
-- **Validation**: Checksum verification of transferred data
-- **Monitoring**: Transfer success/failure notifications
-- **Retry Logic**: Automatic retry on transfer failures
+#### Cross-Site Synchronization Features
 
-### 3. Message Queue Synchronization
+**Data Transfer Methods:**
+- **Secure Transport**: SSH-based file transfer with authentication
+- **Compression**: ZIP compression to minimize bandwidth usage
+- **Integrity Validation**: Checksum verification of transferred files
+- **Retry Logic**: Automatic retry mechanisms for failed transfers
+
+**Synchronization Schedule:**
+- **Primary Backup Window**: Daily scheduled backups during low-activity periods
+- **Transfer Timing**: Immediate transfer post-backup completion
+- **Validation Process**: Automated integrity checks upon DR site arrival
+- **Retention Management**: Coordinated cleanup of old backups across sites
+
+### 3. Message Queue Data Consistency
 
 #### Kafka Topic Replication
-```properties
-# Kafka replication configuration
-offsets.topic.replication.factor=1
-transaction.state.log.replication.factor=1
-num.partitions=1
+
+```mermaid
+graph TB
+    subgraph "Kafka Cluster Replication"
+        subgraph "Topic Partitions"
+            PARTITION1[Partition 0<br/>Leader: Broker 1<br/>Replicas: Broker 2,3]
+            PARTITION2[Partition 1<br/>Leader: Broker 2<br/>Replicas: Broker 1,3]
+            PARTITION3[Partition 2<br/>Leader: Broker 3<br/>Replicas: Broker 1,2]
+        end
+        
+        subgraph "Brokers"
+            BROKER1[Kafka Broker 1]
+            BROKER2[Kafka Broker 2]
+            BROKER3[Kafka Broker 3]
+        end
+    end
+    
+    PARTITION1 --> BROKER1
+    PARTITION2 --> BROKER2
+    PARTITION3 --> BROKER3
+    
+    BROKER1 -.->|Replication| BROKER2
+    BROKER1 -.->|Replication| BROKER3
+    BROKER2 -.->|Replication| BROKER1
+    BROKER2 -.->|Replication| BROKER3
+    BROKER3 -.->|Replication| BROKER1
+    BROKER3 -.->|Replication| BROKER2
 ```
 
-**Kafka Sync Features:**
-- **Partition Replication**: Data redundancy across brokers
-- **Consumer Group Coordination**: Offset management
-- **Message Ordering**: Maintains order within partitions
-- **Durability**: Configurable acknowledgment levels
+**Message Queue Synchronization:**
+- **Partition Leadership**: Each partition has a designated leader broker
+- **Replica Synchronization**: Followers continuously sync from partition leaders
+- **Message Ordering**: Maintains strict ordering within individual partitions
+- **Durability Guarantees**: Configurable replication factor for message persistence
+
+### 4. Configuration and Metadata Synchronization
+
+#### System Configuration Management
+
+**Configuration Backup Coverage:**
+- **Application Configurations**: Service-specific configuration files
+- **Database Schemas**: Collection structures and indexing definitions
+- **Security Credentials**: Encrypted authentication and authorization data
+- **Custom Scripts**: Operational and maintenance automation scripts
+
+**Synchronization Process:**
+1. **Configuration Discovery**: Automated identification of configuration files
+2. **Version Control Integration**: Git-based tracking of configuration changes
+3. **Backup Integration**: Configuration files included in regular backup cycles
+4. **Restore Coordination**: Automatic configuration restoration during DR activation
 
 ---
 
@@ -596,123 +768,106 @@ services:
 
 ## Monitoring and Health Checks
 
-### 1. Application Health Monitoring
+### 1. Comprehensive Monitoring Architecture
+
+```mermaid
+graph TB
+    subgraph "Monitoring Infrastructure"
+        subgraph "Health Check Systems"
+            APP_HEALTH[Application Health Checks<br/>✓ Service endpoint monitoring<br/>✓ Database connectivity<br/>✓ API response validation]
+            
+            DB_HEALTH[Database Health Monitoring<br/>✓ Replica set status<br/>✓ Replication lag tracking<br/>✓ Connection pool utilization]
+            
+            SWARM_HEALTH[Docker Swarm Monitoring<br/>✓ Container health status<br/>✓ Service replica tracking<br/>✓ Node availability]
+        end
+        
+        subgraph "Monitoring Tools"
+            PROMETHEUS[Prometheus<br/>Metrics Collection]
+            GRAFANA[Grafana<br/>Visualization & Alerting]
+            ELK[ELK Stack<br/>Centralized Logging]
+        end
+        
+        subgraph "Alerting Systems"
+            ALERT_MGR[Alert Manager<br/>Notification Routing]
+            NOTIFICATIONS[Notification Channels<br/>Email, Slack, SMS]
+        end
+    end
+    
+    subgraph "Cross-Site Monitoring"
+        DC_MONITOR[Primary Site Monitoring<br/>✓ Service availability<br/>✓ Performance metrics<br/>✓ Resource utilization]
+        
+        DR_MONITOR[DR Site Monitoring<br/>✓ Backup synchronization<br/>✓ System readiness<br/>✓ Network connectivity]
+        
+        SYNC_MONITOR[Synchronization Monitoring<br/>✓ Backup transfer status<br/>✓ Data integrity validation<br/>✓ Recovery metrics]
+    end
+    
+    APP_HEALTH --> PROMETHEUS
+    DB_HEALTH --> PROMETHEUS
+    SWARM_HEALTH --> PROMETHEUS
+    
+    PROMETHEUS --> GRAFANA
+    PROMETHEUS --> ALERT_MGR
+    
+    ALERT_MGR --> NOTIFICATIONS
+    
+    DC_MONITOR --> SYNC_MONITOR
+    DR_MONITOR --> SYNC_MONITOR
+```
+
+### 2. Application and Service Health Monitoring
 
 #### Health Check Implementation
-```go
-// Health check endpoint implementation
-func HealthCheck() http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        // Database connectivity check
-        if err := checkDatabaseConnection(); err != nil {
-            http.Error(w, "Database unhealthy", http.StatusServiceUnavailable)
-            return
-        }
-        
-        // Cache connectivity check
-        if err := checkCacheConnection(); err != nil {
-            http.Error(w, "Cache unhealthy", http.StatusServiceUnavailable)
-            return
-        }
-        
-        w.WriteHeader(http.StatusOK)
-        w.Write([]byte("OK"))
-    }
-}
-```
+- **Endpoint Monitoring**: Regular health endpoint validation (`/health`, `/status`)
+- **Database Connectivity**: Continuous monitoring of database connections
+- **Service Dependencies**: Validation of external service availability
+- **Resource Utilization**: CPU, memory, and storage monitoring
 
-#### Monitoring Components
-- **Prometheus**: Metrics collection and storage
-- **Grafana**: Visualization and alerting dashboards
-- **AlertManager**: Alert routing and notification
-- **ELK Stack**: Centralized logging and analysis
+#### Docker Swarm Health Monitoring
+- **Service Replica Status**: Monitoring of service instance health across nodes
+- **Container Health Checks**: Built-in Docker health check validation
+- **Node Availability**: Manager and worker node status monitoring
+- **Service Discovery**: DNS resolution and service endpoint validation
 
-### 2. Database Health Monitoring
+### 3. Database Health Monitoring
 
-#### MongoDB Replica Set Status
-```javascript
-// MongoDB replica set status monitoring
-rs.status()
-{
-  "set": "myReplicaSet",
-  "members": [
-    {
-      "_id": 0,
-      "name": "mongodb-primary:27017",
-      "health": 1,
-      "state": 1,
-      "stateStr": "PRIMARY"
-    },
-    {
-      "_id": 1,
-      "name": "mongodb-secondary1:27017",
-      "health": 1,
-      "state": 2,
-      "stateStr": "SECONDARY"
-    }
-  ]
-}
-```
+#### MongoDB Replica Set Monitoring
 
-#### Key Monitoring Metrics
-- **Replication Lag**: < 5ms target
-- **Connection Pool Usage**: < 80% utilization
-- **Query Performance**: < 100ms average response time
-- **Disk Space**: < 80% utilization
-- **Memory Usage**: < 85% utilization
+**Key Monitoring Metrics:**
+- **Replica Set Status**: Primary/secondary role assignments and health
+- **Replication Lag**: Time delay between primary and secondary operations
+- **Connection Pool Usage**: Active connections and pool utilization
+- **Query Performance**: Response times and slow query identification
+- **Storage Metrics**: Disk usage, index performance, and collection statistics
 
-### 3. Cache Health Monitoring
+**Critical Thresholds:**
+- **Replication Lag**: < 100ms (Warning), < 500ms (Critical)
+- **Connection Pool**: < 80% utilization (Warning), < 90% (Critical)
+- **Disk Usage**: < 80% (Warning), < 90% (Critical)
+- **Query Response**: < 100ms average (Normal), > 500ms (Critical)
 
-#### Redis Health Checks
-```go
-// Redis health monitoring
-func monitorRedisHealth() {
-    ticker := time.NewTicker(30 * time.Second)
-    for {
-        select {
-        case <-ticker.C:
-            // Check Redis connectivity
-            if err := redisClient.Ping().Err(); err != nil {
-                logger.Error("Redis health check failed", err)
-                triggerRedisFailover()
-            }
-            
-            // Check memory usage
-            info := redisClient.Info("memory").Val()
-            if memoryUsage > 90 {
-                logger.Warn("Redis memory usage high", memoryUsage)
-            }
-        }
-    }
-}
-```
-
-### 4. Cross-Site Monitoring
+### 4. Cross-Site Monitoring and Validation
 
 #### DR Site Health Validation
-```bash
-#!/bin/bash
-# DR site health check script
-check_dr_site() {
-    # Check DR site connectivity
-    if ! ping -c 3 $DR_HOST; then
-        echo "DR site unreachable"
-        exit 1
-    fi
-    
-    # Check backup freshness
-    LATEST_BACKUP=$(ssh $DR_USER@$DR_HOST "ls -t $BACKUP_PATH/*.zip | head -1")
-    BACKUP_AGE=$(stat -c %Y "$LATEST_BACKUP")
-    CURRENT_TIME=$(date +%s)
-    
-    if [ $((CURRENT_TIME - BACKUP_AGE)) -gt 86400 ]; then
-        echo "Backup older than 24 hours"
-        exit 1
-    fi
-    
-    echo "DR site healthy"
-}
-```
+
+**Monitoring Components:**
+- **Network Connectivity**: Cross-site network latency and availability
+- **Backup Synchronization**: Transfer success rates and timing
+- **Data Integrity**: Backup validation and checksum verification
+- **System Readiness**: DR environment health and service availability
+
+#### Backup and Recovery Monitoring
+
+**Backup Process Tracking:**
+- **Backup Completion**: Success/failure status of scheduled backups
+- **Transfer Status**: Cross-site backup transfer monitoring
+- **Storage Utilization**: Backup storage space and retention compliance
+- **Recovery Testing**: Periodic DR drill results and validation
+
+**Key Performance Indicators:**
+- **Backup Success Rate**: > 99% (Target)
+- **Transfer Completion**: < 2 hours (Target)
+- **Data Integrity**: 100% checksum validation
+- **Recovery Testing**: Monthly validation cycles
 
 ---
 
@@ -868,215 +1023,240 @@ curl -f http://primary-site.example.com/health
 
 ## Performance Characteristics
 
-### 1. Recovery Time Objectives (RTO)
+### 1. Service Level Objectives (SLOs)
 
-| Component | Target RTO | Typical RTO | Maximum RTO |
-|-----------|------------|-------------|-------------|
-| Application Services | < 30 seconds | 15 seconds | 60 seconds |
-| MongoDB Replica Set | < 40 seconds | 25 seconds | 2 minutes |
-| Redis Cache | < 10 seconds | 5 seconds | 30 seconds |
-| Kafka Message Queue | < 2 minutes | 90 seconds | 5 minutes |
-| Cross-Site DR | < 15 minutes | 10 minutes | 30 minutes |
+| **Metric** | **Target** | **Typical Performance** | **Maximum Acceptable** |
+|------------|------------|-------------------------|-------------------------|
+| **System Availability** | 99.9% | 99.95% | 99.5% |
+| **Application Response Time** | < 200ms | < 150ms | < 500ms |
+| **Database Query Performance** | < 100ms | < 75ms | < 250ms |
+| **Container Recovery Time** | < 60 seconds | < 45 seconds | < 120 seconds |
 
-### 2. Recovery Point Objectives (RPO)
+### 2. Recovery Time and Point Objectives
 
-| Component | Target RPO | Typical RPO | Maximum RPO |
-|-----------|------------|-------------|-------------|
-| MongoDB Data | 0 seconds | 0 seconds | 5 seconds |
-| Redis Cache | 5 minutes | 2 minutes | 10 minutes |
-| Kafka Messages | 30 seconds | 10 seconds | 2 minutes |
-| Cross-Site Backup | 4 hours | 6 hours | 12 hours |
-| Configuration Data | 1 hour | 30 minutes | 4 hours |
+#### Recovery Time Objectives (RTO)
 
-### 3. Availability Targets
+| **Component** | **Target RTO** | **Typical RTO** | **Description** |
+|---------------|----------------|-----------------|-----------------|
+| **Docker Swarm Services** | < 60 seconds | 45 seconds | Container restart and rescheduling |
+| **MongoDB Replica Set** | < 45 seconds | 30 seconds | Primary election and client reconnection |
+| **Kafka Message Queue** | < 2 minutes | 90 seconds | Partition leader election and consumer rebalancing |
+| **Cross-Site DR** | < 15 minutes | 10 minutes | Complete DR site activation |
+| **Full System Recovery** | < 30 minutes | 20 minutes | End-to-end system restoration |
 
-| Service Level | Target | Achieved | Downtime/Year |
-|---------------|--------|----------|---------------|
-| Application Services | 99.99% | 99.995% | 26.3 minutes |
-| Database Services | 99.95% | 99.98% | 87.6 minutes |
-| Cache Services | 99.9% | 99.95% | 4.38 hours |
-| Message Queue | 99.9% | 99.92% | 4.20 hours |
-| Overall System | 99.9% | 99.94% | 3.15 hours |
+#### Recovery Point Objectives (RPO)
 
-### 4. Performance Metrics
+| **Data Type** | **Target RPO** | **Typical RPO** | **Description** |
+|---------------|----------------|-----------------|-----------------|
+| **Transactional Data** | 0 seconds | 0 seconds | MongoDB replica set with synchronous writes |
+| **Configuration Data** | 1 hour | 30 minutes | Regular configuration backups |
+| **Message Queue Data** | 30 seconds | 15 seconds | Kafka partition replication |
+| **Cross-Site Backup** | 24 hours | 12 hours | Daily backup synchronization |
+| **System Logs** | 5 minutes | 2 minutes | Continuous log streaming |
 
-#### Database Performance
-- **Query Response Time**: < 100ms (95th percentile)
-- **Replication Lag**: < 1ms (local), < 10ms (remote)
-- **Connection Pool**: 100-200 connections per service
-- **Throughput**: 10,000+ operations per second
+### 3. High Availability Metrics
 
-#### Cache Performance
-- **Hit Ratio**: > 95%
-- **Response Time**: < 1ms (99th percentile)
-- **Memory Utilization**: < 80%
-- **Eviction Rate**: < 5% per hour
+#### System Performance Targets
 
-#### Application Performance
-- **Request Response Time**: < 200ms (99th percentile)
-- **Concurrent Sessions**: 10,000+ active sessions
-- **Error Rate**: < 0.1%
-- **CPU Utilization**: < 70% average
+**Application Layer:**
+- **Concurrent Users**: 10,000+ active sessions
+- **Request Throughput**: 5,000+ requests per second
+- **Error Rate**: < 0.1% of total requests
+- **Memory Utilization**: < 80% average across containers
+
+**Database Layer:**
+- **Read Operations**: 15,000+ operations per second
+- **Write Operations**: 5,000+ operations per second
+- **Replication Lag**: < 10ms within replica set
+- **Connection Efficiency**: < 70% pool utilization
+
+**Message Queue:**
+- **Message Throughput**: 50,000+ messages per second
+- **Consumer Lag**: < 1 second average
+- **Partition Balance**: Even distribution across brokers
+- **Storage Efficiency**: < 75% disk utilization
+
+### 4. Scalability Characteristics
+
+#### Horizontal Scaling Capabilities
+
+**Docker Swarm Scaling:**
+- **Service Replicas**: 1-50 replicas per service (configurable)
+- **Node Scaling**: Support for 10+ worker nodes
+- **Auto-scaling**: Resource-based automatic scaling triggers
+- **Rolling Updates**: Zero-downtime service updates
+
+**Database Scaling:**
+- **Read Scaling**: Multiple secondary nodes for read distribution
+- **Sharding Support**: Horizontal partitioning for large datasets
+- **Connection Pooling**: 100-500 connections per service instance
+- **Index Optimization**: Automatic index recommendations and management
+
+### 5. Business Continuity Metrics
+
+#### Availability Classifications
+
+| **Service Tier** | **Availability Target** | **Downtime/Year** | **Use Case** |
+|------------------|-------------------------|-------------------|--------------|
+| **Critical Services** | 99.95% | 4.38 hours | Core security operations, user authentication |
+| **Important Services** | 99.9% | 8.76 hours | Reporting, analytics, integrations |
+| **Standard Services** | 99.5% | 43.8 hours | Administrative tools, batch processing |
+
+#### Disaster Recovery Readiness
+
+**DR Site Preparation:**
+- **Infrastructure Readiness**: 95% (standby services configured)
+- **Data Synchronization**: Daily automated backup transfers
+- **Network Connectivity**: Redundant cross-site connections
+- **Testing Frequency**: Monthly DR activation drills
+
+**Recovery Validation:**
+- **Backup Integrity**: 100% checksum validation
+- **Restore Success Rate**: > 98% successful restorations
+- **DR Drill Success**: > 90% successful monthly drills
+- **Documentation Currency**: Quarterly procedure updates
 
 ---
 
-## Operational Procedures
+## Operational Excellence
 
-### 1. Routine Maintenance
+### 1. Routine Operations and Maintenance
 
-#### Daily Operations
-```bash
-# Daily health check routine
-#!/bin/bash
+#### Daily Operations Framework
+- **Health Status Validation**: Automated health checks across all system components
+- **Performance Monitoring**: Real-time tracking of key performance indicators
+- **Backup Verification**: Validation of scheduled backup completion and integrity
+- **Security Monitoring**: Continuous monitoring for security events and anomalies
+- **Resource Utilization Review**: CPU, memory, storage, and network usage analysis
 
-echo "=== Daily Health Check $(date) ==="
+#### Weekly Maintenance Activities
+- **Backup Restore Testing**: Validation of backup integrity through test restores
+- **Performance Analysis**: Comprehensive performance trend analysis and reporting
+- **Security Updates**: Application of security patches and updates
+- **DR Readiness Validation**: Cross-site connectivity and DR environment health checks
+- **Documentation Updates**: Review and update of operational procedures
 
-# 1. Check service status
-systemctl status zona-services | grep "active (running)" || echo "Service issues detected"
+### 2. Emergency Response and Incident Management
 
-# 2. Check database health
-mongo --eval "rs.status()" | grep "PRIMARY\|SECONDARY" || echo "Database issues detected"
+#### Incident Classification and Response
 
-# 3. Check backup status
-find /backup -name "*.zip" -mtime -1 | wc -l | grep -E "[1-9]" || echo "No recent backups"
-
-# 4. Check disk space
-df -h | awk '$5 > 80 {print "Disk usage high: " $0}'
-
-# 5. Check DR connectivity
-ping -c 3 dr-site.example.com || echo "DR site unreachable"
-
-echo "=== Health Check Complete ==="
-```
-
-#### Weekly Operations
-```bash
-# Weekly maintenance routine
-#!/bin/bash
-
-echo "=== Weekly Maintenance $(date) ==="
-
-# 1. Backup validation
-./scripts/test_backup_restore.sh
-
-# 2. Performance analysis
-./scripts/generate_performance_report.sh
-
-# 3. Security updates
-./scripts/update_security_patches.sh
-
-# 4. DR drill preparation
-./scripts/prepare_dr_drill.sh
-
-echo "=== Weekly Maintenance Complete ==="
-```
-
-### 2. Emergency Procedures
-
-#### Incident Response Workflow
 ```mermaid
 graph TD
     A[Incident Detected] --> B{Severity Assessment}
-    B -->|Critical| C[Immediate Response Team]
-    B -->|High| D[Standard Response Team]
-    B -->|Medium| E[Scheduled Response]
+    B -->|Critical<br/>Site Outage| C[Level 1 Response<br/>Immediate DR Activation]
+    B -->|High<br/>Service Degradation| D[Level 2 Response<br/>Component Failover]
+    B -->|Medium<br/>Performance Issues| E[Level 3 Response<br/>Standard Investigation]
+    B -->|Low<br/>Minor Issues| F[Level 4 Response<br/>Scheduled Resolution]
     
-    C --> F[Primary Site Recovery]
-    F --> G{Recovery Successful?}
-    G -->|Yes| H[Monitor & Validate]
-    G -->|No| I[Activate DR Site]
+    C --> G[DR Site Activation]
+    G --> H[Service Validation]
+    H --> I[Stakeholder Communication]
     
-    I --> J[DR Site Validation]
-    J --> K[Update DNS/LB]
-    K --> L[Monitor DR Operations]
+    D --> J[Component Recovery]
+    J --> K[Performance Validation]
+    K --> L[Root Cause Analysis]
     
-    D --> M[Investigate & Fix]
-    M --> N[Validate Fix]
+    E --> M[Issue Investigation]
+    M --> N[Resolution Planning]
+    N --> O[Scheduled Maintenance]
     
-    E --> O[Plan Maintenance Window]
-    O --> P[Execute Planned Fix]
+    F --> P[Issue Documentation]
+    P --> Q[Next Maintenance Window]
+    
+    subgraph "Response Time Targets"
+        C --> |5 minutes| G
+        D --> |15 minutes| J
+        E --> |1 hour| M
+        F --> |24 hours| P
+    end
 ```
 
-#### Emergency Contacts and Escalation
-1. **Level 1**: Operations Team (Response: 5 minutes)
-2. **Level 2**: Engineering Team (Response: 15 minutes)
-3. **Level 3**: Architecture Team (Response: 30 minutes)
-4. **Level 4**: Executive Team (Response: 1 hour)
+#### Escalation Matrix
+- **Level 1**: Operations Team (24/7 response within 5 minutes)
+- **Level 2**: Engineering Team (Response within 15 minutes)
+- **Level 3**: Architecture Team (Response within 30 minutes)
+- **Level 4**: Management Team (Response within 1 hour)
 
-### 3. DR Testing and Validation
+### 3. Disaster Recovery Testing and Validation
 
-#### Monthly DR Drill
-```bash
-# Monthly DR drill procedure
-#!/bin/bash
+#### Monthly DR Validation Process
 
-echo "=== DR Drill $(date) ==="
+**DR Drill Components:**
+1. **Simulation Phase**: Controlled primary site failure simulation
+2. **Activation Phase**: DR site activation and service deployment
+3. **Validation Phase**: End-to-end functionality testing and validation
+4. **Measurement Phase**: RTO/RPO measurement and performance analysis
+5. **Documentation Phase**: Results documentation and improvement identification
+6. **Recovery Phase**: Return to normal operations and post-drill analysis
 
-# 1. Simulate primary site failure
-./scripts/simulate_primary_failure.sh
+**Success Criteria:**
+- **RTO Achievement**: DR activation within 15-minute target
+- **RPO Validation**: Data loss within acceptable 24-hour window
+- **Functionality Verification**: 100% critical service functionality
+- **Performance Acceptance**: > 80% of normal performance levels
 
-# 2. Activate DR site
-./scripts/activate_dr_site.sh
+### 4. Continuous Improvement and Optimization
 
-# 3. Run application tests
-./scripts/run_dr_tests.sh
+#### Performance Optimization Strategy
 
-# 4. Measure RTO/RPO
-./scripts/measure_recovery_metrics.sh
+**Capacity Planning:**
+- **Growth Forecasting**: Monthly analysis of resource utilization trends
+- **Scaling Triggers**: Automated scaling based on performance thresholds
+- **Resource Optimization**: Regular review and optimization of resource allocation
+- **Technology Evaluation**: Quarterly assessment of new technologies and improvements
 
-# 5. Document results
-./scripts/generate_dr_report.sh
+**Process Enhancement:**
+- **Automation Expansion**: Continuous automation of manual operational tasks
+- **Monitoring Enhancement**: Implementation of predictive analytics and AI-driven monitoring
+- **Documentation Improvement**: Regular updates to operational procedures and runbooks
+- **Training Programs**: Ongoing team training on HA/DR procedures and best practices
 
-# 6. Restore normal operations
-./scripts/restore_primary_site.sh
+### 5. Compliance and Governance
 
-echo "=== DR Drill Complete ==="
-```
+#### Regulatory Compliance Framework
+- **Data Protection**: Compliance with data protection regulations and standards
+- **Security Standards**: Adherence to industry security frameworks and guidelines
+- **Audit Readiness**: Continuous audit trail maintenance and reporting capabilities
+- **Change Management**: Formal change control processes for system modifications
 
-### 4. Capacity Planning
-
-#### Resource Monitoring
-- **Database Growth**: 10-15% monthly
-- **Cache Usage**: Seasonal variations (20-40%)
-- **Message Queue**: Event-driven spikes
-- **Storage Requirements**: 2TB annually
-
-#### Scaling Triggers
-- **CPU Utilization**: > 70% for 15 minutes
-- **Memory Usage**: > 80% for 10 minutes
-- **Disk Usage**: > 75%
-- **Network Throughput**: > 80% of capacity
+#### Quality Assurance
+- **Testing Standards**: Comprehensive testing protocols for all system changes
+- **Code Quality**: Automated code quality checks and review processes
+- **Documentation Standards**: Standardized documentation templates and maintenance procedures
+- **Training Requirements**: Mandatory training and certification for operational staff
 
 ---
 
 ## Conclusion
 
-The Zona Services HA/DR architecture provides comprehensive protection against various failure scenarios through:
+The Zona Services High Availability and Disaster Recovery architecture provides enterprise-grade reliability and business continuity through:
 
-1. **Multi-layered Redundancy**: Application, database, cache, and message queue redundancy
-2. **Automated Failover**: Sub-minute failover capabilities across all components
-3. **Cross-Site DR**: Automated backup and restore with 4-6 hour RPO
-4. **Comprehensive Monitoring**: Real-time health checks and alerting
-5. **Proven Recovery Procedures**: Documented and tested recovery processes
+### Key Architectural Strengths
 
-This architecture ensures 99.9%+ availability while maintaining data integrity and providing rapid recovery capabilities. Regular testing and continuous improvement ensure the solution remains effective against evolving threats and requirements.
+1. **Multi-Layer Redundancy**: Comprehensive redundancy at application, database, and message queue layers
+2. **Docker Swarm Orchestration**: Modern container orchestration with automatic failover and scaling
+3. **Automated Backup and Recovery**: Robust cross-site backup and restore automation
+4. **Comprehensive Monitoring**: Real-time health monitoring and alerting across all components
+5. **Proven Recovery Procedures**: Well-documented and regularly tested recovery processes
 
-### Key Benefits
+### Business Benefits
 
-- **Business Continuity**: Minimal service disruption during failures
-- **Data Protection**: Zero data loss for critical operations
-- **Scalability**: Architecture supports growth and increased load
-- **Compliance**: Meets regulatory requirements for data protection
-- **Cost Effectiveness**: Balanced approach to availability and cost
+- **99.9%+ Availability**: Minimal service disruption ensuring business continuity
+- **Rapid Recovery**: Sub-15 minute DR activation capabilities
+- **Data Protection**: Zero data loss for critical operations with comprehensive backup strategies
+- **Scalability**: Architecture designed to support business growth and increased demand
+- **Cost Optimization**: Balanced approach to availability requirements and operational costs
 
-### Recommendations
+### Recommendations for Ongoing Success
 
-1. **Regular DR Testing**: Monthly DR drills to validate procedures
-2. **Monitoring Enhancement**: Implement predictive analytics for failure detection
-3. **Automation Improvement**: Expand automated recovery procedures
-4. **Documentation Updates**: Keep procedures current with system changes
-5. **Training Programs**: Regular team training on HA/DR procedures
+1. **Regular Testing**: Continue monthly DR drills and quarterly comprehensive testing
+2. **Monitoring Enhancement**: Implement predictive analytics for proactive issue detection
+3. **Automation Expansion**: Continuously automate manual processes for improved reliability
+4. **Documentation Maintenance**: Keep all procedures current with system changes and improvements
+5. **Team Training**: Regular training programs to maintain team expertise and readiness
+
+This HA/DR architecture ensures that the Zona Services platform can meet the most demanding availability requirements while providing rapid recovery capabilities in the event of any failure scenario. The combination of proven technologies, automated processes, and comprehensive monitoring provides customers with confidence in the platform's reliability and business continuity capabilities.
 
 ---
 
-*This document serves as the comprehensive reference for the Zona Services HA/DR architecture and should be reviewed and updated quarterly to reflect system changes and improvements.*
+*This high-level architecture document provides customers with a comprehensive understanding of the Zona Services HA/DR capabilities. For detailed implementation specifics or technical deep-dives, additional technical documentation is available upon request.*
