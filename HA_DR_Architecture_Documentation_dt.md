@@ -6,7 +6,7 @@ The Securaa solution implements a High Availability (HA) and Disaster Recovery (
 
 **Local Site HA (Automatic):** Each site (DC and DR independently) operates a 3-server MongoDB replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) providing automatic failover within 15-35 seconds for server-level failures.
 
-**Cross-Site DR (Manual):** This document describes two supported manual DR synchronization methods between the Data Center (DC) and Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (manual/cron-based incremental backups; recommended interval: 30 minutes) and (2) Hot Sync (oplog-based near real-time replication with manual DR activation). **DR activation requires manual administrator intervention** - there are no automated failover agents or health-check systems for cross-site DR.
+**Cross-Site DR (Automatic Sync, Manual Activation):** This document describes two supported DR synchronization methods between the Data Center (DC) and Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (automated cron-based incremental backups; recommended interval: 30 minutes) and (2) Hot Sync (automated oplog-based near real-time replication). **DR activation requires manual administrator intervention** - there are no automated failover agents or health-check systems for cross-site DR. Data synchronization is automatic; only failover/activation is manual.
 
 While both provide business continuity capabilities, Hot Sync delivers faster replication and lower RPO (~1 minute) than periodic backup/restore (30 minutes).
 
@@ -31,7 +31,7 @@ The SOAR Services platform implements a flexible HA/DR strategy that supports tw
 - DC–DR Incremental Backup & Restore (periodic incremental archives; default: every 30 minutes)
 - Hot Sync (oplog-based, near real-time MongoDB replication; directory data synchronized periodically)
 
-Both approaches use the existing three-server MongoDB replica set design locally within each site (DC and DR operate independently) for distributed HA, and provide manual cross-site DR capability. They differ in replication latency and data synchronization method.
+Both approaches use the existing three-server MongoDB replica set design locally within each site (DC and DR operate independently) for distributed HA, and provide cross-site DR capability with automatic data synchronization. They differ in replication latency and data synchronization method.
 
 ```mermaid
 graph TB
@@ -99,13 +99,13 @@ Key properties:
 - **All three MongoDB instances use port 27017**
 - **Each component runs on a separate physical/virtual machine**
 
-### 2. Cross‑Site Disaster Recovery (Manual Activation)
+### 2. Cross‑Site Disaster Recovery (Automatic Sync, Manual Activation)
 
-The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site (1 Primary + 1 Secondary with data + 1 Arbiter without data). DR activation is a **manual process** that requires administrator intervention.
+The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site (1 Primary + 1 Secondary with data + 1 Arbiter without data). DR activation is a **manual process** that requires administrator intervention, but data synchronization is **automatic**.
 
 - **Manual DR Activation** — Administrators manually activate DR site during DC disasters
-- **Data Synchronization** —  Periodic backups transferred over SCP (port 22) or oplog-based sync
-- **Automatic Agents** —   Automated backup/restore; synchronization performed via cron jobs
+- **Automatic Data Synchronization** — Automated periodic backups transferred over SCP (port 22) or automated oplog-based sync
+- **No Automated Failover Agents** — Synchronization runs automatically via cron jobs or oplog replication; DR activation is manual
 - **Identical Architecture** — DR site has the same 3-server structure (1 Primary + 1 Secondary data-bearing + 1 Arbiter voting-only)
 
 Both synchronization approaches are described in the Disaster Recovery Setup section below.
@@ -171,16 +171,16 @@ This section describes the two supported DC↔DR synchronization modes and their
 ### DC–DR Incremental Backup & Restore
 
 Overview:
-- Manual periodic backups are taken at DC and manually restored to DR at administrator-defined intervals. Default recommendation: every 30 minutes.
+- Automated periodic backups are taken at DC and automatically restored to DR at administrator-defined intervals. Default recommendation: every 30 minutes.
 
 Process:
-1. Administrator or manual cron job performs MongoDB logical/physical and file backups at the DC (incremental dumps or snapshots).
-2. Compress and manually transfer backup archives to the DR system via SCP (port 22).
-3. Administrator manually validates archives and restores MongoDB data and files to their locations on the DR site servers.
+1. Automated cron job performs MongoDB logical/physical and file backups at the DC (incremental dumps or snapshots).
+2. Compress and automatically transfer backup archives to the DR system via SCP (port 22).
+3. Automated process validates archives and restores MongoDB data and files to their locations on the DR site servers.
 
 Behavior:
 - DR instance can remain active and continuously running (services can be available for testing).
-- Data on DR is updated on each manual restore based on administrator-defined intervals (≈ every 30 minutes recommended).
+- Data on DR is updated on each automated restore based on administrator-defined intervals (≈ every 30 minutes recommended).
 - Initial downtime: the first restore to a new DR environment requires downtime on DR while the baseline restore completes — depends on production data size (typical order: ≈ 1 hour; varies).
 - Sync duration: ≈ 30 minutes per incremental cycle (depends on data volume and transfer frequency).
 - RPO is bounded by the backup interval (default 30 minutes recommendation).
@@ -196,31 +196,31 @@ Notes and operational considerations:
 sequenceDiagram
     participant DC_APP as DC Application
     participant DC_DB as DC MongoDB
-    participant ADMIN as Administrator
+    participant CRON as Automated Cron Job
     participant SCP as SCP Transfer
     participant DR_DB as DR MongoDB
     participant DR_APP as DR Application
     
-    Note over DC_APP,DR_APP: Normal Operations (Manual backup every ~30 minutes)
+    Note over DC_APP,DR_APP: Normal Operations (Automated backup every ~30 minutes)
     
     DC_APP->>DC_DB: Write Operations
     
     rect rgb(200, 230, 200)
-        Note over ADMIN: Administrator Initiates Backup
-        ADMIN->>DC_DB: Run backup command (incremental)
-        DC_DB-->>ADMIN: Incremental dump created
-        ADMIN->>ADMIN: Compress archive
-        ADMIN->>SCP: Transfer incremental archive
+        Note over CRON: Cron Job Triggers Backup Automatically
+        CRON->>DC_DB: Run backup command (incremental)
+        DC_DB-->>CRON: Incremental dump created
+        CRON->>CRON: Compress archive
+        CRON->>SCP: Transfer incremental archive
         SCP->>SCP: Encrypt & validate checksum
         SCP-->>DR_DB: Deliver archive (port 22)
     end
     
     rect rgb(200, 200, 230)
-        Note over ADMIN: Administrator Initiates Restore
-        ADMIN->>DR_DB: Validate archive integrity
-        ADMIN->>DR_DB: Extract and apply incremental data
+        Note over CRON: Automated Restore Process
+        CRON->>DR_DB: Validate archive integrity
+        CRON->>DR_DB: Extract and apply incremental data
         DR_DB->>DR_DB: Update data & indexes
-        ADMIN->>DR_APP: Update configurations if needed
+        CRON->>DR_APP: Update configurations if needed
     end
     
     Note over DC_APP,DR_APP: DR is now synced (RPO = 30 min)
@@ -228,7 +228,8 @@ sequenceDiagram
     rect rgb(230, 200, 200)
         Note over DC_APP,DR_APP: DC Failure Scenario - Manual DR Activation
         DC_APP->>DC_APP: DC Site Failure
-        ADMIN->>DR_DB: Apply latest incremental manually
+        participant ADMIN as Administrator
+        ADMIN->>DR_DB: Verify latest data synchronized
         ADMIN->>DR_APP: Start services manually
         DR_APP->>DR_APP: Validate health
         Note over DR_APP: DR now serves traffic (manual activation)
@@ -238,11 +239,11 @@ sequenceDiagram
 ### Hot Sync (Near Real‑Time Replication)
 
 Overview:
-- MongoDB oplog-based replication from DC to DR (manually configured) provides near real-time synchronization for database operations. Directory/file data is synchronized manually at administrator-defined intervals (via SCP) as needed.
+- MongoDB oplog-based replication from DC to DR (automatically configured and running) provides near real-time synchronization for database operations. Directory/file data is synchronized automatically at administrator-defined intervals (via SCP) as needed.
 
 Process:
-1. DC MongoDB replicates oplog entries to the DR MongoDB over port 27017 (manually configured replication); this creates near real-time data parity for database contents. Typical sync duration for DB ops: ≈ 1 minute (dependent on network bandwidth and workload).
-2. Directory and file data are synchronized separately at manual intervals using SCP (port 22) or rsync+ssh.
+1. DC MongoDB automatically replicates oplog entries to the DR MongoDB over port 27017 (continuous automatic replication); this creates near real-time data parity for database contents. Typical sync duration for DB ops: ≈ 1 minute (dependent on network bandwidth and workload).
+2. Directory and file data are synchronized automatically at configured intervals using SCP (port 22) or rsync+ssh.
 
 Behavior:
 - DR remains in standby mode with application services inactive (not accepting user traffic).
@@ -313,18 +314,18 @@ sequenceDiagram
 
 ## Failover Mechanisms
 
-### 1. DC–DR Incremental Backup & Restore Failover (Manual Process)
+### 1. DC–DR Incremental Backup & Restore Failover (Automatic Sync, Manual Activation)
 
 - Detection: Administrator monitors DC and detects unavailability.
+- Automated cron jobs have already synchronized the latest incremental backups to DR.
 - Administrator validates latest incremental backup is present and intact on DR.
-- Administrator manually applies baseline and incremental backup archives to DR (initial baseline restore may be lengthy — ≈ 1 hour; incremental restores follow).
-- Administrator manually starts and validates services on DR.
+- Administrator manually starts and validates services on DR (data is already synchronized automatically).
 - Users are redirected (DNS / load balancer / manual configuration) to DR UI.
 
 Estimated timings:
 - Detection phase: minutes to hours (depends on manual monitoring).
-- Restore & service activation: baseline ≈ 30–60+ minutes (varies by dataset) + incremental application time.
-- Total RTO depends on size of baseline and incremental chain, plus manual intervention time.
+- Service activation: ≈ 5–15 minutes (data is already synchronized; only service startup required).
+- Total RTO depends on detection time plus manual service activation time.
 
 #### Incremental Backup Failover Flow
 
@@ -709,17 +710,17 @@ Success criteria:
 
 ## Conclusion
 
-The platform supports two manual DR synchronization methods between DC and DR:
+The platform supports two automated DR synchronization methods between DC and DR:
 
-1. **DC–DR Incremental Backup & Restore**: Manual or cron-based incremental backups (recommended: every 30 minutes). Administrator manually applies backups to DR. Initial baseline restore may require ≈ 1 hour. Suitable when network constraints or operational policies favor periodic transfer.
+1. **DC–DR Incremental Backup & Restore**: Automated cron-based incremental backups (recommended: every 30 minutes) automatically transfer and restore to DR. Initial baseline setup may require ≈ 1 hour. Suitable when network constraints or operational policies favor periodic transfer.
 
-2. **Hot Sync (Near Real‑Time Replication)**: MongoDB oplog-based replication offers near-real-time DB synchronization (typical ~1 minute lag); DR stays in standby. **Administrator manually activates DR** when DC fails. Preferred for lower RPO.
+2. **Hot Sync (Near Real‑Time Replication)**: MongoDB oplog-based replication offers automatic near-real-time DB synchronization (typical ~1 minute lag); DR stays in standby. **Administrator manually activates DR** when DC fails. Preferred for lower RPO.
 
 **Key Architecture Points:**
 - **Local Site HA (Automatic)**: Each site (DC and DR) has 3-server MongoDB replica set (1 PRIMARY + 1 SECONDARY with data + 1 Arbiter without data) with automatic failover (15-35 seconds)
 - **2x Data Redundancy**: PRIMARY and SECONDARY store complete copies of data; Arbiter has no data
-- **Cross-Site DR (Manual)**: DC to DR synchronization and failover requires manual administrator intervention
-- **No Automated Agents**: No automated backup/restore agents or automated DR activation
+- **Cross-Site DR (Automatic Sync, Manual Activation)**: DC to DR data synchronization is automatic (cron jobs or oplog replication); DR activation requires manual administrator intervention
+- **No Automated Failover**: Automated synchronization runs continuously; DR activation is manual
 - **Identical Architecture**: DR site mirrors DC site structure (3 servers: 2 data-bearing + 1 arbiter)
 
 Choose the mode that matches your RPO/RTO, network, and operational requirements. Hot Sync provides faster replication and lower RPO; incremental backup/restore is simpler and can be used where continuous replication is not feasible.
@@ -728,21 +729,21 @@ Choose the mode that matches your RPO/RTO, network, and operational requirements
 
 | **Aspect** | **DC–DR Incremental Backup & Restore** | **Hot Sync (Near Real-Time)** |
 |------------|----------------------------------------|-------------------------------|
-| **Synchronization Method** | Manual/cron incremental backups via SCP | Continuous oplog replication (manual config) |
+| **Synchronization Method** | Automated cron incremental backups via SCP | Continuous automated oplog replication |
 | **Default Interval** | 30 minutes recommended | Near real-time (~1 minute lag) |
 | **Network Ports** | Port 22 (SSH/SCP) | Port 27017 (MongoDB) + Port 22 (file sync) |
 | **RPO (Recovery Point Objective)** | 30 minutes (backup interval) | ~1 minute (replication lag) |
-| **RTO (Recovery Time Objective)** | Manual intervention time + 30-60+ min restore | Manual intervention time + activation |
+| **RTO (Recovery Time Objective)** | Manual intervention time + 5-15 min activation | Manual intervention time + activation |
 | **DR State During Normal Operations** | Standby (can be active for testing) | Standby (services inactive) |
 | **DR Activation** | Manual by administrator | Manual by administrator |
 | **Initial Setup Time** | ~1 hour (baseline restore) | ~1 hour (initial baseline + oplog catchup) |
 | **Data Loss on Failover** | Up to 30 minutes | Up to ~1 minute |
 | **Bandwidth Requirements** | Moderate (periodic transfers) | Higher (continuous streaming) |
-| **Complexity** | Simple (manual/cron jobs) | Moderate (oplog management, manual monitoring) |
-| **Automation Level** | Manual or scheduled cron | Manual activation required |
+| **Complexity** | Simple (automated cron jobs) | Moderate (oplog management, monitoring) |
+| **Automation Level** | Automated sync + manual activation | Automated sync + manual activation |
 | **Best For** | Network constraints, batch updates | Mission-critical, low RPO requirements |
-| **Failover Trigger** | Manual or monitoring-based | Automated via health check (20 min threshold) |
-| **DR Activation** | Restore + service start | Service start only (data already synced) |
+| **Failover Trigger** | Manual detection and activation | Manual detection and activation |
+| **DR Activation** | Service start only (data already synced) | Service start only (data already synced) |
 
 ### Architecture Decision Guide
 
