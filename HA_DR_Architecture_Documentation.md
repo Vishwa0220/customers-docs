@@ -30,46 +30,46 @@ The SOAR Services platform implements a comprehensive HA/DR strategy with single
 ```mermaid
 graph TB
     subgraph "SOAR DC (Primary Site)"
-        subgraph "Single Server - SOAR DC HA Setup"
-            subgraph "MongoDB Replica Set - DC"
-                MONGO_P_DC[MongoDB Primary<br/>Port: 27017<br/>Read/Write Operations]
-                MONGO_S1_DC[MongoDB Secondary 1<br/>Port: 27018<br/>Read Operations]
+        subgraph "DC Server"
+            subgraph "MongoDB Replica Set"
+                MONGO_P_DC[MongoDB Primary<br/>Port: 27017<br/>Read/Write Ops]
+                MONGO_S1_DC[MongoDB Secondary 1<br/>Port: 27018<br/>Read Ops]
                 MONGO_S2_DC[MongoDB Secondary 2<br/>Port: 27019<br/>Backup/Failover]
             end
             
-            subgraph "Application Layer - DC"
-                UI_DC[Securaa UI<br/>Port: 443<br/>Primary Access Point]
-                SERVICES_DC[SOAR Services<br/>Security Operations<br/>Analytics & Reporting]
+            subgraph "Application Layer"
+                UI_DC[Securaa UI<br/>Port: 443<br/>Primary Access]
+                SERVICES_DC[SOAR Services<br/>Security Operations]
             end
             
-            subgraph "Backup System - DC"
-                BACKUP_DC[Automated Backup<br/>Daily Scheduled<br/>Cross-site Transfer]
+            subgraph "Backup System"
+                BACKUP_DC[Automated Backup<br/>Daily Scheduled]
             end
         end
     end
     
     subgraph "SOAR DR (Disaster Recovery Site)"
-        subgraph "Single Server - SOAR DR Setup"
-            subgraph "MongoDB Replica Set - DR"
+        subgraph "DR Server"
+            subgraph "MongoDB Replica Set"
                 MONGO_P_DR[MongoDB Primary<br/>Port: 27017<br/>Restored Data]
-                MONGO_S1_DR[MongoDB Secondary 1<br/>Port: 27018<br/>Read Operations]
+                MONGO_S1_DR[MongoDB Secondary 1<br/>Port: 27018<br/>Read Ops]
                 MONGO_S2_DR[MongoDB Secondary 2<br/>Port: 27019<br/>Backup/Failover]
             end
             
-            subgraph "Application Layer - DR"
-                UI_DR[Securaa UI<br/>Port: 443<br/>DR Access Point]
-                SERVICES_DR[SOAR Services<br/>Standby Mode<br/>Ready for Activation]
+            subgraph "Application Layer"
+                UI_DR[Securaa UI<br/>Port: 443<br/>DR Access]
+                SERVICES_DR[SOAR Services<br/>Standby Mode]
             end
             
-            subgraph "Restore System - DR"
-                RESTORE_DR[Automated Restore<br/>Version Compatible<br/>Database Recovery]
+            subgraph "Restore System"
+                RESTORE_DR[Automated Restore<br/>Version Compatible]
             end
         end
     end
     
     subgraph "Cross-Site Communication"
-        SYNC_SSH[SSH/SCP Transfer<br/>Port: 22<br/>Database Backup & Restore]
-        USER_ACCESS[User Access<br/>Securaa UI (DC Primary IP)<br/>Securaa UI (DR Primary IP)]
+        SYNC_SSH[SSH/SCP Transfer<br/>Port: 22<br/>Backup & Restore]
+        USER_ACCESS[User Access<br/>DC: Primary IP:443<br/>DR: Standby IP:443]
     end
     
     %% DC Internal Connections
@@ -127,32 +127,32 @@ The platform implements MongoDB replica sets within single servers for both SOAR
 
 ```mermaid
 graph TB
-    subgraph "SOAR DC - Single Server Architecture"
-        subgraph "MongoDB Replica Set (DC Server)"
-            PRIMARY_DC[Primary Node<br/>Port: 27017<br/>✓ All Write Operations<br/>✓ Read Operations<br/>✓ Oplog Generation]
+    subgraph "SOAR DC - Single Server"
+        subgraph "MongoDB Replica Set (DC)"
+            PRIMARY_DC[Primary Node<br/>Port: 27017<br/>All Write Operations<br/>Read Operations<br/>Oplog Generation]
             
-            SECONDARY1_DC[Secondary Node 1<br/>Port: 27018<br/>✓ Read Operations<br/>✓ Async Replication<br/>✓ Failover Candidate]
+            SECONDARY1_DC[Secondary Node 1<br/>Port: 27018<br/>Read Operations<br/>Async Replication<br/>Failover Candidate]
             
-            SECONDARY2_DC[Secondary Node 2<br/>Port: 27019<br/>✓ Read Operations<br/>✓ Async Replication<br/>✓ Failover Candidate]
+            SECONDARY2_DC[Secondary Node 2<br/>Port: 27019<br/>Read Operations<br/>Async Replication<br/>Failover Candidate]
         end
         
         subgraph "Application Services (DC)"
-            UI_APP_DC[Securaa UI Application<br/>Port: 443<br/>Primary User Interface]
+            UI_APP_DC[Securaa UI<br/>Port: 443<br/>Primary User Interface]
             SOAR_SERVICES_DC[SOAR Services<br/>Security Operations<br/>Analytics & Reporting]
         end
     end
     
-    subgraph "SOAR DR - Single Server Architecture"
-        subgraph "MongoDB Replica Set (DR Server)"
-            PRIMARY_DR[Primary Node<br/>Port: 27017<br/>✓ Restored Data<br/>✓ Read/Write Ready<br/>✓ Standby Operations]
+    subgraph "SOAR DR - Single Server"
+        subgraph "MongoDB Replica Set (DR)"
+            PRIMARY_DR[Primary Node<br/>Port: 27017<br/>Restored Data<br/>Read/Write Ready<br/>Standby Operations]
             
-            SECONDARY1_DR[Secondary Node 1<br/>Port: 27018<br/>✓ Read Operations<br/>✓ Async Replication<br/>✓ Failover Candidate]
+            SECONDARY1_DR[Secondary Node 1<br/>Port: 27018<br/>Read Operations<br/>Async Replication<br/>Failover Candidate]
             
-            SECONDARY2_DR[Secondary Node 2<br/>Port: 27019<br/>✓ Read Operations<br/>✓ Async Replication<br/>✓ Failover Candidate]
+            SECONDARY2_DR[Secondary Node 2<br/>Port: 27019<br/>Read Operations<br/>Async Replication<br/>Failover Candidate]
         end
         
         subgraph "Application Services (DR)"
-            UI_APP_DR[Securaa UI Application<br/>Port: 443<br/>DR User Interface]
+            UI_APP_DR[Securaa UI<br/>Port: 443<br/>DR User Interface]
             SOAR_SERVICES_DR[SOAR Services<br/>Standby Mode<br/>Ready for Activation]
         end
     end
@@ -180,6 +180,13 @@ graph TB
     PRIMARY_DR -->|Async Replication| SECONDARY2_DR
     SECONDARY1_DR -.->|Election Process| PRIMARY_DR
     SECONDARY2_DR -.->|Election Process| PRIMARY_DR
+    
+    %% Styling
+    classDef dcSite fill:#e8f5e8
+    classDef drSite fill:#fff2e8
+    
+    class PRIMARY_DC,SECONDARY1_DC,SECONDARY2_DC,UI_APP_DC,SOAR_SERVICES_DC dcSite
+    class PRIMARY_DR,SECONDARY1_DR,SECONDARY2_DR,UI_APP_DR,SOAR_SERVICES_DR drSite
 ```
 
 #### Single-Server HA Benefits
@@ -214,22 +221,22 @@ The SOAR platform implements a comprehensive disaster recovery solution between 
 ```mermaid
 graph LR
     subgraph "SOAR DC (Primary Data Center)"
-        subgraph "DC Server Infrastructure"
+        subgraph "DC Server"
             DC_REPLICA[MongoDB Replica Set<br/>Primary: 27017<br/>Secondary 1: 27018<br/>Secondary 2: 27019]
             DC_UI[Securaa UI<br/>HTTPS Port: 443<br/>Primary Access]
-            DC_BACKUP[Automated Backup System<br/>Daily Scheduled Backups]
+            DC_BACKUP[Automated Backup<br/>Daily Scheduled]
         end
     end
     
     subgraph "Cross-Site Connectivity"
-        SSH_TRANSFER[SSH/SCP Transfer<br/>Port: 22<br/>Database Backup & Restore<br/>Secure File Transfer]
+        SSH_TRANSFER[SSH/SCP Transfer<br/>Port: 22<br/>Backup & Restore<br/>Secure File Transfer]
     end
     
     subgraph "SOAR DR (Disaster Recovery Site)"
-        subgraph "DR Server Infrastructure"
+        subgraph "DR Server"
             DR_REPLICA[MongoDB Replica Set<br/>Primary: 27017<br/>Secondary 1: 27018<br/>Secondary 2: 27019]
             DR_UI[Securaa UI<br/>HTTPS Port: 443<br/>DR Access]
-            DR_RESTORE[Automated Restore System<br/>Version-Compatible Recovery]
+            DR_RESTORE[Automated Restore<br/>Version-Compatible]
         end
     end
     
@@ -352,21 +359,30 @@ sequenceDiagram
 ```mermaid
 graph TD
     A[Application Health Check Failure] --> B{Assess Failure Type}
-    B -->|Service Process Crash| C[Automatic Service Restart]
-    B -->|Database Connection Loss| D[Database Reconnection Logic]
-    B -->|Configuration Error| E[Manual Intervention Required]
+    B -->|Service Crash| C[Auto Service Restart]
+    B -->|DB Connection Loss| D[DB Reconnection Logic]
+    B -->|Config Error| E[Manual Intervention]
     
     C --> F[Restart SOAR Services]
-    F --> G[Validate Database Connectivity]
+    F --> G[Validate DB Connectivity]
     G --> H[Resume Normal Operations]
     
-    D --> I[Try Alternative Replica Set Members]
-    I --> J[Establish New Database Connection]
+    D --> I[Try Alternative Replica Members]
+    I --> J[Establish New DB Connection]
     J --> K[Continue Service Operations]
     
     E --> L[Administrative Review]
     L --> M[Configuration Correction]
-    M --> N[Service Restart and Validation]
+    M --> N[Service Restart & Validation]
+    
+    %% Styling
+    classDef processNode fill:#e8f5e8
+    classDef decisionNode fill:#fff2e8
+    classDef actionNode fill:#e8f2ff
+    
+    class A,F,G,H,I,J,K,L,M,N processNode
+    class B decisionNode
+    class C,D,E actionNode
 ```
 
 **Application Recovery Features:**
@@ -438,25 +454,25 @@ graph TD
 
 ```mermaid
 graph TB
-    subgraph "SOAR DC Server - MongoDB Replica Set"
+    subgraph "SOAR DC Server"
         subgraph "Data Replication Flow"
             CLIENT_DC[SOAR Applications<br/>Write Operations]
-            PRIMARY_DC[Primary MongoDB<br/>Port: 27017<br/>✓ Receives all writes<br/>✓ Generates oplog entries<br/>✓ Confirms operations]
+            PRIMARY_DC[Primary MongoDB<br/>Port: 27017<br/>Receives writes<br/>Generates oplog<br/>Confirms operations]
             
-            SECONDARY1_DC[Secondary MongoDB 1<br/>Port: 27018<br/>✓ Async replication<br/>✓ Read operations<br/>✓ Oplog replay]
+            SECONDARY1_DC[Secondary MongoDB 1<br/>Port: 27018<br/>Async replication<br/>Read operations<br/>Oplog replay]
             
-            SECONDARY2_DC[Secondary MongoDB 2<br/>Port: 27019<br/>✓ Async replication<br/>✓ Backup operations<br/>✓ Oplog replay]
+            SECONDARY2_DC[Secondary MongoDB 2<br/>Port: 27019<br/>Async replication<br/>Backup operations<br/>Oplog replay]
         end
     end
     
-    subgraph "SOAR DR Server - MongoDB Replica Set"
+    subgraph "SOAR DR Server"
         subgraph "Restored Data Flow"
             CLIENT_DR[SOAR Applications<br/>Read/Write Operations]
-            PRIMARY_DR[Primary MongoDB<br/>Port: 27017<br/>✓ Restored from backup<br/>✓ Ready for operations<br/>✓ Independent oplog]
+            PRIMARY_DR[Primary MongoDB<br/>Port: 27017<br/>Restored from backup<br/>Ready for operations<br/>Independent oplog]
             
-            SECONDARY1_DR[Secondary MongoDB 1<br/>Port: 27018<br/>✓ Async replication<br/>✓ Read operations<br/>✓ Local oplog replay]
+            SECONDARY1_DR[Secondary MongoDB 1<br/>Port: 27018<br/>Async replication<br/>Read operations<br/>Local oplog replay]
             
-            SECONDARY2_DR[Secondary MongoDB 2<br/>Port: 27019<br/>✓ Async replication<br/>✓ Backup operations<br/>✓ Local oplog replay]
+            SECONDARY2_DR[Secondary MongoDB 2<br/>Port: 27019<br/>Async replication<br/>Backup operations<br/>Local oplog replay]
         end
     end
     
@@ -473,6 +489,13 @@ graph TB
     
     SECONDARY1_DR -.->|Read Operations| CLIENT_DR
     SECONDARY2_DR -.->|Read Operations| CLIENT_DR
+    
+    %% Styling
+    classDef dcSite fill:#e8f5e8
+    classDef drSite fill:#fff2e8
+    
+    class CLIENT_DC,PRIMARY_DC,SECONDARY1_DC,SECONDARY2_DC dcSite
+    class CLIENT_DR,PRIMARY_DR,SECONDARY1_DR,SECONDARY2_DR drSite
 ```
 
 **Single-Server Synchronization Characteristics:**
@@ -488,33 +511,33 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    participant DC_PRIMARY as SOAR DC Primary DB
-    participant DC_BACKUP as DC Backup System
-    participant TRANSFER as SSH/SCP Transfer (Port 22)
-    participant DR_RESTORE as DR Restore System
-    participant DR_PRIMARY as SOAR DR Primary DB
+    participant DC as SOAR DC Primary
+    participant BACKUP as DC Backup System
+    participant TRANSFER as SSH/SCP Transfer
+    participant RESTORE as DR Restore System
+    participant DR as SOAR DR Primary
     
-    Note over DC_PRIMARY,DR_PRIMARY: Daily Backup Cycle
+    Note over DC,DR: Daily Backup Cycle
     
-    DC_PRIMARY->>DC_BACKUP: Initiate Scheduled Backup
-    DC_BACKUP->>DC_BACKUP: Create Complete DB Dump
-    DC_BACKUP->>DC_BACKUP: Include System Configurations
-    DC_BACKUP->>DC_BACKUP: Compress and Package
+    DC->>BACKUP: Initiate Scheduled Backup
+    BACKUP->>BACKUP: Create Complete DB Dump
+    BACKUP->>BACKUP: Include System Configs
+    BACKUP->>BACKUP: Compress and Package
     
-    DC_BACKUP->>TRANSFER: Secure File Transfer
+    BACKUP->>TRANSFER: Secure File Transfer
     TRANSFER->>TRANSFER: Validate Transfer Integrity
-    TRANSFER->>DR_RESTORE: Deliver Backup Package
+    TRANSFER->>RESTORE: Deliver Backup Package
     
-    DR_RESTORE->>DR_RESTORE: Validate Backup Version
-    DR_RESTORE->>DR_RESTORE: Store for Future Restore
+    RESTORE->>RESTORE: Validate Backup Version
+    RESTORE->>RESTORE: Store for Future Restore
     
-    Note over DC_PRIMARY,DR_PRIMARY: During DR Activation
+    Note over DC,DR: During DR Activation
     
-    DR_RESTORE->>DR_RESTORE: Execute Restore Process
-    DR_RESTORE->>DR_PRIMARY: Restore Complete Database
-    DR_RESTORE->>DR_PRIMARY: Update Configurations
-    DR_PRIMARY->>DR_PRIMARY: Initialize Replica Set
-    DR_PRIMARY->>DC_BACKUP: Confirm DR Readiness
+    RESTORE->>RESTORE: Execute Restore Process
+    RESTORE->>DR: Restore Complete Database
+    RESTORE->>DR: Update Configurations
+    DR->>DR: Initialize Replica Set
+    DR->>BACKUP: Confirm DR Readiness
 ```
 
 #### Cross-Site Synchronization Features
