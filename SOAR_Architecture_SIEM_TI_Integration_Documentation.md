@@ -1,101 +1,402 @@
-# SOAR Platform Architecture and Integration Overview
+# SOAR Platform Architecture and Integration
 
 ## Executive Summary
 
-The SOAR (Security Orchestration, Automation and Response) platform serves as a central integration hub that connects with TIP (Threat Intelligence Platform) services and CSAM (Cyber Security Asset Management) services. The platform provides unified dashboards, threat intelligence integration, investigation capabilities, case enrichment, and automated playbook execution.
+The SOAR (Security Orchestration, Automation and Response) platform integrates SIEM tools, Threat Intelligence feeds, and vulnerability scanners through specialized TIP and CSAM services. The platform provides centralized orchestration, automated workflows, and unified dashboards for comprehensive security operations.
 
 ## Table of Contents
 
-1. [SOAR Platform Architecture](#soar-platform-architecture)
-2. [TIP and CSAM Service Integration](#tip-and-csam-service-integration)
-3. [Threat Intelligence Processing](#threat-intelligence-processing)
-4. [Asset and Vulnerability Management](#asset-and-vulnerability-management)
-5. [Integration Patterns](#integration-patterns)
+1. [Platform Architecture](#platform-architecture)
+2. [SIEM Integration](#siem-integration)
+3. [Threat Intelligence Feeds](#threat-intelligence-feeds)
+4. [Vulnerability Management](#vulnerability-management)
+5. [Service Communication](#service-communication)
 
 ---
 
-## SOAR Platform Architecture
+## Platform Architecture
 
-### Actual System Architecture
-
-Based on the codebase analysis, the platform consists of three main services running on different ports:
+### System Overview
 
 ```mermaid
 graph TB
-    subgraph "SOAR Platform (Main Machine)"
-        SOAR_CORE[SOAR Core Services<br/>Port: 443<br/>MongoDB Database]
-        PLAYBOOK_ENGINE[Playbook Engine<br/>Automated Workflows]
-        INTEGRATION_LAYER[Integration Layer<br/>REST API Connectors]
-        DASHBOARD[Unified Dashboard<br/>Central Management]
-        MONGO_DB[(MongoDB<br/>SOAR Data Storage)]
+    subgraph "SOAR Core Platform"
+        SOAR[SOAR Platform<br/>Port: 443<br/>MongoDB Database]
+        PLAYBOOKS[Playbook Engine<br/>Automated Workflows]
+        DASHBOARD[Unified Dashboard<br/>Security Operations]
     end
     
-    subgraph "TIP Service (Same/Different Machine)"
-        TIP_SERVICE[TIP Service<br/>Port: 7000<br/>zona_tip_batch/tip_services]
-        ELASTIC_TIP[(Elasticsearch<br/>TI Data Storage<br/>ESHostURL configured)]
+    subgraph "TIP Service - Port 7000"
+        TIP_API[TIP REST API<br/>zona_tip_batch/tip_services]
+        TIP_ES[(Elasticsearch<br/>Threat Intelligence DB)]
     end
     
-    subgraph "CSAM Service (Same/Different Machine)"
-        CSAM_SERVICE[CSAM Service<br/>Port: 8229<br/>securaa_csam/services]
-        ELASTIC_CSAM[(Elasticsearch<br/>CSAM Data Storage<br/>Port: 9200)]
+    subgraph "CSAM Service - Port 8229"
+        CSAM_API[CSAM REST API<br/>securaa_csam/services]
+        CSAM_ES[(Elasticsearch<br/>Asset & Vulnerability DB)]
     end
     
-    subgraph "External Sources"
-        TI_FEEDS[Threat Intelligence Feeds<br/>Batch Processing<br/>RF, MISP, etc.]
-        VULN_SCANNERS[Vulnerability Scanners<br/>Asset Discovery<br/>Cloud Platforms]
+    subgraph "External Integrations"
+        SIEM_TOOLS[SIEM Tools<br/>Graylog, Elastic, QRadar<br/>Splunk, Sentinel]
+        TI_FEEDS[TI Feed Sources<br/>Recorded Future, MISP<br/>Abuse.ch, Bambenek]
+        VULN_SCANNERS[Vulnerability Scanners<br/>Nessus, Qualys<br/>Cloud Scanners]
     end
     
-    %% Core Connections
-    SOAR_CORE --> MONGO_DB
-    SOAR_CORE --> PLAYBOOK_ENGINE
-    SOAR_CORE --> INTEGRATION_LAYER
-    SOAR_CORE --> DASHBOARD
-    
-    %% Service Connections via HTTPS
-    INTEGRATION_LAYER <-->|HTTPS tipHost:7000| TIP_SERVICE
-    INTEGRATION_LAYER <-->|HTTPS csamHost:8229| CSAM_SERVICE
+    %% Service Communication
+    SOAR -.->|HTTPS tipHost:7000| TIP_API
+    SOAR -.->|HTTPS csamHost:8229| CSAM_API
     
     %% Data Storage
-    TIP_SERVICE --> ELASTIC_TIP
-    CSAM_SERVICE --> ELASTIC_CSAM
+    TIP_API --> TIP_ES
+    CSAM_API --> CSAM_ES
     
-    %% External Integrations
-    TI_FEEDS --> TIP_SERVICE
-    VULN_SCANNERS --> CSAM_SERVICE
+    %% External Data Sources
+    SIEM_TOOLS --> SOAR
+    TI_FEEDS --> TIP_API
+    VULN_SCANNERS --> CSAM_API
     
-    %% Styling
-    classDef soarComponent fill:#e8f5e8
-    classDef serviceComponent fill:#fff2e8
-    classDef dataComponent fill:#e8f2ff
-    classDef externalComponent fill:#ffe8e8
+    %% Dashboard Integration
+    TIP_ES -.-> DASHBOARD
+    CSAM_ES -.-> DASHBOARD
     
-    class SOAR_CORE,PLAYBOOK_ENGINE,INTEGRATION_LAYER,DASHBOARD soarComponent
-    class TIP_SERVICE,CSAM_SERVICE serviceComponent
-    class MONGO_DB,ELASTIC_TIP,ELASTIC_CSAM dataComponent
-    class TI_FEEDS,VULN_SCANNERS externalComponent
+    classDef soarCore fill:#e8f5e8
+    classDef services fill:#fff2e8
+    classDef databases fill:#e8f2ff
+    classDef external fill:#ffe8e8
+    
+    class SOAR,PLAYBOOKS,DASHBOARD soarCore
+    class TIP_API,CSAM_API services
+    class TIP_ES,CSAM_ES databases
+    class SIEM_TOOLS,TI_FEEDS,VULN_SCANNERS external
 ```
 
-### Key Components
+### Core Components
 
-**SOAR Platform (Main Machine):**
-- **MongoDB Database**: Primary data storage for SOAR operations, cases, and configurations
-- **Integration Layer**: HTTPS API connectors to TIP and CSAM services
-- **Playbook Engine**: Automated workflow execution with task management
-- **Unified Dashboard**: Central management interface for all services
-
-**TIP Service (Port 7000):**
-- **Service Location**: `zona_tip_batch/tip_services/main.go`
-- **Elasticsearch**: Threat intelligence data storage with configurable ESHostURL
-- **Batch Processing**: Multiple TI feed processors (RF, MISP, abuse.ch, etc.)
-- **REST API**: Search, import, association, and configuration endpoints
-
-**CSAM Service (Port 8229):**
-- **Service Location**: `securaa_csam/services/main.go`
-- **Elasticsearch**: Asset and vulnerability data storage (Port 9200)
-- **Asset Management**: Cloud asset tracking and vulnerability assessment
-- **REST API**: Asset data, dashboard, and export endpoints
+| Component | Port | Database | Purpose |
+|-----------|------|----------|---------|
+| **SOAR Platform** | 443 | MongoDB | Central orchestration, case management, playbook execution |
+| **TIP Service** | 7000 | Elasticsearch | Threat intelligence processing and API |
+| **CSAM Service** | 8229 | Elasticsearch | Asset management and vulnerability tracking |
 
 ---
+
+## SIEM Integration
+
+### Supported SIEM Platforms
+
+The SOAR platform integrates with various SIEM tools for security event ingestion and incident management:
+
+#### Enterprise SIEM Solutions
+- **Graylog**: Open-source log management and analysis
+- **Elastic Security**: Elasticsearch-based security analytics
+- **IBM QRadar**: Enterprise SIEM with threat detection
+- **Splunk**: Data platform for security monitoring
+- **Microsoft Sentinel**: Cloud-native SIEM solution
+
+#### Integration Methods
+- **REST API**: Direct API integration for event ingestion
+- **Webhooks**: Real-time event notifications
+- **Log Forwarding**: Syslog and structured log ingestion
+- **Database Connections**: Direct database queries
+
+### SIEM Data Flow
+
+```mermaid
+sequenceDiagram
+    participant SIEM as SIEM Platform
+    participant SOAR as SOAR Platform
+    participant TIP as TIP Service
+    participant ANALYST as Security Analyst
+    
+    Note over SIEM,ANALYST: Security Event Processing
+    
+    SIEM->>SOAR: Security Alert/Event
+    SOAR->>SOAR: Create Incident
+    SOAR->>TIP: Enrich with TI Data
+    TIP->>SOAR: Threat Context
+    SOAR->>SOAR: Execute Playbook
+    SOAR->>ANALYST: Prioritized Alert
+    
+    Note over SIEM,ANALYST: Investigation Flow
+    
+    ANALYST->>SOAR: Investigation Request
+    SOAR->>SIEM: Query Historical Data
+    SIEM->>SOAR: Log/Event Data
+    SOAR->>ANALYST: Investigation Results
+```
+
+### SIEM Configuration Examples
+
+**Graylog Integration:**
+```yaml
+Connection_Type: "REST API"
+Endpoint: "https://graylog.company.com:9000/api"
+Authentication: "Bearer Token"
+Data_Format: "JSON"
+Event_Types: ["security_alert", "authentication", "network"]
+```
+
+**QRadar Integration:**
+```yaml
+Connection_Type: "REST API"
+Endpoint: "https://qradar.company.com/api/siem"
+Authentication: "SEC Token"
+Data_Format: "JSON"
+Offenses: "Auto-import high severity offenses"
+```
+
+---
+
+## Threat Intelligence Feeds
+
+### TI Feed Processing Architecture
+
+The TIP service processes multiple threat intelligence sources through dedicated batch processors:
+
+```mermaid
+graph LR
+    subgraph "Commercial TI Feeds"
+        RF[Recorded Future<br/>tip_batch_rf]
+        THREATMON[ThreatMon<br/>Commercial IOCs]
+    end
+    
+    subgraph "Open Source Feeds"
+        MISP[MISP Platform<br/>tip_batch_local]
+        ABUSE[Abuse.ch<br/>tip_batch_abuse.ch]
+        BAMBENEK[Bambenek<br/>tip_batch_bambenek]
+        BLOCKLIST[Blocklist.de<br/>tip_batch_blocklist.de]
+    end
+    
+    subgraph "Specialized Feeds"
+        FIREBOG[Firebog<br/>tip_batch_firebog]
+        BOTSCOUT[BotScout<br/>tip_batch_botscout]
+        DANGER[Danger.rulez<br/>tip_batch_danger.rulez]
+    end
+    
+    subgraph "TIP Service Processing"
+        NORMALIZER[Data Normalizer]
+        STORAGE[(Elasticsearch<br/>Indicator Storage)]
+        API[TIP REST API<br/>Port 7000]
+    end
+    
+    RF --> NORMALIZER
+    MISP --> NORMALIZER
+    ABUSE --> NORMALIZER
+    BAMBENEK --> NORMALIZER
+    BLOCKLIST --> NORMALIZER
+    FIREBOG --> NORMALIZER
+    BOTSCOUT --> NORMALIZER
+    DANGER --> NORMALIZER
+    THREATMON --> NORMALIZER
+    
+    NORMALIZER --> STORAGE
+    STORAGE --> API
+```
+
+### Supported Indicator Types
+
+| Indicator Type | Description | Sources |
+|----------------|-------------|---------|
+| **IP Addresses** | Malicious IPs, C2 servers | RF, Abuse.ch, Blocklist.de |
+| **Domain Names** | Malicious domains, DGA domains | RF, MISP, Bambenek |
+| **URLs** | Malicious URLs, phishing sites | RF, MISP, Firebog |
+| **File Hashes** | Malware hashes (MD5, SHA1, SHA256) | RF, MISP, Abuse.ch |
+| **Email Addresses** | Phishing/spam email addresses | RF, MISP, BotScout |
+
+### TI Feed Configuration
+
+**Batch Processing Schedule:**
+```yaml
+Recorded_Future:
+  interval: 60  # minutes
+  enabled: true
+  endpoint: "RF API"
+
+MISP_Local:
+  interval: 30  # minutes
+  enabled: true
+  format: "STIX"
+
+Abuse_ch:
+  interval: 120 # minutes
+  enabled: true
+  feeds: ["malware", "botnet", "c2"]
+```
+
+### TI Service API Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|---------|---------|
+| `/search/{userid}/{indicator}/{tiptype}/` | GET | Search indicators |
+| `/datalist/` | POST | Retrieve indicator tables |
+| `/importindicators/` | POST | Import custom indicators |
+| `/addassociates/` | POST | Manage associations |
+| `/exportindicator/` | POST | Export indicator data |
+
+---
+
+## Vulnerability Management
+
+### CSAM Service Architecture
+
+The CSAM service integrates with various vulnerability scanners and cloud platforms for comprehensive asset management:
+
+```mermaid
+graph TB
+    subgraph "Vulnerability Scanners"
+        NESSUS[Nessus<br/>Tenable Scanner]
+        QUALYS[Qualys VMDR<br/>Cloud Scanner]
+        OPENVAS[OpenVAS<br/>Open Source Scanner]
+        RAPID7[Rapid7 InsightVM<br/>Scanner]
+    end
+    
+    subgraph "Cloud Platforms"
+        AWS[AWS Security<br/>Config, Inspector]
+        AZURE[Azure Security<br/>Security Center]
+        GCP[GCP Security<br/>Security Command]
+    end
+    
+    subgraph "CSAM Service - Port 8229"
+        ASSET_CTRL[Asset Controller<br/>Data Processing]
+        CSAM_DB[(Elasticsearch<br/>csam_{tenant})]
+        DASHBOARD_API[Dashboard API<br/>Metrics & Reports]
+    end
+    
+    subgraph "Vulnerability Database"
+        NVD[National Vulnerability DB<br/>CVE Data]
+        VENDOR_FEEDS[Vendor Security Feeds<br/>Security Advisories]
+    end
+    
+    NESSUS --> ASSET_CTRL
+    QUALYS --> ASSET_CTRL
+    OPENVAS --> ASSET_CTRL
+    RAPID7 --> ASSET_CTRL
+    
+    AWS --> ASSET_CTRL
+    AZURE --> ASSET_CTRL
+    GCP --> ASSET_CTRL
+    
+    NVD --> ASSET_CTRL
+    VENDOR_FEEDS --> ASSET_CTRL
+    
+    ASSET_CTRL --> CSAM_DB
+    CSAM_DB --> DASHBOARD_API
+```
+
+### Asset Management Features
+
+**Cloud Asset Discovery:**
+- **AWS**: EC2, S3, VPC, Security Groups, IAM
+- **Azure**: VMs, Storage, Networks, Security Groups
+- **GCP**: Compute, Storage, Networks, IAM
+
+**Vulnerability Assessment:**
+- **CVSS Scoring**: Risk prioritization based on CVSS scores
+- **Asset Criticality**: Business impact assessment
+- **Patch Management**: Vulnerability remediation tracking
+- **Compliance Mapping**: Regulatory compliance status
+
+### CSAM Service API Endpoints
+
+| Endpoint | Method | Purpose |
+|----------|---------|---------|
+| `/assets` | GET | Retrieve asset information |
+| `/vulnerability-details/{cve-id}` | GET | CVE vulnerability details |
+| `/tasks/asset-info` | POST | Asset information tasks |
+| `/assets/export` | POST | Export asset data |
+| `/dashboarddata` | GET | Dashboard metrics |
+
+### Vulnerability Data Structure
+
+```yaml
+Asset_Schema:
+  asset_id: "unique identifier"
+  ip_address: "asset IP"
+  hostname: "asset hostname"
+  os_type: "operating system"
+  business_hierarchy: "organizational unit"
+  vulnerabilities:
+    - cve_id: "CVE-2023-XXXX"
+      cvss_score: 9.8
+      severity: "Critical"
+      patch_available: true
+      scanner_source: "Nessus"
+```
+
+---
+
+## Service Communication
+
+### Integration Architecture
+
+```mermaid
+sequenceDiagram
+    participant USER as Security Analyst
+    participant SOAR as SOAR Platform
+    participant TIP as TIP Service
+    participant CSAM as CSAM Service
+    participant SIEM as SIEM Platform
+    
+    Note over USER,SIEM: Investigation Workflow
+    
+    USER->>SOAR: Create Investigation
+    SOAR->>TIP: Query Threat Intelligence
+    TIP->>SOAR: Indicator Information
+    SOAR->>CSAM: Query Asset Information
+    CSAM->>SOAR: Asset & Vulnerability Data
+    SOAR->>SIEM: Query Historical Events
+    SIEM->>SOAR: Security Events
+    SOAR->>USER: Comprehensive Investigation Report
+```
+
+### Configuration Parameters
+
+**Service Endpoints:**
+```yaml
+TIP_Service:
+  host: "${tipHost}"
+  port: 7000
+  protocol: "HTTPS"
+  elasticsearch: "${ESHostURL}"
+
+CSAM_Service:
+  host: "${csamHost}"
+  port: 8229
+  protocol: "HTTPS"
+  elasticsearch: "https://${csamHost}:9200"
+
+SOAR_Platform:
+  port: 443
+  database: "MongoDB"
+  protocol: "HTTPS"
+```
+
+**Authentication:**
+- **Service-to-Service**: HTTPS with TLS certificates
+- **Elasticsearch**: Basic authentication (username/password)
+- **External APIs**: Token-based authentication
+
+### Data Flow Patterns
+
+1. **Real-time Integration**: Webhook-based event notifications
+2. **Scheduled Polling**: Periodic data synchronization
+3. **On-demand Queries**: User-initiated data retrieval
+4. **Batch Processing**: Bulk data import and processing
+
+---
+
+## Conclusion
+
+The SOAR platform provides comprehensive security orchestration through:
+
+- **SIEM Integration**: Multi-platform security event management
+- **Threat Intelligence**: Automated TI feed processing and correlation
+- **Vulnerability Management**: Cloud-native asset and vulnerability tracking
+- **Unified Operations**: Centralized dashboard and workflow automation
+
+This architecture enables organizations to achieve integrated security operations with automated threat detection, investigation, and response capabilities.
+
+*Document reflects actual implementation based on zona_tip_batch and securaa_csam codebase analysis.*
 
 ## TIP and CSAM Service Integration
 
