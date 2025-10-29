@@ -23,9 +23,9 @@ The SOAR Services platform implements a comprehensive HA/DR strategy with single
 
 - **Single-Machine Architecture**: Each site (DC and DR) operates on a dedicated server
 - **MongoDB Replica Set HA**: 3-node MongoDB replica set (1 Primary + 2 Secondary) per site
-- **Cross-Site DR**: Automated database backup and restore between SOAR DC and SOAR DR
+- **Cross-Site DR**: Automated incremental database backup and restore between SOAR DC and SOAR DR using cron-scheduled intervals
 - **User Interface Access**: Securaa UI accessible via port 443 at each site
-- **Database Synchronization**: Port 22 SSH/SCP based backup transfer
+- **Database Synchronization**: Port 22 SSH/SCP based incremental backup transfer
 
 ```mermaid
 graph TB
@@ -43,7 +43,7 @@ graph TB
             end
             
             subgraph "Backup System"
-                BACKUP_DC[Automated Backup<br/>Daily Scheduled]
+                BACKUP_DC[Automated Backup<br/>Cron Scheduled<br/>Incremental]
             end
         end
     end
@@ -264,37 +264,45 @@ graph LR
 
 #### Backup System Components
 
-**SOAR DC Backup Process:**
-- **Multi-Tenant Database Backup**: Complete MongoDB dumps for all active tenant databases
+**SOAR DC Incremental Backup Process:**
+- **Cron-Based Scheduling**: Automated incremental backups using configurable cron intervals
+- **Multi-Tenant Database Backup**: Incremental MongoDB dumps for all active tenant databases
 - **System Configuration Backup**: Application settings, user configurations, and security policies
 - **Operational Data Backup**: Reports, dashboards, custom analytics, and operational logs
 - **Metadata Backup**: License information, tenant configurations, and system metadata
+- **Change Detection**: Only modified data since last backup is captured and transferred
 
 #### Cross-Site Transfer Mechanism
 
-**Secure Data Transfer (Port 22):**
+**Secure Incremental Data Transfer (Port 22):**
 - **SSH/SCP Protocol**: Encrypted file transfer between SOAR DC and SOAR DR
 - **Authentication Methods**: SSH key-based or credential-based authentication
 - **Transfer Validation**: Checksum verification and integrity validation
-- **Automated Scheduling**: Daily backup transfers during low-activity periods
+- **Cron-Based Scheduling**: Configurable interval backups (hourly, daily, or custom intervals)
+- **Incremental Transfer**: Only changed data since last backup is transferred
 - **Retry Logic**: Automatic retry mechanisms for failed transfers
+- **Bandwidth Optimization**: Reduced transfer times due to incremental nature
 
-#### SOAR DR Restore Process
+#### SOAR DR Incremental Restore Process
 
-**Automated Recovery System:**
+**Automated Incremental Recovery System:**
 - **Version Compatibility**: Ensures backup version matches DR environment version
 - **Pre-Restore Safety**: Creates safety backup of existing DR data before restoration
-- **Database Restoration**: Complete restoration of MongoDB replica set from backup
+- **Incremental Database Restoration**: Applies incremental changes to MongoDB replica set
+- **Cron-Based Restore**: Automated restore process triggered by cron intervals
+- **Change Tracking**: Maintains incremental change logs for efficient restoration
 - **Configuration Update**: Automatic update of connection strings and host configurations
 - **Service Activation**: Restart and validation of SOAR services post-restoration
+- **Rollback Capability**: Ability to rollback to previous incremental backup points
 
 ### 3. DR Site Readiness and Activation
 
 #### Standby Configuration
 - **Infrastructure Readiness**: DR server maintains identical configuration to primary
 - **Service Standby**: SOAR services configured and ready for immediate activation
-- **Data Synchronization**: Regular backup transfers ensure data currency
+- **Incremental Data Synchronization**: Regular cron-based incremental backup transfers ensure data currency
 - **Network Preparation**: UI accessibility via DR site IP address (Port 443)
+- **Cron Service Management**: Automated cron jobs handle backup scheduling and execution
 
 #### DR Activation Process
 1. **Failure Detection**: Primary site unavailability detection
@@ -512,29 +520,32 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant DC as SOAR DC Primary
+    participant CRON as Cron Service
     participant BACKUP as DC Backup System
     participant TRANSFER as SSH/SCP Transfer
     participant RESTORE as DR Restore System
     participant DR as SOAR DR Primary
     
-    Note over DC,DR: Daily Backup Cycle
+    Note over DC,DR: Incremental Backup Cycle
     
-    DC->>BACKUP: Initiate Scheduled Backup
-    BACKUP->>BACKUP: Create Complete DB Dump
-    BACKUP->>BACKUP: Include System Configs
-    BACKUP->>BACKUP: Compress and Package
+    CRON->>BACKUP: Trigger Scheduled Incremental Backup
+    BACKUP->>DC: Identify Changed Data Since Last Backup
+    DC->>BACKUP: Return Delta Changes
+    BACKUP->>BACKUP: Create Incremental DB Dump
+    BACKUP->>BACKUP: Include Config Changes
+    BACKUP->>BACKUP: Compress Incremental Package
     
-    BACKUP->>TRANSFER: Secure File Transfer
+    BACKUP->>TRANSFER: Secure Incremental Transfer
     TRANSFER->>TRANSFER: Validate Transfer Integrity
-    TRANSFER->>RESTORE: Deliver Backup Package
+    TRANSFER->>RESTORE: Deliver Incremental Package
     
-    RESTORE->>RESTORE: Validate Backup Version
-    RESTORE->>RESTORE: Store for Future Restore
+    RESTORE->>RESTORE: Validate Incremental Backup
+    RESTORE->>RESTORE: Store Incremental Changes
     
     Note over DC,DR: During DR Activation
     
-    RESTORE->>RESTORE: Execute Restore Process
-    RESTORE->>DR: Restore Complete Database
+    RESTORE->>RESTORE: Apply All Incremental Changes
+    RESTORE->>DR: Restore Base + Incremental Data
     RESTORE->>DR: Update Configurations
     DR->>DR: Initialize Replica Set
     DR->>BACKUP: Confirm DR Readiness
@@ -547,46 +558,52 @@ sequenceDiagram
 - **Authentication**: Key-based or credential-based authentication
 - **Compression**: Efficient data compression for bandwidth optimization
 - **Integrity**: Checksum validation and error detection
-- **Automation**: Scheduled transfers with retry logic
+- **Automation**: Cron-scheduled transfers with configurable intervals
+- **Incremental Transfer**: Only changed data since last backup is transferred
 
 **Synchronization Schedule and Metrics:**
-- **Backup Frequency**: Daily automated backups during low-activity windows
-- **Transfer Duration**: 30 minutes to 2 hours (depending on data size)
-- **RPO (Recovery Point Objective)**: 24 hours maximum data loss
-- **Validation Process**: Automated integrity checks upon DR site arrival
-- **Retention Policy**: 5 recent backup versions maintained at both sites
+- **Backup Frequency**: Configurable cron intervals (hourly, daily, or custom)
+- **Incremental Transfer**: Reduced transfer times (5-30 minutes depending on changes)
+- **RPO (Recovery Point Objective)**: Based on cron interval (1-24 hours configurable)
+- **Validation Process**: Automated integrity checks for each incremental transfer
+- **Retention Policy**: Multiple incremental backup points maintained at both sites
+- **Change Detection**: Efficient delta identification and transfer optimization
 
 ### 3. SOAR Application Data Consistency
 
-#### Multi-Tenant Data Management
+#### Multi-Tenant Incremental Data Management
 
 **Tenant Database Synchronization:**
-- **Tenant Isolation**: Each tenant's data backed up independently
-- **Configuration Consistency**: Tenant-specific configurations preserved
+- **Tenant Isolation**: Each tenant's incremental data backed up independently
+- **Configuration Consistency**: Tenant-specific configuration changes preserved
 - **Security Context**: Encrypted credentials and access controls maintained
 - **Operational Continuity**: User sessions and operational state preservation
+- **Change Tracking**: Efficient tracking of per-tenant data modifications
 
 **System Metadata Synchronization:**
-- **License Information**: Platform licensing and activation data
-- **User Management**: User accounts, roles, and permissions
-- **System Configuration**: SOAR operational parameters and settings
-- **Custom Content**: Reports, dashboards, and analytical configurations
+- **License Information**: Platform licensing and activation data changes
+- **User Management**: User accounts, roles, and permissions modifications
+- **System Configuration**: SOAR operational parameter changes
+- **Custom Content**: Reports, dashboards, and analytical configuration updates
+- **Incremental Updates**: Only modified metadata transferred during backup cycles
 
 ### 4. Data Integrity and Validation
 
-#### Backup Validation Process
+#### Incremental Backup Validation Process
 
 **Pre-Transfer Validation:**
-- **Database Consistency**: Verify replica set consistency before backup
-- **Data Completeness**: Ensure all collections and indexes are captured
-- **Version Compatibility**: Validate backup format and version compatibility
+- **Database Consistency**: Verify replica set consistency before incremental backup
+- **Change Detection**: Ensure all modifications since last backup are captured
+- **Data Completeness**: Validate incremental backup includes all changed collections and indexes
+- **Version Compatibility**: Validate incremental backup format and version compatibility
 - **Access Permissions**: Verify backup file permissions and security
 
 **Post-Transfer Validation:**
-- **Transfer Integrity**: Checksum verification of transferred files
-- **File Completeness**: Validate all backup components received
-- **Restore Readiness**: Confirm DR environment compatibility
-- **Storage Management**: Monitor DR storage capacity and retention compliance
+- **Transfer Integrity**: Checksum verification of incremental backup files
+- **Incremental Completeness**: Validate all incremental changes received
+- **Restore Readiness**: Confirm DR environment compatibility with incremental changes
+- **Storage Management**: Monitor DR storage capacity and incremental backup retention
+- **Chain Validation**: Ensure incremental backup chain integrity for proper restoration
 
 ---
 
