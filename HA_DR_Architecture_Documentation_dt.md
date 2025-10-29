@@ -2,7 +2,13 @@
 
 ## Executive Summary
 
-The Securaa solution implements a robust High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document describes two supported HA mechanisms between the Data Center (DC) and the Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (periodic incremental backups; default interval: 30 minutes) and (2) Hot Sync (oplog-based near real-time replication). While both provide business continuity, Hot Sync delivers faster replication and higher operational reliability than periodic backup/restore.
+The Securaa solution implements a High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure business continuity, data protection, and recovery capabilities. 
+
+**Local Site HA (Automatic):** Each site (DC and DR independently) operates a 3-server MongoDB replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) providing automatic failover within 15-35 seconds for server-level failures.
+
+**Cross-Site DR (Manual):** This document describes two supported manual DR synchronization methods between the Data Center (DC) and Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (manual/cron-based incremental backups; recommended interval: 30 minutes) and (2) Hot Sync (oplog-based near real-time replication with manual DR activation). **DR activation requires manual administrator intervention** - there are no automated failover agents or health-check systems for cross-site DR.
+
+While both provide business continuity capabilities, Hot Sync delivers faster replication and lower RPO (~1 minute) than periodic backup/restore (30 minutes).
 
 ## Table of Contents
 
@@ -25,47 +31,37 @@ The SOAR Services platform implements a flexible HA/DR strategy that supports tw
 - DC–DR Incremental Backup & Restore (periodic incremental archives; default: every 30 minutes)
 - Hot Sync (oplog-based, near real-time MongoDB replication; directory data synchronized periodically)
 
-Both approaches use the existing three-server replica-set design locally (per site) for distributed HA and provide cross-site continuity, but they differ in replication latency, DR behavior, and failover activation.
+Both approaches use the existing three-server MongoDB replica set design locally within each site (DC and DR operate independently) for distributed HA, and provide manual cross-site DR capability. They differ in replication latency and data synchronization method.
 
 ```mermaid
 graph TB
-    subgraph DC["<b>SOAR DC (Primary Site - 3 Servers)</b>"]
+    subgraph DC["<b>SOAR DC (Primary Active Site - 3 Servers)</b>"]
         DC_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
         DC_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
         DC_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
-        DC_BACKUP["<b>Backup Agent / Cron</b>"]
     end
 
-    subgraph DR["<b>SOAR DR (Disaster Recovery Site - 3 Servers)</b>"]
+    subgraph DR["<b>SOAR DR (Standby Site - 3 Servers)</b>"]
         DR_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
         DR_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
         DR_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
-        DR_MONGO["<b>MongoDB Replica Set</b><br/>(3 instances on port 27017)<br/>Primary, Secondary, Arbiter"]
-        DR_APP["<b>Securaa UI & SOAR Services</b>"]
-        DR_RESTORE["<b>Restore Agent / Cron</b>"]
     end
 
     UserAccess["<b>User Access</b><br/>HTTPS (443)"]
 
-    %% Backup & Restore path
-    DC_BACKUP -->|"<b>SCP Transfer</b><br/>(port 22)<br/>Incremental archives<br/>every 30 min"| DR_RESTORE
-    DR_RESTORE --> DR_MONGO
-    DR_RESTORE --> DR_SERVER
+    %% Manual data sync paths (no automatic agents)
+    DC_SRV1 -.->|"<b>Manual Backup/Sync</b><br/>(SCP port 22)<br/>Periodic transfer"| DR_SRV1
+    DC_SRV2 -.->|"<b>Manual Backup/Sync</b><br/>(SCP port 22)<br/>Periodic transfer"| DR_SRV2
 
-    %% Hot Sync path
-    DC_MONGO -->|"<b>Oplog Replication</b><br/>(port 27017)<br/>Near real-time"| DR_MONGO
-    DC_SERVER -->|"<b>Directory Sync</b><br/>(SCP port 22)<br/>Configurable interval"| DR_SERVER
-
-    %% Access
-    UserAccess --> DC_APP
-    UserAccess --> DR_APP
+    %% Access (only to active DC site)
+    UserAccess --> DC_SRV1
 
     classDef dcStyle fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
     classDef drStyle fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
     classDef userStyle fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
     
-    class DC_SERVER,DC_MONGO,DC_APP,DC_BACKUP dcStyle
-    class DR_SERVER,DR_MONGO,DR_APP,DR_RESTORE drStyle
+    class DC_SRV1,DC_SRV2,DC_SRV3 dcStyle
+    class DR_SRV1,DR_SRV2,DR_SRV3 drStyle
     class UserAccess userStyle
 ```
 
@@ -87,14 +83,16 @@ Key properties:
 - **All three MongoDB instances use port 27017**
 - **Each component runs on a separate physical/virtual machine**
 
-### 2. Cross‑Site High Availability (two supported mechanisms)
+### 2. Cross‑Site Disaster Recovery (Manual Activation)
 
-We support two mechanisms for achieving cross-site HA between DC and DR:
+The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site. DR activation is a **manual process** that requires administrator intervention.
 
-- DC–DR Incremental Backup & Restore — Periodic incremental backups transferred over SCP (port 22). Default transfer interval: 30 minutes (configurable).
-- Hot Sync (Near Real‑Time Replication) — MongoDB oplog replication from DC to DR for near real-time data replication; directory/file sync remains periodic using SCP.
+- **Manual DR Activation** — Administrators manually activate DR site during DC disasters
+- **Data Synchronization** — Manual periodic backups transferred over SCP (port 22) or manual oplog-based sync
+- **No Automatic Agents** — No automated backup/restore agents; synchronization performed manually or via manual cron jobs
+- **Identical Architecture** — DR site has the same 3-server structure (Server 1 Primary + MongoDB Primary, Server 2 Secondary + MongoDB Secondary, Server 3 Arbiter)
 
-Both modes are described in the Disaster Recovery Setup section below.
+Both synchronization approaches are described in the Disaster Recovery Setup section below.
 
 ### 3. Detailed Three-Server MongoDB Replica Set Architecture
 
@@ -157,24 +155,24 @@ This section describes the two supported DC↔DR synchronization modes and their
 ### DC–DR Incremental Backup & Restore
 
 Overview:
-- Periodic incremental backups are taken at DC and restored to DR at a configurable interval. Default: every 30 minutes.
+- Manual periodic backups are taken at DC and manually restored to DR at administrator-defined intervals. Default recommendation: every 30 minutes.
 
 Process:
-1. Perform MongoDB logical/physical and file backups at the DC (incremental dumps or snapshots).
-2. Compress and transfer backup archives to the DR system via SCP (port 22).
-3. The DR restore agent validates archives and restores MongoDB data and files to their locations on the DR server.
+1. Administrator or manual cron job performs MongoDB logical/physical and file backups at the DC (incremental dumps or snapshots).
+2. Compress and manually transfer backup archives to the DR system via SCP (port 22).
+3. Administrator manually validates archives and restores MongoDB data and files to their locations on the DR site servers.
 
 Behavior:
-- DR instance remains active and continuously running (services can be available).
-- Data on DR is updated on each restore based on the configured interval (≈ every 30 minutes by default).
+- DR instance can remain active and continuously running (services can be available for testing).
+- Data on DR is updated on each manual restore based on administrator-defined intervals (≈ every 30 minutes recommended).
 - Initial downtime: the first restore to a new DR environment requires downtime on DR while the baseline restore completes — depends on production data size (typical order: ≈ 1 hour; varies).
-- Sync duration: ≈ 30 minutes per incremental cycle (depends on data volume and configured frequency).
-- RPO is bounded by the backup interval (default 30 minutes).
+- Sync duration: ≈ 30 minutes per incremental cycle (depends on data volume and transfer frequency).
+- RPO is bounded by the backup interval (default 30 minutes recommendation).
 
 Notes and operational considerations:
 - Ensure sufficient DR storage and retention for incremental chains.
 - Validate incremental chain integrity and version compatibility during each transfer.
-- DR services may be kept active for read access; consider whether application-level write suppression is required on DR depending on your failover policy.
+- DR services may be kept active for testing/read access; **DR activation for production traffic requires manual administrator intervention**.
 
 #### Incremental Backup & Restore Workflow
 
@@ -182,61 +180,64 @@ Notes and operational considerations:
 sequenceDiagram
     participant DC_APP as DC Application
     participant DC_DB as DC MongoDB
-    participant BACKUP as Backup Agent
+    participant ADMIN as Administrator
     participant SCP as SCP Transfer
-    participant RESTORE as Restore Agent
     participant DR_DB as DR MongoDB
     participant DR_APP as DR Application
     
-    Note over DC_APP,DR_APP: Normal Operations (Every 30 minutes)
+    Note over DC_APP,DR_APP: Normal Operations (Manual backup every ~30 minutes)
     
     DC_APP->>DC_DB: Write Operations
     
     rect rgb(200, 230, 200)
-        Note over BACKUP: Backup Cycle Initiated
-        BACKUP->>DC_DB: Identify changes since last backup
-        DC_DB-->>BACKUP: Changed data (incremental)
-        BACKUP->>BACKUP: Create incremental dump
-        BACKUP->>BACKUP: Compress archive
-        BACKUP->>SCP: Transfer incremental archive
+        Note over ADMIN: Administrator Initiates Backup
+        ADMIN->>DC_DB: Run backup command (incremental)
+        DC_DB-->>ADMIN: Incremental dump created
+        ADMIN->>ADMIN: Compress archive
+        ADMIN->>SCP: Transfer incremental archive
         SCP->>SCP: Encrypt & validate checksum
-        SCP->>RESTORE: Deliver archive (port 22)
+        SCP-->>DR_DB: Deliver archive (port 22)
     end
     
     rect rgb(200, 200, 230)
-        Note over RESTORE: Restore Cycle
-        RESTORE->>RESTORE: Validate archive integrity
-        RESTORE->>RESTORE: Extract incremental data
-        RESTORE->>DR_DB: Apply incremental changes
+        Note over ADMIN: Administrator Initiates Restore
+        ADMIN->>DR_DB: Validate archive integrity
+        ADMIN->>DR_DB: Extract and apply incremental data
         DR_DB->>DR_DB: Update data & indexes
-        RESTORE->>DR_APP: Update configurations if needed
+        ADMIN->>DR_APP: Update configurations if needed
     end
     
     Note over DC_APP,DR_APP: DR is now synced (RPO = 30 min)
     
     rect rgb(230, 200, 200)
-        Note over DC_APP,DR_APP: DC Failure Scenario
+        Note over DC_APP,DR_APP: DC Failure Scenario - Manual DR Activation
         DC_APP->>DC_APP: DC Site Failure
-        RESTORE->>DR_DB: Apply latest incremental
-        RESTORE->>DR_APP: Start services
+        ADMIN->>DR_DB: Apply latest incremental manually
+        ADMIN->>DR_APP: Start services manually
         DR_APP->>DR_APP: Validate health
-        Note over DR_APP: DR now serves traffic
+        Note over DR_APP: DR now serves traffic (manual activation)
     end
 ```
 
 ### Hot Sync (Near Real‑Time Replication)
 
 Overview:
-- MongoDB oplog-based replication from DC to DR provides near real-time synchronization for database operations. Directory/file data is synchronized at a configurable interval (via SCP) as needed.
+- MongoDB oplog-based replication from DC to DR (manually configured) provides near real-time synchronization for database operations. Directory/file data is synchronized manually at administrator-defined intervals (via SCP) as needed.
 
 Process:
-1. DC MongoDB replicates oplog entries to the DR MongoDB over port 27017; this creates near real-time data parity for database contents. Typical sync duration for DB ops: ≈ 1 minute (dependent on network bandwidth and workload).
-2. Directory and file data are synchronized separately at configurable intervals using SCP (port 22) or rsync+ssh.
+1. DC MongoDB replicates oplog entries to the DR MongoDB over port 27017 (manually configured replication); this creates near real-time data parity for database contents. Typical sync duration for DB ops: ≈ 1 minute (dependent on network bandwidth and workload).
+2. Directory and file data are synchronized separately at manual intervals using SCP (port 22) or rsync+ssh.
 
 Behavior:
 - DR remains in standby mode with application services inactive (not accepting user traffic).
-- DR becomes active only when the health-check/monitoring service detects DC unavailability beyond a configured threshold (default: 20 minutes).
-- Failover duration = DC downtime detection window (default 20 minutes) + DR boot/service activation time.
+- **Manual DR Activation**: Administrator must manually activate DR site when DC becomes unavailable.
+- Failover duration = Administrator detection time + manual DR service activation time.
+
+Notes and operational considerations:
+- Hot Sync provides lower RPO and faster recovery than periodic backup/restore.
+- Monitor oplog window sizes and network reliability; configure appropriate oplog retention.
+- Directory/file synchronization frequency should be chosen to balance consistency and bandwidth.
+- **No automatic health-check monitoring or automated failover** - administrator intervention required.
 
 Notes and operational considerations:
 - Hot Sync provides lower RPO and faster recovery than periodic backup/restore.
@@ -254,7 +255,7 @@ sequenceDiagram
     participant ARB as ⚪ DC Arbiter<br/>(Port 27017)
     participant OPLOG as 📋 Oplog Stream
     participant DR as 🔷 DR MongoDB<br/>(Port 27017)
-    participant HEALTH as 🏥 Health Check
+    participant ADMIN as 👤 Administrator
     participant DRAPP as 💤 DR App<br/>(Standby)
     
     Note over APP,DRAPP: <b>Normal Operations - Continuous Replication</b>
@@ -269,25 +270,25 @@ sequenceDiagram
         Note over DR: ✓ Data synchronized<br/>✗ Services inactive
     end
     
-    HEALTH->>APP: Health check ping
-    APP-->>HEALTH: ✓ Healthy response
+    ADMIN->>APP: Monitor DC health
+    APP-->>ADMIN: ✓ Healthy response
     
     rect rgb(255, 235, 230)
-        Note over APP,DRAPP: <b>⚠ DC Failure Scenario</b>
+        Note over APP,DRAPP: <b>⚠ DC Failure Scenario - Manual Activation</b>
         APP-xAPP: ⚠ DC Site Failure
         
-        HEALTH->>APP: Health check ping
-        APP--xHEALTH: ✗ No response
-        HEALTH->>HEALTH: Wait & retry<br/>(20 min threshold)
+        ADMIN->>APP: Monitor DC health
+        APP--xADMIN: ✗ No response
+        ADMIN->>ADMIN: Assess DC failure<br/>(manual verification)
         
-        alt After 20 minutes downtime
-            HEALTH->>DRAPP: <b>⚡ Trigger DR activation</b>
+        alt Administrator decides to activate DR
+            ADMIN->>DRAPP: <b>⚡ Manually activate DR services</b>
             DRAPP->>DRAPP: Start services
             DRAPP->>DR: Verify data consistency
             DR-->>DRAPP: ✓ Data up-to-date<br/>(~1 min behind)
-            DRAPP->>DRAPP: Reconfigure connections
-            DRAPP->>HEALTH: ✓ Services active
-            Note over DRAPP: <b>✓ DR now serves traffic</b><br/>Failover complete
+            ADMIN->>DRAPP: Reconfigure connections
+            DRAPP-->>ADMIN: ✓ Services active
+            Note over DRAPP: <b>✓ DR now serves traffic</b><br/>Manual failover complete
         end
     end
 ```
@@ -296,18 +297,18 @@ sequenceDiagram
 
 ## Failover Mechanisms
 
-### 1. DC–DR Incremental Backup & Restore Failover
+### 1. DC–DR Incremental Backup & Restore Failover (Manual Process)
 
-- Detection: Monitoring detects DC unavailability.
-- Validate latest incremental backup is present and intact on DR.
-- If baseline and incremental chain sufficient, DR restore agent applies archives (initial baseline restore may be lengthy — ≈ 1 hour; incremental restores follow configured intervals).
-- Services on DR are started and validated.
-- Users are redirected (DNS / load balancer / manual) to DR UI.
+- Detection: Administrator monitors DC and detects unavailability.
+- Administrator validates latest incremental backup is present and intact on DR.
+- Administrator manually applies baseline and incremental backup archives to DR (initial baseline restore may be lengthy — ≈ 1 hour; incremental restores follow).
+- Administrator manually starts and validates services on DR.
+- Users are redirected (DNS / load balancer / manual configuration) to DR UI.
 
 Estimated timings:
-- Detection phase: minutes (depends on monitoring).
-- Restore & service activation: baseline ≈ 30–60+ minutes (varies by dataset) + incremental application per cycle.
-- Total RTO depends on size of baseline and incremental chain.
+- Detection phase: minutes to hours (depends on manual monitoring).
+- Restore & service activation: baseline ≈ 30–60+ minutes (varies by dataset) + incremental application time.
+- Total RTO depends on size of baseline and incremental chain, plus manual intervention time.
 
 #### Incremental Backup Failover Flow
 
@@ -357,67 +358,68 @@ flowchart TD
     style X fill:#90EE90
 ```
 
-### 2. Hot Sync Failover (Standby → Active)
+### 2. Hot Sync Failover (Manual Activation - Standby → Active)
 
 - DC MongoDB oplog replication keeps DR data near up-to-date.
-- DR services remain stopped; health-check monitors DC.
-- Upon DC unavailability beyond detection threshold (default: 20 minutes), health-check triggers DR activation workflow:
-    - Start application services on DR
-    - Reconfigure connection strings (if required)
-    - Promote any DR mongod to be writable (if configured)
-    - Validate application health and redirect users
+- DR services remain stopped; administrator monitors DC health.
+- Upon DC unavailability, administrator manually triggers DR activation workflow:
+    - Manually start application services on DR
+    - Manually reconfigure connection strings (if required)
+    - Manually configure DR MongoDB for write operations
+    - Manually validate application health and redirect users
 
 Estimated timings:
 - Oplog replication lag: typically ~1 minute (network-dependent)
-- Failover duration: detection window (default 20 minutes) + DR activation time (minutes)
-- RTO roughly equals configured detection threshold plus activation time.
+- Failover duration: Administrator detection time + manual DR activation time (minutes to hours)
+- RTO depends on administrator availability and manual intervention time.
 
 #### Hot Sync Failover Flow
 
 ```mermaid
+```mermaid
 flowchart TD
-    A["🟢 <b>DC Site Operating</b><br/>Oplog Streaming Active"] --> B["🏥 <b>Health Check Service</b><br/>Monitors DC"]
+    A["🟢 <b>DC Site Operating</b><br/>Oplog Streaming Active"] --> B["👤 <b>Administrator</b><br/>Monitors DC"]
     
     B --> C{"✓ DC Responding?"}
     C -->|"Yes"| D["✓ Continue Normal<br/>Operations"]
     D --> B
     
-    C -->|"No"| E["⏱ <b>Start Detection Timer</b>"]
-    E --> F{"⚠ DC Down > 20 min?"}
+    C -->|"No"| E["⏱ <b>Administrator Assesses</b><br/><b>DC Failure</b>"]
+    E --> F{"⚠ DC Truly Failed?"}
     
-    F -->|"No - Retry"| G["🔄 Continue Health Checks<br/>(every 30-60 sec)"]
+    F -->|"No - Transient"| G["🔄 Continue Monitoring<br/>Wait for Recovery"]
     G --> H{"✓ DC Recovered?"}
     H -->|"Yes"| D
     H -->|"No"| F
     
-    F -->|"Yes"| I["⚡ <b>Trigger Automated</b><br/><b>DR Activation</b>"]
+    F -->|"Yes"| I["⚡ <b>Administrator Manually</b><br/><b>Activates DR</b>"]
     
     I --> J["🔍 Verify DR MongoDB<br/>Data Consistency"]
-    J --> K{"Data Lag < 5 min?"}
+    J --> K{"Data Lag Acceptable?"}
     
     K -->|"No"| L["⏳ Wait for Final<br/>Oplog Sync if Possible"]
     L --> M["⚠ Accept Data Loss<br/>Beyond RPO"]
     
     K -->|"Yes"| M
-    M --> N["📝 Promote DR MongoDB<br/>to Writable"]
-    N --> O["🚀 Start SOAR Services<br/>on DR"]
-    O --> P["⚙ Update Connection<br/>Strings & Config"]
+    M --> N["📝 Manually Configure DR MongoDB<br/>for Write Operations"]
+    N --> O["🚀 Manually Start SOAR Services<br/>on DR"]
+    O --> P["⚙ Manually Update Connection<br/>Strings & Config"]
     P --> Q["✅ Run Service<br/>Health Checks"]
     
     Q --> R{"All Services<br/>Healthy?"}
     R -->|"No"| S["🔄 Restart Failed<br/>Services"]
     S --> Q
     
-    R -->|"Yes"| T["🌐 Update DNS/LB<br/>to DR Site"]
+    R -->|"Yes"| T["🌐 Manually Update DNS/LB<br/>to DR Site"]
     T --> U["📢 Send Notifications<br/>to Users/Admins"]
     U --> V["📊 Monitor DR<br/>Operations"]
     
     V --> W{"🔧 DC Site<br/>Restored?"}
     W -->|"No"| V
-    W -->|"Yes"| X["📋 Coordinate Failback"]
+    W -->|"Yes"| X["📋 Coordinate Manual Failback"]
     X --> Y{"Use DC or<br/>Continue DR?"}
     
-    Y -->|"Failback to DC"| Z["🔄 Reverse Sync<br/>DR → DC"]
+    Y -->|"Failback to DC"| Z["🔄 Manual Reverse Sync<br/>DR → DC"]
     Z --> AA["🔀 Redirect Traffic<br/>to DC"]
     AA --> AB["💤 DR Returns to<br/>Standby Mode"]
     
@@ -439,7 +441,7 @@ flowchart TD
 
 ### 3. Local Site Failover (MongoDB replica set)
 
-- Within each server, the 3-node replica set (1 Primary, 1 Secondary, 1 Arbiter) offers automatic election on Primary failure (15–35 seconds).
+- Within each site, the 3-server replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) offers automatic election on Primary server failure (15–35 seconds).
 
 #### Local MongoDB Replica Set Failover Flow
 
@@ -467,8 +469,8 @@ flowchart TD
     L --> M["🔌 Application<br/>Auto-Reconnects to New Primary"]
     M --> N["🔍 Failed Primary Detected"]
     
-    N --> O{"Old Primary<br/>Can Restart?"}
-    O -->|"Yes"| P["🔄 Restart mongod Process"]
+    N --> O{"Old Primary<br/>Server 1 Can Restart?"}
+    O -->|"Yes"| P["🔄 Restart MongoDB on Server 1"]
     P --> Q["➕ Rejoins as Secondary"]
     Q --> R["🔄 Syncs Latest Data<br/>from New Primary"]
     R --> S["✅ <b>Replica Set Healthy</b><br/>Primary + Secondary + Arbiter"]
@@ -494,7 +496,7 @@ flowchart TD
 
 **Failover Characteristics:**
 - **Detection Time**: 10-15 seconds (heartbeat timeout)
-- **Election Time**: 5-20 seconds (local server, minimal latency)
+- **Election Time**: 5-20 seconds (across servers within site, minimal latency)
 - **Total Failover**: 15-35 seconds end-to-end
 - **Application Impact**: Brief connection interruption, automatic reconnection
 - **Data Consistency**: Zero data loss with proper write concerns
@@ -554,10 +556,10 @@ graph LR
 
 ### 2. Hot Sync (Oplog) Synchronization
 
-- MongoDB oplog entries are streamed/replicated from DC primary to DR mongod process (port 27017).
+- MongoDB oplog entries are streamed/replicated from DC primary (Server 1) to DR replica set (Server 1 primary) via port 27017.
 - Near real-time database parity: typical lag ~1 minute subject to network speed and write workload.
-- Directory/file sync is still performed periodically (SCP) to transfer non-database artifacts.
-- Ensure network security and authentication for replication: TLS and authenticated MongoDB users; secure network connectivity between DC and DR.
+- Directory/file sync is still performed periodically (SCP) to transfer non-database artifacts between server pairs.
+- Ensure network security and authentication for replication: TLS and authenticated MongoDB users; secure network connectivity between DC and DR sites.
 
 #### Hot Sync Data Flow
 
@@ -653,69 +655,79 @@ Common checks for both methods:
 
 ## Recovery Procedures
 
-### 1. DR Activation — DC–DR Incremental Backup & Restore
+### 1. DR Activation — DC–DR Incremental Backup & Restore (Manual Process)
 
-1. Detect primary outage via monitoring/health-check.
-2. Confirm latest incremental backup archive is available and validated on DR.
-3. If DR baseline not present, perform baseline restore (initial baseline may take ≈ 1 hour).
-4. Apply subsequent increments until caught up to the most recent consistent point.
-5. Start/validate application services on DR.
-6. Redirect traffic (DNS/load balancer) to DR site.
-7. Monitor system health and application correctness.
+1. Administrator detects primary outage via monitoring.
+2. Administrator confirms latest incremental backup archive is available and validated on DR.
+3. If DR baseline not present, administrator performs manual baseline restore (initial baseline may take ≈ 1 hour).
+4. Administrator manually applies subsequent increments until caught up to the most recent consistent point.
+5. Administrator manually starts and validates application services on DR.
+6. Administrator redirects traffic (DNS/load balancer) to DR site.
+7. Administrator monitors system health and application correctness.
 
 Rollback / Failback:
-- After primary is restored, replicate incremental changes from DR back to DC if needed (method depends on chosen mode — Hot Sync or Backup).
-- Gradually shift traffic back to DC once verified.
+- After primary is restored, administrator manually replicates incremental changes from DR back to DC if needed.
+- Administrator gradually shifts traffic back to DC once verified.
 
-### 2. DR Activation — Hot Sync
+### 2. DR Activation — Hot Sync (Manual Process)
 
-1. Health check detects DC unavailability past threshold (default 20 minutes).
-2. Run activation playbook: start services on DR, ensure DB is in a writable/primary state if required by topology, update connection strings, run service health checks.
-3. Redirect traffic to DR.
-4. Continue monitoring and, after DC recovery, coordinate failback (prefer controlled data synchronization).
+1. Administrator detects DC unavailability through monitoring.
+2. Administrator runs manual activation procedure: manually start services on DR, manually configure DB for write operations, manually update connection strings, manually run service health checks.
+3. Administrator redirects traffic to DR.
+4. Continue monitoring and, after DC recovery, administrator coordinates manual failback (controlled data synchronization).
 
-### 3. Local MongoDB Recovery
+### 3. Local MongoDB Recovery (Automatic)
 
-- For mongod process failures, the in-server replica set will elect a new primary automatically. Application reconnection logic should handle transient disconnects.
+- For MongoDB server failures (Server 1 primary failure), the replica set will **automatically** elect Server 2 secondary to new primary. Application reconnection logic should handle transient disconnects during the 15-35 second election process.
+- This is the ONLY automatic failover in the system - local site failover within DC or DR.
 
 ---
 
 ## Failover Test Plan (short)
 
-- Test 1 (Periodic Backup mode): Simulate DC outage; validate DR archive availability; measure baseline restore time and incremental application; verify app functionality on DR.
-- Test 2 (Hot Sync mode): Verify oplog replication under load; simulate DC unavailability for >20 minutes; verify DR activation time and data consistency.
-- Test 3 (Local failover): Kill primary mongod process; ensure replica election and app reconnection within expected window (15–35s).
+- Test 1 (Periodic Backup mode): Simulate DC outage; administrator manually validates DR archive availability; administrator manually measures baseline restore time and incremental application; verify app functionality on DR after manual activation.
+- Test 2 (Hot Sync mode): Verify oplog replication under load; simulate DC unavailability; administrator manually activates DR and verifies data consistency.
+- Test 3 (Local automatic failover): Simulate Server 1 failure (power off or network disconnect); ensure replica set election automatically promotes Server 2 to primary and app reconnection within expected window (15–35s).
 
 Success criteria:
 - Data consistency within expected RPO (backup interval for Backup mode; near real-time for Hot Sync).
-- RTO within planned window (document test results and tune detection thresholds accordingly).
-- Automated alerts for failed transfers or replication lag.
+- Manual RTO within planned window based on administrator response time (document test results).
+- Clear documentation and runbooks for manual DR activation procedures.
 
 ---
 
 ## Conclusion
 
-The platform supports two HA methods between DC and DR:
+The platform supports two manual DR synchronization methods between DC and DR:
 
-1. DC–DR Incremental Backup & Restore: configurable incremental backups (default: every 30 minutes). DR can remain active; initial baseline restore may require downtime (≈ 1 hour). Suitable when network constraints or operational policies favor periodic transfer.
-2. Hot Sync (Near Real‑Time Replication): oplog-based replication offers near-real-time DB synchronization (typical ~1 minute lag); DR stays in standby (services inactive) and is activated after DC detection threshold (default 20 minutes). Preferred for lower RPO and faster recoveries.
+1. **DC–DR Incremental Backup & Restore**: Manual or cron-based incremental backups (recommended: every 30 minutes). Administrator manually applies backups to DR. Initial baseline restore may require ≈ 1 hour. Suitable when network constraints or operational policies favor periodic transfer.
 
-Choose the mode that matches your RPO/RTO, network, and operational requirements. Hot Sync provides faster replication and higher reliability; incremental backup/restore is simpler and can be used where continuous replication is not feasible.
+2. **Hot Sync (Near Real‑Time Replication)**: MongoDB oplog-based replication offers near-real-time DB synchronization (typical ~1 minute lag); DR stays in standby. **Administrator manually activates DR** when DC fails. Preferred for lower RPO.
+
+**Key Architecture Points:**
+- **Local Site HA (Automatic)**: Each site (DC and DR) has 3-server MongoDB replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) with automatic failover (15-35 seconds)
+- **Cross-Site DR (Manual)**: DC to DR synchronization and failover requires manual administrator intervention
+- **No Automated Agents**: No automated backup/restore agents or automated DR activation
+- **Identical Architecture**: DR site mirrors DC site structure (3 servers each)
+
+Choose the mode that matches your RPO/RTO, network, and operational requirements. Hot Sync provides faster replication and lower RPO; incremental backup/restore is simpler and can be used where continuous replication is not feasible.
 
 ### HA Mode Comparison Matrix
 
 | **Aspect** | **DC–DR Incremental Backup & Restore** | **Hot Sync (Near Real-Time)** |
 |------------|----------------------------------------|-------------------------------|
-| **Synchronization Method** | Periodic incremental backups via SCP | Continuous oplog replication |
-| **Default Interval** | 30 minutes (configurable) | Near real-time (~1 minute lag) |
+| **Synchronization Method** | Manual/cron incremental backups via SCP | Continuous oplog replication (manual config) |
+| **Default Interval** | 30 minutes recommended | Near real-time (~1 minute lag) |
 | **Network Ports** | Port 22 (SSH/SCP) | Port 27017 (MongoDB) + Port 22 (file sync) |
 | **RPO (Recovery Point Objective)** | 30 minutes (backup interval) | ~1 minute (replication lag) |
-| **RTO (Recovery Time Objective)** | 30-60+ minutes (restore time) | 20-25 minutes (detection + activation) |
-| **DR State During Normal Operations** | Active (services running) | Standby (services inactive) |
+| **RTO (Recovery Time Objective)** | Manual intervention time + 30-60+ min restore | Manual intervention time + activation |
+| **DR State During Normal Operations** | Standby (can be active for testing) | Standby (services inactive) |
+| **DR Activation** | Manual by administrator | Manual by administrator |
 | **Initial Setup Time** | ~1 hour (baseline restore) | ~1 hour (initial baseline + oplog catchup) |
 | **Data Loss on Failover** | Up to 30 minutes | Up to ~1 minute |
 | **Bandwidth Requirements** | Moderate (periodic transfers) | Higher (continuous streaming) |
-| **Complexity** | Simple (scheduled jobs) | Moderate (oplog management, monitoring) |
+| **Complexity** | Simple (manual/cron jobs) | Moderate (oplog management, manual monitoring) |
+| **Automation Level** | Manual or scheduled cron | Manual activation required |
 | **Best For** | Network constraints, batch updates | Mission-critical, low RPO requirements |
 | **Failover Trigger** | Manual or monitoring-based | Automated via health check (20 min threshold) |
 | **DR Activation** | Restore + service start | Service start only (data already synced) |
@@ -773,9 +785,9 @@ graph TB
     end
     
     subgraph LHA["<b>🔄 LOCAL HA - Both DC & DR Sites</b>"]
-        LHA1["<b>MongoDB Replica Set</b><br/>3 Processes per Server<br/>Port 27017"]
+        LHA1["<b>MongoDB Replica Set</b><br/>3 Separate Servers<br/>Port 27017"]
         LHA2["<b>Auto Failover</b><br/>⏱ 15-35 seconds"]
-        LHA3["<b>Process-Level Redundancy</b><br/>Primary + Secondary + Arbiter"]
+        LHA3["<b>Server-Level Redundancy</b><br/>Server 1 (Primary) + Server 2 (Secondary) + Server 3 (Arbiter)"]
         
         LHA1 --> LHA2 --> LHA3
     end
@@ -836,65 +848,74 @@ graph TB
 
 ## MongoDB Replica Set Architecture Explained
 
-### Understanding the Primary-Secondary-Arbiter Configuration
+### Understanding the Three-Server Primary-Secondary-Arbiter Configuration
 
-Each site (DC and DR) operates a MongoDB replica set with three mongod processes on a single server:
+Each site (DC and DR) operates a MongoDB replica set distributed across three separate servers:
 
-#### Component Roles
+#### Component Distribution
 
-**Primary (Port 27017):**
+**Server 1 - Primary Node (Port 27017):**
+- Hosts **SOAR Primary application** (UI & services on HTTPS port 443)
+- Runs **MongoDB Primary instance** (port 27017)
 - Handles **ALL** read operations from applications
 - Handles **ALL** write operations from applications  
-- Replicates data changes to the Secondary via oplog
-- Sends heartbeat signals to Secondary and Arbiter
+- Replicates data changes to Secondary on Server 2 via oplog
+- Sends heartbeat signals to Secondary (Server 2) and Arbiter (Server 3)
 - Only one Primary exists at any time
 
-**Secondary (Port 27017):**
+**Server 2 - Secondary Node (Port 27017):**
+- Hosts **SOAR Secondary application** (UI & services on HTTPS port 443)
+- Runs **MongoDB Secondary instance** (port 27017)
 - Maintains a **complete copy** of all data from Primary
 - Continuously applies oplog entries from Primary to stay synchronized
 - **Does NOT serve read operations** in this configuration (all reads go to Primary)
 - Participates in elections when Primary fails
-- Becomes the new Primary if elected during failover
+- Becomes the new Primary if elected during failover (entire Server 2 becomes active)
 - Acts as data redundancy and failover candidate
 
-**Arbiter (Port 27017):**
+**Server 3 - Arbiter Node (Port 27017):**
+- Runs **MongoDB Arbiter instance only** (no SOAR application)
 - **Does NOT store any data** (no database files)
 - Participates in elections only (voting member)
-- Provides tiebreaker vote in 2-member scenarios
+- Provides tiebreaker vote to elect between Server 1 and Server 2
 - Consumes minimal resources (CPU, memory, disk)
 - Sends/receives heartbeat signals only
 - Cannot become Primary
 
-**Important Note:** All three MongoDB instances (Primary, Secondary, Arbiter) run on port 27017. They are differentiated by their replica set member configuration and roles, not by different ports.
+**Important Note:** All three MongoDB instances (Primary on Server 1, Secondary on Server 2, Arbiter on Server 3) run on port 27017. They are differentiated by their physical/virtual server location and replica set member configuration, not by different ports.
 
 ### Operation Flow
 
-**Normal Operations (All traffic to Primary on Port 27017):**
+**Normal Operations (All traffic to Server 1 Primary on Port 27017):**
 ```
-Application → Primary (Port 27017) → [ALL Reads + Writes]
-Primary → Secondary (Port 27017) → [Oplog replication]
-Primary ↔ Arbiter (Port 27017) → [Heartbeat only]
+Application → Server 1 Primary (Port 27017) → [ALL Reads + Writes]
+Server 1 Primary → Server 2 Secondary (Port 27017) → [Oplog replication]
+Server 1 Primary ↔ Server 3 Arbiter (Port 27017) → [Heartbeat only]
+Users → Server 1 SOAR Primary (HTTPS 443) → [Active UI & Services]
 ```
 
-**Failover Scenario (Primary fails):**
+**Failover Scenario (Server 1 Primary fails):**
 ```
-1. Primary (Port 27017) fails → No heartbeat detected
-2. Secondary (Port 27017) + Arbiter (Port 27017) → Initiate election
-3. Secondary receives majority vote → Promoted to Primary
-4. Application → New Primary (Port 27017) → [ALL Reads + Writes]
-5. Old Primary restarts → Rejoins as Secondary (Port 27017)
+1. Server 1 Primary (Port 27017) fails → No heartbeat detected
+2. Server 2 Secondary (Port 27017) + Server 3 Arbiter (Port 27017) → Initiate election
+3. Server 2 Secondary receives majority vote → Promoted to Primary
+4. Application → Server 2 New Primary (Port 27017) → [ALL Reads + Writes]
+5. Users → Server 2 SOAR Primary (HTTPS 443) → [Active UI & Services]
+6. Server 1 restarts → Rejoins as Secondary (Port 27017)
 ```
 
 ### Key Characteristics
 
+- **Three-Server Architecture**: Distributed deployment across separate physical/virtual servers
 - **Single Port Configuration**: All three replica set members use port 27017
-- **Single Point of Read/Write**: All operations always go to the current Primary (never split between nodes)
-- **Automatic Failover**: Secondary automatically promoted when Primary fails (15-35 seconds)
-- **Data Redundancy**: 2 copies of data (Primary + Secondary); Arbiter has none
-- **Election Quorum**: Requires 2 out of 3 votes (Secondary + Arbiter can elect new Primary)
-- **Zero Data Loss**: Secondary stays synchronized; no data loss on failover with proper write concerns
+- **Single Point of Read/Write**: All operations always go to the current Primary server (never split between nodes)
+- **Automatic Failover**: Server 2 Secondary automatically promoted when Server 1 Primary fails (15-35 seconds)
+- **Data Redundancy**: 2 copies of data (Server 1 Primary + Server 2 Secondary); Server 3 Arbiter has none
+- **Election Quorum**: Requires 2 out of 3 votes (Server 2 + Server 3 can elect new Primary)
+- **Zero Data Loss**: Server 2 stays synchronized; no data loss on failover with proper write concerns
+- **Application Failover**: When MongoDB fails over to Server 2, the SOAR application on Server 2 also becomes active
 
-This design provides high availability while maintaining operational simplicity on a single server per site, with all MongoDB instances using the standard port 27017.
+This design provides high availability through distributed server architecture, with all MongoDB instances using the standard port 27017 and automatic server-level failover between Server 1 and Server 2.
 
 ---
 
