@@ -25,19 +25,21 @@ The SOAR Services platform implements a flexible HA/DR strategy that supports tw
 - DC–DR Incremental Backup & Restore (periodic incremental archives; default: every 30 minutes)
 - Hot Sync (oplog-based, near real-time MongoDB replication; directory data synchronized periodically)
 
-Both approaches use the existing single-server replica-set design locally (per site) for process-level HA and provide cross-site continuity, but they differ in replication latency, DR behavior, and failover activation.
+Both approaches use the existing three-server replica-set design locally (per site) for distributed HA and provide cross-site continuity, but they differ in replication latency, DR behavior, and failover activation.
 
 ```mermaid
 graph TB
-    subgraph DC["<b>SOAR DC (Primary Site)</b>"]
-        DC_SERVER["<b>DC Server</b>"]
-        DC_MONGO["<b>MongoDB Replica Set</b><br/>(3 instances on port 27017)<br/>Primary, Secondary, Arbiter"]
-        DC_APP["<b>Securaa UI & SOAR Services</b><br/>(HTTPS: 443)"]
+    subgraph DC["<b>SOAR DC (Primary Site - 3 Servers)</b>"]
+        DC_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
+        DC_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
+        DC_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
         DC_BACKUP["<b>Backup Agent / Cron</b>"]
     end
 
-    subgraph DR["<b>SOAR DR (Disaster Recovery Site)</b>"]
-        DR_SERVER["<b>DR Server</b>"]
+    subgraph DR["<b>SOAR DR (Disaster Recovery Site - 3 Servers)</b>"]
+        DR_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
+        DR_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
+        DR_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
         DR_MONGO["<b>MongoDB Replica Set</b><br/>(3 instances on port 27017)<br/>Primary, Secondary, Arbiter"]
         DR_APP["<b>Securaa UI & SOAR Services</b>"]
         DR_RESTORE["<b>Restore Agent / Cron</b>"]
@@ -71,18 +73,19 @@ graph TB
 
 ## High Availability Components
 
-### 1. Single-Server MongoDB Replica Set Architecture (per site)
+### 1. Three-Server MongoDB Replica Set Architecture (per site)
 
-Each site runs a MongoDB replica set on a single server with 3 mongod processes: 1 Primary (data + operations), 1 Secondary (data replica), and 1 Arbiter (voting only, no data). All three instances run on port 27017. This provides local process-level HA, automatic elections, and quick recovery from process failures.
+Each site runs a MongoDB replica set across three separate servers: Server 1 (SOAR Primary + MongoDB Primary), Server 2 (SOAR Secondary + MongoDB Secondary), and Server 3 (Arbiter for failover voting). This provides distributed HA, automatic elections, and quick recovery from server failures.
 
 Key properties:
-- **Primary (Port 27017)**: Handles all read and write operations; replicates data to Secondary
-- **Secondary (Port 27017)**: Maintains a copy of data; participates in elections; becomes Primary on failover
-- **Arbiter (Port 27017)**: Participates in elections only; does not store data; acts as tiebreaker
-- Local election and failover within ~15–35 seconds
-- **All operations (read + write) performed on Primary only**
-- When Secondary becomes Primary, all read/write operations switch to the new Primary
+- **Server 1 - Primary (Port 27017)**: Runs SOAR Primary application + MongoDB Primary; handles all read and write operations; replicates data to Secondary
+- **Server 2 - Secondary (Port 27017)**: Runs SOAR Secondary application + MongoDB Secondary; maintains a copy of data; participates in elections; becomes Primary on failover
+- **Server 3 - Arbiter (Port 27017)**: Runs Arbiter service only; participates in elections; does not store data; acts as tiebreaker
+- Distributed election and failover within ~15–35 seconds
+- **All operations (read + write) performed on Primary server only**
+- When Secondary server becomes Primary, all read/write operations switch to the new Primary server
 - **All three MongoDB instances use port 27017**
+- **Each component runs on a separate physical/virtual machine**
 
 ### 2. Cross‑Site High Availability (two supported mechanisms)
 
@@ -93,32 +96,40 @@ We support two mechanisms for achieving cross-site HA between DC and DR:
 
 Both modes are described in the Disaster Recovery Setup section below.
 
-### 3. Detailed Single-Server MongoDB Replica Set Architecture
+### 3. Detailed Three-Server MongoDB Replica Set Architecture
 
 ```mermaid
 graph TB
-    subgraph SERVER["<b>Single Server (DC or DR)</b>"]
-        subgraph REPLICA["<b>MongoDB Replica Set - 3 Processes on Port 27017</b>"]
-            PRIMARY["<b>Primary mongod</b><br/>Port: 27017<br/>✓ ALL Read Operations<br/>✓ ALL Write Operations<br/>✓ Replicates to Secondary"]
-            SECONDARY["<b>Secondary mongod</b><br/>Port: 27017<br/>✓ Data Replica<br/>✓ Standby for Election<br/>✓ Sync from Primary"]
-            ARBITER["<b>Arbiter mongod</b><br/>Port: 27017<br/>✗ No Data Storage<br/>✓ Voting Only<br/>✓ Election Participant"]
-            
-            PRIMARY ==>|"<b>Oplog Replication</b><br/>(Data Sync)"| SECONDARY
-            PRIMARY -.->|"Heartbeat"| SECONDARY
-            PRIMARY -.->|"Heartbeat"| ARBITER
-            SECONDARY -.->|"Heartbeat"| ARBITER
+    subgraph SITE["<b>DC or DR Site (3 Servers)</b>"]
+        subgraph SERVER1["<b>Server 1 - Primary</b>"]
+            PRIMARY["<b>MongoDB Primary</b><br/>Port: 27017<br/>✓ ALL Read Operations<br/>✓ ALL Write Operations<br/>✓ Replicates to Secondary"]
+            SOAR_PRI["<b>SOAR Primary Application</b><br/>Securaa UI<br/>SOAR Services"]
         end
         
-        APP["<b>SOAR Application</b><br/>Securaa UI<br/>SOAR Services"]
+        subgraph SERVER2["<b>Server 2 - Secondary</b>"]
+            SECONDARY["<b>MongoDB Secondary</b><br/>Port: 27017<br/>✓ Data Replica<br/>✓ Standby for Election<br/>✓ Sync from Primary"]
+            SOAR_SEC["<b>SOAR Secondary Application</b><br/>Standby Services"]
+        end
         
-        APP ==>|"<b>ALL Read Operations</b>"| PRIMARY
-        APP ==>|"<b>ALL Write Operations</b>"| PRIMARY
+        subgraph SERVER3["<b>Server 3 - Arbiter</b>"]
+            ARBITER["<b>Arbiter mongod</b><br/>Port: 27017<br/>✗ No Data Storage<br/>✓ Voting Only<br/>✓ Election Participant"]
+        end
+        
+        SOAR_PRI ==>|"<b>ALL Read Operations</b>"| PRIMARY
+        SOAR_PRI ==>|"<b>ALL Write Operations</b>"| PRIMARY
+        
+        PRIMARY ==>|"<b>Oplog Replication</b><br/>(Data Sync)"| SECONDARY
+        PRIMARY -.->|"Heartbeat"| SECONDARY
+        PRIMARY -.->|"Heartbeat"| ARBITER
+        SECONDARY -.->|"Heartbeat"| ARBITER
+        
+        SECONDARY -.->|"Standby"| SOAR_SEC
     end
     
     subgraph FAILOVER["<b>Failover Scenario</b>"]
-        FAIL["<b>⚠ Primary Failure Detected</b>"]
+        FAIL["<b>⚠ Server 1 (Primary) Failure</b>"]
         ELECT["<b>Election Process</b><br/>Secondary + Arbiter Vote<br/>⏱ 15-35 seconds"]
-        NEWPRIMARY["<b>✓ Secondary becomes Primary</b><br/>ALL Read/Write operations<br/>switch to new Primary"]
+        NEWPRIMARY["<b>✓ Server 2 becomes Primary</b><br/>SOAR Secondary → SOAR Primary<br/>MongoDB Secondary → MongoDB Primary<br/>ALL Read/Write switch to Server 2"]
         
         FAIL --> ELECT
         ELECT --> NEWPRIMARY
@@ -127,13 +138,13 @@ graph TB
     classDef primaryStyle fill:#4CAF50,stroke:#2e7d32,stroke-width:3px,color:#fff,font-size:14px
     classDef secondaryStyle fill:#2196F3,stroke:#1565c0,stroke-width:3px,color:#fff,font-size:14px
     classDef arbiterStyle fill:#757575,stroke:#424242,stroke-width:3px,color:#fff,font-size:14px
-    classDef appStyle fill:#FF9800,stroke:#e65100,stroke-width:3px,color:#fff,font-size:14px
+    classDef soarStyle fill:#FF9800,stroke:#e65100,stroke-width:3px,color:#fff,font-size:14px
     classDef failoverStyle fill:#f44336,stroke:#c62828,stroke-width:3px,color:#fff,font-size:14px
     
     class PRIMARY,NEWPRIMARY primaryStyle
     class SECONDARY secondaryStyle
     class ARBITER arbiterStyle
-    class APP appStyle
+    class SOAR_PRI,SOAR_SEC soarStyle
     class FAIL,ELECT failoverStyle
 ```
 
