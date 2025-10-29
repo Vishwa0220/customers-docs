@@ -35,34 +35,48 @@ Both approaches use the existing three-server MongoDB replica set design locally
 
 ```mermaid
 graph TB
-    subgraph DC["<b>SOAR DC (Primary Active Site - 3 Servers)</b>"]
-        DC_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
-        DC_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
-        DC_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
+    subgraph DC["<b>SOAR DC Site</b>"]
+        subgraph DC_HA["<b>SOAR DC HA Setup</b>"]
+            DC_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 192.0.2.10"]
+            DC_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 192.0.2.11"]
+            DC_SEC2["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 192.0.2.12"]
+            
+            DC_PRI ---|"Replication"| DC_SEC1
+            DC_PRI ---|"Replication"| DC_SEC2
+            DC_SEC1 -.->|"Heartbeat"| DC_SEC2
+        end
     end
 
-    subgraph DR["<b>SOAR DR (Standby Site - 3 Servers)</b>"]
-        DR_SRV1["<b>Server 1</b><br/>SOAR Primary + MongoDB Primary<br/>Port 27017"]
-        DR_SRV2["<b>Server 2</b><br/>SOAR Secondary + MongoDB Secondary<br/>Port 27017"]
-        DR_SRV3["<b>Server 3</b><br/>Arbiter<br/>Port 27017"]
+    subgraph DR["<b>SOAR DR Site</b>"]
+        subgraph DR_HA["<b>SOAR DR HA Setup</b>"]
+            DR_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 203.0.113.10"]
+            DR_SEC1["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 203.0.113.11"]
+            DR_SEC2["<b>SECONDARY</b><br/>Port: 27017<br/>IP: 203.0.113.12"]
+            
+            DR_PRI ---|"Replication"| DR_SEC1
+            DR_PRI ---|"Replication"| DR_SEC2
+            DR_SEC1 -.->|"Heartbeat"| DR_SEC2
+        end
     end
 
-    UserAccess["<b>User Access</b><br/>HTTPS (443)"]
+    USER["<b>👤 User</b>"]
 
-    %% Manual data sync paths (no automatic agents)
-    DC_SRV1 -.->|"<b>Manual Backup/Sync</b><br/>(SCP port 22)<br/>Periodic transfer"| DR_SRV1
-    DC_SRV2 -.->|"<b>Manual Backup/Sync</b><br/>(SCP port 22)<br/>Periodic transfer"| DR_SRV2
+    %% Cross-site backup/restore
+    DC -.->|"<b>Port: 22</b><br/>Database Backup and Restore"| DR
 
-    %% Access (only to active DC site)
-    UserAccess --> DC_SRV1
+    %% User access
+    USER -->|"<b>UI Port: 443</b><br/>Securaa UI (DC Primary IP)"| DC_PRI
+    USER -.->|"<b>UI Port: 443</b><br/>Securaa UI (DR Primary IP)<br/>(Manual Failover)"| DR_PRI
 
-    classDef dcStyle fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
-    classDef drStyle fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
-    classDef userStyle fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
+    classDef primaryStyle fill:#4169e1,stroke:#1e3a8a,stroke-width:3px,color:#fff,font-weight:bold
+    classDef secondaryStyle fill:#10b981,stroke:#047857,stroke-width:3px,color:#fff,font-weight:bold
+    classDef userStyle fill:#f59e0b,stroke:#b45309,stroke-width:3px,color:#fff,font-weight:bold
+    classDef siteStyle fill:#e5e7eb,stroke:#6b7280,stroke-width:2px,color:#000
     
-    class DC_SRV1,DC_SRV2,DC_SRV3 dcStyle
-    class DR_SRV1,DR_SRV2,DR_SRV3 drStyle
-    class UserAccess userStyle
+    class DC_PRI,DR_PRI primaryStyle
+    class DC_SEC1,DC_SEC2,DR_SEC1,DR_SEC2 secondaryStyle
+    class USER userStyle
+    class DC_HA,DR_HA siteStyle
 ```
 
 ---
@@ -71,26 +85,26 @@ graph TB
 
 ### 1. Three-Server MongoDB Replica Set Architecture (per site)
 
-Each site runs a MongoDB replica set across three separate servers: Server 1 (SOAR Primary + MongoDB Primary), Server 2 (SOAR Secondary + MongoDB Secondary), and Server 3 (Arbiter for failover voting). This provides distributed HA, automatic elections, and quick recovery from server failures.
+Each site runs a MongoDB replica set across three separate servers: 1 Primary, 1 Secondary (data-bearing), and 1 Arbiter (voting-only, no data). This provides distributed HA, automatic elections, and quick recovery from server failures.
 
 Key properties:
-- **Server 1 - Primary (Port 27017)**: Runs SOAR Primary application + MongoDB Primary; handles all read and write operations; replicates data to Secondary
-- **Server 2 - Secondary (Port 27017)**: Runs SOAR Secondary application + MongoDB Secondary; maintains a copy of data; participates in elections; becomes Primary on failover
-- **Server 3 - Arbiter (Port 27017)**: Runs Arbiter service only; participates in elections; does not store data; acts as tiebreaker
+- **PRIMARY Node (Port 27017)**: Runs SOAR Primary application + MongoDB Primary; handles all read and write operations; replicates data to Secondary
+- **SECONDARY Node (Port 27017)**: Runs SOAR Secondary application + MongoDB Secondary; maintains a complete copy of data; participates in elections; can become Primary on failover
+- **SECONDARY Node (Arbiter - Port 27017)**: Runs Arbiter service only (labeled as "SECONDARY" in diagrams); participates in elections; **does NOT store data**; acts as tiebreaker
 - Distributed election and failover within ~15–35 seconds
-- **All operations (read + write) performed on Primary server only**
-- When Secondary server becomes Primary, all read/write operations switch to the new Primary server
+- **All operations (read + write) performed on Primary node only**
+- When the Secondary becomes Primary, all read/write operations switch to the new Primary
 - **All three MongoDB instances use port 27017**
 - **Each component runs on a separate physical/virtual machine**
 
 ### 2. Cross‑Site Disaster Recovery (Manual Activation)
 
-The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site. DR activation is a **manual process** that requires administrator intervention.
+The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site (1 Primary + 1 Secondary with data + 1 Arbiter without data). DR activation is a **manual process** that requires administrator intervention.
 
 - **Manual DR Activation** — Administrators manually activate DR site during DC disasters
 - **Data Synchronization** — Manual periodic backups transferred over SCP (port 22) or manual oplog-based sync
 - **No Automatic Agents** — No automated backup/restore agents; synchronization performed manually or via manual cron jobs
-- **Identical Architecture** — DR site has the same 3-server structure (Server 1 Primary + MongoDB Primary, Server 2 Secondary + MongoDB Secondary, Server 3 Arbiter)
+- **Identical Architecture** — DR site has the same 3-server structure (1 Primary + 1 Secondary data-bearing + 1 Arbiter voting-only)
 
 Both synchronization approaches are described in the Disaster Recovery Setup section below.
 
@@ -99,50 +113,50 @@ Both synchronization approaches are described in the Disaster Recovery Setup sec
 ```mermaid
 graph TB
     subgraph SITE["<b>DC or DR Site (3 Servers)</b>"]
-        subgraph SERVER1["<b>Server 1 - Primary</b>"]
-            PRIMARY["<b>MongoDB Primary</b><br/>Port: 27017<br/>✓ ALL Read Operations<br/>✓ ALL Write Operations<br/>✓ Replicates to Secondary"]
-            SOAR_PRI["<b>SOAR Primary Application</b><br/>Securaa UI<br/>SOAR Services"]
+        subgraph SERVER1["<b>PRIMARY</b>"]
+            PRIMARY["<b>MongoDB Primary</b><br/>Port: 27017<br/>IP: 192.0.2.10 (DC)<br/>✓ ALL Read Operations<br/>✓ ALL Write Operations<br/>✓ Replicates to Secondary"]
+            SOAR_PRI["<b>SOAR Application</b><br/>Securaa UI (Port 443)<br/>SOAR Services"]
         end
         
-        subgraph SERVER2["<b>Server 2 - Secondary</b>"]
-            SECONDARY["<b>MongoDB Secondary</b><br/>Port: 27017<br/>✓ Data Replica<br/>✓ Standby for Election<br/>✓ Sync from Primary"]
-            SOAR_SEC["<b>SOAR Secondary Application</b><br/>Standby Services"]
+        subgraph SERVER2["<b>SECONDARY</b>"]
+            SECONDARY1["<b>MongoDB Secondary</b><br/>Port: 27017<br/>IP: 192.0.2.11 (DC)<br/>✓ Data Replica<br/>✓ Standby for Election<br/>✓ Sync from Primary"]
+            SOAR_SEC1["<b>SOAR Application</b><br/>Standby Services"]
         end
         
-        subgraph SERVER3["<b>Server 3 - Arbiter</b>"]
-            ARBITER["<b>Arbiter mongod</b><br/>Port: 27017<br/>✗ No Data Storage<br/>✓ Voting Only<br/>✓ Election Participant"]
+        subgraph SERVER3["<b>SECONDARY (Arbiter)</b>"]
+            ARBITER["<b>Arbiter</b><br/>Port: 27017<br/>IP: 192.0.2.12 (DC)<br/>✗ NO Data Storage<br/>✓ Election Voting Only<br/>✓ Tiebreaker"]
         end
         
         SOAR_PRI ==>|"<b>ALL Read Operations</b>"| PRIMARY
         SOAR_PRI ==>|"<b>ALL Write Operations</b>"| PRIMARY
         
-        PRIMARY ==>|"<b>Oplog Replication</b><br/>(Data Sync)"| SECONDARY
-        PRIMARY -.->|"Heartbeat"| SECONDARY
+        PRIMARY ==>|"<b>Oplog Replication</b><br/>(Data Sync)"| SECONDARY1
+        PRIMARY -.->|"Heartbeat"| SECONDARY1
         PRIMARY -.->|"Heartbeat"| ARBITER
-        SECONDARY -.->|"Heartbeat"| ARBITER
+        SECONDARY1 -.->|"Heartbeat"| ARBITER
         
-        SECONDARY -.->|"Standby"| SOAR_SEC
+        SECONDARY1 -.->|"Standby"| SOAR_SEC1
     end
     
     subgraph FAILOVER["<b>Failover Scenario</b>"]
-        FAIL["<b>⚠ Server 1 (Primary) Failure</b>"]
+        FAIL["<b>⚠ PRIMARY Server Failure</b>"]
         ELECT["<b>Election Process</b><br/>Secondary + Arbiter Vote<br/>⏱ 15-35 seconds"]
-        NEWPRIMARY["<b>✓ Server 2 becomes Primary</b><br/>SOAR Secondary → SOAR Primary<br/>MongoDB Secondary → MongoDB Primary<br/>ALL Read/Write switch to Server 2"]
+        NEWPRIMARY["<b>✓ SECONDARY Promoted to Primary</b><br/>SOAR Standby → SOAR Active<br/>MongoDB Secondary → MongoDB Primary<br/>ALL Read/Write switch to New Primary"]
         
         FAIL --> ELECT
         ELECT --> NEWPRIMARY
     end
     
-    classDef primaryStyle fill:#4CAF50,stroke:#2e7d32,stroke-width:3px,color:#fff,font-size:14px
-    classDef secondaryStyle fill:#2196F3,stroke:#1565c0,stroke-width:3px,color:#fff,font-size:14px
-    classDef arbiterStyle fill:#757575,stroke:#424242,stroke-width:3px,color:#fff,font-size:14px
-    classDef soarStyle fill:#FF9800,stroke:#e65100,stroke-width:3px,color:#fff,font-size:14px
-    classDef failoverStyle fill:#f44336,stroke:#c62828,stroke-width:3px,color:#fff,font-size:14px
+    classDef primaryStyle fill:#4169e1,stroke:#1e3a8a,stroke-width:3px,color:#fff,font-size:14px,font-weight:bold
+    classDef secondaryStyle fill:#10b981,stroke:#047857,stroke-width:3px,color:#fff,font-size:14px,font-weight:bold
+    classDef arbiterStyle fill:#6b7280,stroke:#374151,stroke-width:3px,color:#fff,font-size:14px,font-weight:bold
+    classDef soarStyle fill:#f59e0b,stroke:#b45309,stroke-width:3px,color:#fff,font-size:14px
+    classDef failoverStyle fill:#ef4444,stroke:#b91c1c,stroke-width:3px,color:#fff,font-size:14px
     
     class PRIMARY,NEWPRIMARY primaryStyle
-    class SECONDARY secondaryStyle
+    class SECONDARY1 secondaryStyle
     class ARBITER arbiterStyle
-    class SOAR_PRI,SOAR_SEC soarStyle
+    class SOAR_PRI,SOAR_SEC1 soarStyle
     class FAIL,ELECT failoverStyle
 ```
 
@@ -441,45 +455,45 @@ flowchart TD
 
 ### 3. Local Site Failover (MongoDB replica set)
 
-- Within each site, the 3-server replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) offers automatic election on Primary server failure (15–35 seconds).
+- Within each site, the 3-server replica set (1 PRIMARY + 1 SECONDARY with data + 1 Arbiter without data) offers automatic election on Primary failure (15–35 seconds).
 
 #### Local MongoDB Replica Set Failover Flow
 
 ```mermaid
 flowchart TD
-    A["🟢 <b>MongoDB Replica Set</b><br/>Normal Operations"] --> B["All 3 instances on Port 27017<br/>🔵 Primary | 🟢 Secondary | ⚪ Arbiter"]
+    A["🟢 <b>MongoDB Replica Set</b><br/>Normal Operations"] --> B["All 3 instances on Port 27017<br/>🔵 PRIMARY | 🟢 SECONDARY (data) | ⚪ Arbiter (no data)"]
     
-    B --> C{"⚠ Primary<br/>Process Fails?"}
+    B --> C{"⚠ PRIMARY<br/>Node Fails?"}
     C -->|"No"| A
     
-    C -->|"Yes"| D["🔔 Secondary + Arbiter<br/>Detect Missing Heartbeat"]
+    C -->|"Yes"| D["🔔 SECONDARY + Arbiter<br/>Detect Missing Heartbeat"]
     D --> E["⏱ 10-15 seconds<br/>Failure Detection"]
     
-    E --> F["🗳 Secondary Initiates Election<br/>Arbiter Participates"]
-    F --> G["✋ Secondary + Arbiter<br/>Vote for New Primary"]
+    E --> F["🗳 Election Initiated<br/>SECONDARY + Arbiter Vote"]
+    F --> G["✋ SECONDARY + Arbiter<br/>Cast Votes (2 out of 3)"]
     G --> H["⏱ 5-20 seconds<br/>Election Process"]
     
     H --> I{"Majority<br/>Achieved?"}
     I -->|"No"| J["🔄 Retry Election"]
     J --> F
     
-    I -->|"Yes"| K["🎯 <b>Secondary Promoted</b><br/>to New Primary"]
-    K --> L["✓ New Primary Port 27017<br/>Accepts ALL Read/Write"]
+    I -->|"Yes"| K["🎯 <b>SECONDARY Promoted</b><br/>to New Primary"]
+    K --> L["✓ New PRIMARY Port 27017<br/>Accepts ALL Read/Write"]
     
     L --> M["🔌 Application<br/>Auto-Reconnects to New Primary"]
-    M --> N["🔍 Failed Primary Detected"]
+    M --> N["🔍 Failed PRIMARY Detected"]
     
-    N --> O{"Old Primary<br/>Server 1 Can Restart?"}
-    O -->|"Yes"| P["🔄 Restart MongoDB on Server 1"]
+    N --> O{"Old PRIMARY<br/>Can Restart?"}
+    O -->|"Yes"| P["🔄 Restart MongoDB on Old PRIMARY"]
     P --> Q["➕ Rejoins as Secondary"]
     Q --> R["🔄 Syncs Latest Data<br/>from New Primary"]
-    R --> S["✅ <b>Replica Set Healthy</b><br/>Primary + Secondary + Arbiter"]
+    R --> S["✅ <b>Replica Set Healthy</b><br/>PRIMARY + SECONDARY + Arbiter"]
     
     O -->|"No"| T["⚠ Manual Intervention<br/>Required"]
     T --> U["🔧 Admin Investigates<br/>Root Cause"]
     U --> V{"Can Fix?"}
     V -->|"Yes"| P
-    V -->|"No"| W["⚠ Run with 2 Nodes<br/>Reduced Redundancy"]
+    V -->|"No"| W["⚠ Run with 2 Nodes<br/>(1 data + 1 arbiter)<br/>Reduced Redundancy"]
     
     classDef normalOps fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
     classDef warning fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
@@ -678,8 +692,8 @@ Rollback / Failback:
 
 ### 3. Local MongoDB Recovery (Automatic)
 
-- For MongoDB server failures (Server 1 primary failure), the replica set will **automatically** elect Server 2 secondary to new primary. Application reconnection logic should handle transient disconnects during the 15-35 second election process.
-- This is the ONLY automatic failover in the system - local site failover within DC or DR.
+- For MongoDB PRIMARY node failures, the replica set will **automatically** elect the SECONDARY node to become the new Primary (with Arbiter providing the deciding vote). Application reconnection logic should handle transient disconnects during the 15-35 second election process.
+- This is the ONLY automatic failover in the system - local site failover within DC or DR between PRIMARY, SECONDARY, and Arbiter.
 
 ---
 
@@ -687,7 +701,7 @@ Rollback / Failback:
 
 - Test 1 (Periodic Backup mode): Simulate DC outage; administrator manually validates DR archive availability; administrator manually measures baseline restore time and incremental application; verify app functionality on DR after manual activation.
 - Test 2 (Hot Sync mode): Verify oplog replication under load; simulate DC unavailability; administrator manually activates DR and verifies data consistency.
-- Test 3 (Local automatic failover): Simulate Server 1 failure (power off or network disconnect); ensure replica set election automatically promotes Server 2 to primary and app reconnection within expected window (15–35s).
+- Test 3 (Local automatic failover): Simulate PRIMARY node failure (power off or network disconnect); ensure replica set election automatically promotes SECONDARY to Primary (with Arbiter voting) and app reconnection within expected window (15–35s).
 
 Success criteria:
 - Data consistency within expected RPO (backup interval for Backup mode; near real-time for Hot Sync).
@@ -705,10 +719,11 @@ The platform supports two manual DR synchronization methods between DC and DR:
 2. **Hot Sync (Near Real‑Time Replication)**: MongoDB oplog-based replication offers near-real-time DB synchronization (typical ~1 minute lag); DR stays in standby. **Administrator manually activates DR** when DC fails. Preferred for lower RPO.
 
 **Key Architecture Points:**
-- **Local Site HA (Automatic)**: Each site (DC and DR) has 3-server MongoDB replica set (Server 1 Primary, Server 2 Secondary, Server 3 Arbiter) with automatic failover (15-35 seconds)
+- **Local Site HA (Automatic)**: Each site (DC and DR) has 3-server MongoDB replica set (1 PRIMARY + 1 SECONDARY with data + 1 Arbiter without data) with automatic failover (15-35 seconds)
+- **2x Data Redundancy**: PRIMARY and SECONDARY store complete copies of data; Arbiter has no data
 - **Cross-Site DR (Manual)**: DC to DR synchronization and failover requires manual administrator intervention
 - **No Automated Agents**: No automated backup/restore agents or automated DR activation
-- **Identical Architecture**: DR site mirrors DC site structure (3 servers each)
+- **Identical Architecture**: DR site mirrors DC site structure (3 servers: 2 data-bearing + 1 arbiter)
 
 Choose the mode that matches your RPO/RTO, network, and operational requirements. Hot Sync provides faster replication and lower RPO; incremental backup/restore is simpler and can be used where continuous replication is not feasible.
 
@@ -785,9 +800,9 @@ graph TB
     end
     
     subgraph LHA["<b>🔄 LOCAL HA - Both DC & DR Sites</b>"]
-        LHA1["<b>MongoDB Replica Set</b><br/>3 Separate Servers<br/>Port 27017"]
+        LHA1["<b>MongoDB Replica Set</b><br/>3 Servers (2 data + 1 arbiter)<br/>Port 27017"]
         LHA2["<b>Auto Failover</b><br/>⏱ 15-35 seconds"]
-        LHA3["<b>Server-Level Redundancy</b><br/>Server 1 (Primary) + Server 2 (Secondary) + Server 3 (Arbiter)"]
+        LHA3["<b>2x Data Redundancy</b><br/>PRIMARY + SECONDARY (data)<br/>+ Arbiter (voting only)"]
         
         LHA1 --> LHA2 --> LHA3
     end
@@ -848,72 +863,78 @@ graph TB
 
 ## MongoDB Replica Set Architecture Explained
 
-### Understanding the Three-Server Primary-Secondary-Arbiter Configuration
+### Understanding the Three-Server Configuration (1 Primary + 1 Secondary + 1 Arbiter)
 
 Each site (DC and DR) operates a MongoDB replica set distributed across three separate servers:
 
 #### Component Distribution
 
-**Server 1 - Primary Node (Port 27017):**
-- Hosts **SOAR Primary application** (UI & services on HTTPS port 443)
+**PRIMARY Node (Port 27017):**
+- Example IP: 192.0.2.10 (DC), 203.0.113.10 (DR)
+- Hosts **SOAR Application** (UI & services on HTTPS port 443)
 - Runs **MongoDB Primary instance** (port 27017)
 - Handles **ALL** read operations from applications
 - Handles **ALL** write operations from applications  
-- Replicates data changes to Secondary on Server 2 via oplog
-- Sends heartbeat signals to Secondary (Server 2) and Arbiter (Server 3)
+- Replicates data changes to Secondary node via oplog
+- Sends heartbeat signals to Secondary and Arbiter
 - Only one Primary exists at any time
 
-**Server 2 - Secondary Node (Port 27017):**
-- Hosts **SOAR Secondary application** (UI & services on HTTPS port 443)
+**SECONDARY Node (Port 27017):**
+- Example IP: 192.0.2.11 (DC), 203.0.113.11 (DR)
+- Hosts **SOAR Application** in standby mode (UI & services on HTTPS port 443)
 - Runs **MongoDB Secondary instance** (port 27017)
 - Maintains a **complete copy** of all data from Primary
 - Continuously applies oplog entries from Primary to stay synchronized
 - **Does NOT serve read operations** in this configuration (all reads go to Primary)
 - Participates in elections when Primary fails
-- Becomes the new Primary if elected during failover (entire Server 2 becomes active)
+- Becomes the new Primary if elected during failover
 - Acts as data redundancy and failover candidate
 
-**Server 3 - Arbiter Node (Port 27017):**
-- Runs **MongoDB Arbiter instance only** (no SOAR application)
-- **Does NOT store any data** (no database files)
+**SECONDARY Node (Arbiter - Port 27017):**
+- Example IP: 192.0.2.12 (DC), 203.0.113.12 (DR)
+- Labeled as "SECONDARY" in architecture diagrams but functions as an **Arbiter**
+- Runs **MongoDB Arbiter instance** (port 27017)
+- **Does NOT store any data** (no database files, no SOAR application)
 - Participates in elections only (voting member)
-- Provides tiebreaker vote to elect between Server 1 and Server 2
+- Provides tiebreaker vote between Primary and Secondary
 - Consumes minimal resources (CPU, memory, disk)
 - Sends/receives heartbeat signals only
 - Cannot become Primary
 
-**Important Note:** All three MongoDB instances (Primary on Server 1, Secondary on Server 2, Arbiter on Server 3) run on port 27017. They are differentiated by their physical/virtual server location and replica set member configuration, not by different ports.
+**Important Note:** All three MongoDB instances run on port 27017. They are differentiated by their physical/virtual server location and replica set member configuration, not by different ports. Only PRIMARY and SECONDARY (data-bearing) nodes store data; the Arbiter node stores no data.
 
 ### Operation Flow
 
-**Normal Operations (All traffic to Server 1 Primary on Port 27017):**
+**Normal Operations (All traffic to PRIMARY node on Port 27017):**
 ```
-Application → Server 1 Primary (Port 27017) → [ALL Reads + Writes]
-Server 1 Primary → Server 2 Secondary (Port 27017) → [Oplog replication]
-Server 1 Primary ↔ Server 3 Arbiter (Port 27017) → [Heartbeat only]
-Users → Server 1 SOAR Primary (HTTPS 443) → [Active UI & Services]
+Application → PRIMARY (Port 27017: 192.0.2.10) → [ALL Reads + Writes]
+PRIMARY → SECONDARY (Port 27017: 192.0.2.11) → [Oplog replication - DATA]
+PRIMARY ↔ SECONDARY ↔ Arbiter (Port 27017: 192.0.2.12) → [Heartbeat signals only]
+Users → PRIMARY SOAR (HTTPS 443: 192.0.2.10) → [Active UI & Services]
 ```
 
-**Failover Scenario (Server 1 Primary fails):**
+**Failover Scenario (PRIMARY node fails):**
 ```
-1. Server 1 Primary (Port 27017) fails → No heartbeat detected
-2. Server 2 Secondary (Port 27017) + Server 3 Arbiter (Port 27017) → Initiate election
-3. Server 2 Secondary receives majority vote → Promoted to Primary
-4. Application → Server 2 New Primary (Port 27017) → [ALL Reads + Writes]
-5. Users → Server 2 SOAR Primary (HTTPS 443) → [Active UI & Services]
-6. Server 1 restarts → Rejoins as Secondary (Port 27017)
+1. PRIMARY (Port 27017: 192.0.2.10) fails → No heartbeat detected
+2. SECONDARY (192.0.2.11) + Arbiter (192.0.2.12) → Initiate election
+3. SECONDARY receives majority vote (2 out of 3) → Promoted to Primary
+4. Application → New PRIMARY (Port 27017: 192.0.2.11) → [ALL Reads + Writes]
+5. Users → New PRIMARY SOAR (HTTPS 443: 192.0.2.11) → [Active UI & Services]
+6. Old PRIMARY restarts → Rejoins as Secondary (Port 27017)
 ```
 
 ### Key Characteristics
 
 - **Three-Server Architecture**: Distributed deployment across separate physical/virtual servers
+- **2x Data Redundancy**: 2 nodes store complete copies of data (PRIMARY + SECONDARY); Arbiter has no data
 - **Single Port Configuration**: All three replica set members use port 27017
-- **Single Point of Read/Write**: All operations always go to the current Primary server (never split between nodes)
-- **Automatic Failover**: Server 2 Secondary automatically promoted when Server 1 Primary fails (15-35 seconds)
-- **Data Redundancy**: 2 copies of data (Server 1 Primary + Server 2 Secondary); Server 3 Arbiter has none
-- **Election Quorum**: Requires 2 out of 3 votes (Server 2 + Server 3 can elect new Primary)
-- **Zero Data Loss**: Server 2 stays synchronized; no data loss on failover with proper write concerns
-- **Application Failover**: When MongoDB fails over to Server 2, the SOAR application on Server 2 also becomes active
+- **Single Point of Read/Write**: All operations always go to the current Primary node (never split between nodes)
+- **Automatic Failover**: SECONDARY can be automatically promoted when PRIMARY fails (15-35 seconds)
+- **Data Redundancy**: 2 complete copies of data (PRIMARY + SECONDARY); Arbiter stores no data
+- **Election Quorum**: Requires majority vote (2 out of 3) to elect new Primary
+- **Zero Data Loss**: SECONDARY stays synchronized; no data loss on failover with proper write concerns
+- **Application Failover**: When MongoDB fails over to SECONDARY, the SOAR application on that server also becomes active
+- **Arbiter Role**: Provides tiebreaker vote; minimal resource usage; no data storage
 
 This design provides high availability through distributed server architecture, with all MongoDB instances using the standard port 27017 and automatic server-level failover between Server 1 and Server 2.
 
