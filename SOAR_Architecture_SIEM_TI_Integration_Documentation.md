@@ -1,133 +1,298 @@
-# SOAR Platform Architecture and Integration with SIEM & Threat Intelligence Solutions
+# SOAR Platform Architecture and Integration Overview
 
 ## Executive Summary
 
-This document provides a comprehensive overview of the SOAR (Security Orchestration, Automation and Response) platform architecture and its seamless integration capabilities with SIEM (Security Information and Event Management) and Threat Intelligence (TI) solutions. The platform demonstrates sophisticated integration patterns with Graylog SIEM and ThreatMon TI, along with extensive support for other industry-leading security tools.
+The SOAR (Security Orchestration, Automation and Response) platform serves as a central integration hub where CSAM (Cyber Security Asset Management) and TIP (Threat Intelligence Platform) applications can be integrated. The platform provides unified dashboards and integrations for threat intelligence feeds, investigation capabilities, case enrichment, and automated playbook execution.
 
 ## Table of Contents
 
-1. [SOAR Platform Architecture Overview](#soar-platform-architecture-overview)
-2. [Integration Architecture Framework](#integration-architecture-framework)
-3. [Graylog SIEM Integration](#graylog-siem-integration)
-4. [ThreatMon Threat Intelligence Integration](#threatmon-threat-intelligence-integration)
-5. [Data Flow and Processing](#data-flow-and-processing)
-6. [Security and Authentication](#security-and-authentication)
-7. [Scalability and Performance](#scalability-and-performance)
-8. [Use Cases and Benefits](#use-cases-and-benefits)
+1. [SOAR Platform Architecture](#soar-platform-architecture)
+2. [CSAM and TIP Integration](#csam-and-tip-integration)
+3. [Threat Intelligence Integration](#threat-intelligence-integration)
+4. [Investigation and Enrichment](#investigation-and-enrichment)
+5. [Vulnerability Management](#vulnerability-management)
 
 ---
 
-## SOAR Platform Architecture Overview
+## SOAR Platform Architecture
 
-### Core Platform Components
+### Core Architecture Overview
 
-The SOAR platform is built on a microservices architecture designed for scalability, resilience, and seamless integration with external security tools.
+The SOAR platform acts as a central orchestration layer with integrated CSAM and TIP applications deployed on separate machines, connected through secure integrations.
 
 ```mermaid
 graph TB
-    subgraph "SOAR Core Platform"
-        subgraph "Presentation Layer"
-            UI[Securaa UI<br/>Port: 443<br/>React-based Dashboard]
-            API[REST API Gateway<br/>Authentication & Routing]
-        end
-        
-        subgraph "Application Services Layer"
-            PLAYBOOK[Playbook Engine<br/>Automation & Orchestration]
-            SIEM_SVC[SIEM Services<br/>Incident Management]
-            TI_SVC[Threat Intel Services<br/>IOC Analysis]
-            CASE_MGT[Case Management<br/>Workflow & Tracking]
-            TASK_MGT[Task Management<br/>Action Execution]
-        end
-        
-        subgraph "Integration Layer"
-            CONNECTOR[Integration Connectors<br/>Multi-Protocol Support]
-            RIS[Remote Integration Server<br/>Secure Communication]
-            CACHE[Redis Cache<br/>Performance Optimization]
-        end
-        
-        subgraph "Data Layer"
-            MONGO[MongoDB Replica Set<br/>Primary Data Store]
-            ELASTIC[ElasticSearch<br/>Log Analysis & Search]
-            BACKUP[Backup System<br/>Data Protection]
-        end
+    subgraph "SOAR Platform (Main Machine)"
+        SOAR_CORE[SOAR Core Engine<br/>Orchestration & Automation]
+        MONGO_DB[(MongoDB<br/>SOAR Data Storage)]
+        INTEGRATIONS[Integration Layer<br/>API Connectors]
+        PLAYBOOKS[Playbook Engine<br/>Automated Workflows]
+        DASHBOARD[Unified Dashboard<br/>Central Management]
     end
     
-    subgraph "External Security Tools"
-        GRAYLOG[Graylog SIEM<br/>Log Management<br/>Event Correlation]
-        THREATMON[ThreatMon TI<br/>Threat Intelligence<br/>IOC Feeds]
-        SIEM_TOOLS[SIEM Platforms<br/>Splunk, QRadar, ArcSight<br/>Sentinel, LogRhythm, AlienVault]
-        TI_FEEDS[Threat Intelligence<br/>ThreatConnect, Anomali<br/>MISP, OpenCTI, VirusTotal]
-        EDR_TOOLS[EDR/XDR Solutions<br/>CrowdStrike, SentinelOne<br/>Carbon Black, Cortex XDR]
+    subgraph "CSAM Machine"
+        CSAM_APP[CSAM Application<br/>Asset Management]
+        ELASTIC_CSAM[(Elasticsearch<br/>CSAM Data Store)]
     end
     
-    %% UI Connections
-    UI --> API
-    API --> PLAYBOOK
-    API --> SIEM_SVC
-    API --> TI_SVC
-    API --> CASE_MGT
+    subgraph "TIP Machine"
+        TIP_APP[TIP Application<br/>Threat Intelligence]
+        ELASTIC_TIP[(Elasticsearch<br/>TI Data Store)]
+    end
     
-    %% Service Connections
-    PLAYBOOK --> TASK_MGT
-    SIEM_SVC --> CONNECTOR
-    TI_SVC --> CONNECTOR
-    CASE_MGT --> MONGO
-    TASK_MGT --> RIS
+    subgraph "External Sources"
+        TI_FEEDS[Threat Intelligence Feeds<br/>Open Source & Commercial<br/>Recorded Future, MISP, etc.]
+        VULN_SCANNERS[Vulnerability Scanners<br/>Cloud Asset Scanning<br/>Application Security]
+        SIEM_SOURCES[SIEM Sources<br/>Graylog, Splunk<br/>Security Events]
+    end
     
-    %% Data Layer Connections
-    CONNECTOR --> CACHE
-    CONNECTOR --> MONGO
-    SIEM_SVC --> ELASTIC
-    MONGO --> BACKUP
+    %% Core Connections
+    SOAR_CORE --> MONGO_DB
+    SOAR_CORE --> INTEGRATIONS
+    SOAR_CORE --> PLAYBOOKS
+    SOAR_CORE --> DASHBOARD
+    
+    %% Integration Connections
+    INTEGRATIONS <--> CSAM_APP
+    INTEGRATIONS <--> TIP_APP
+    CSAM_APP --> ELASTIC_CSAM
+    TIP_APP --> ELASTIC_TIP
     
     %% External Integrations
-    RIS <--> GRAYLOG
-    RIS <--> THREATMON
-    CONNECTOR <--> SIEM_TOOLS
-    CONNECTOR <--> TI_FEEDS
-    CONNECTOR <--> EDR_TOOLS
+    INTEGRATIONS <--> TI_FEEDS
+    INTEGRATIONS <--> VULN_SCANNERS
+    INTEGRATIONS <--> SIEM_SOURCES
+    
+    %% Data Flow for Dashboards
+    ELASTIC_CSAM -.->|Pull Data| DASHBOARD
+    ELASTIC_TIP -.->|Pull Data| DASHBOARD
     
     %% Styling
-    classDef coreService fill:#e8f5e8
-    classDef integrationLayer fill:#fff2e8
-    classDef dataLayer fill:#e8f2ff
-    classDef externalTool fill:#ffe8e8
+    classDef soarComponent fill:#e8f5e8
+    classDef appComponent fill:#fff2e8
+    classDef dataComponent fill:#e8f2ff
+    classDef externalComponent fill:#ffe8e8
     
-    class UI,API,PLAYBOOK,SIEM_SVC,TI_SVC,CASE_MGT,TASK_MGT coreService
-    class CONNECTOR,RIS,CACHE integrationLayer
-    class MONGO,ELASTIC,BACKUP dataLayer
-    class GRAYLOG,THREATMON,SIEM_TOOLS,TI_FEEDS,EDR_TOOLS externalTool
+    class SOAR_CORE,INTEGRATIONS,PLAYBOOKS,DASHBOARD soarComponent
+    class CSAM_APP,TIP_APP appComponent
+    class MONGO_DB,ELASTIC_CSAM,ELASTIC_TIP dataComponent
+    class TI_FEEDS,VULN_SCANNERS,SIEM_SOURCES externalComponent
 ```
 
-### Key Architectural Principles
+### Key Components
 
-**1. Microservices Design**
-- Independent, loosely-coupled services
-- Technology-agnostic integration capabilities
-- Horizontal scalability and fault tolerance
-- Container-based deployment with Docker Swarm
+**SOAR Platform (Main Machine):**
+- **MongoDB Database**: Primary data storage for SOAR operations
+- **Integration Layer**: API connectors for external systems
+- **Playbook Engine**: Automated workflow execution
+- **Unified Dashboard**: Central management interface
 
-**2. Event-Driven Architecture**
-- Asynchronous event processing
-- Real-time incident handling
-- Message queue-based communication (Kafka)
-- Stream processing for high-volume data
+**CSAM Application (Separate Machine):**
+- **Asset Management**: Cloud and application asset tracking
+- **Elasticsearch Database**: CSAM-specific data storage
+- **Vulnerability Dashboard**: Asset vulnerability visualization
 
-**3. API-First Approach**
-- RESTful APIs for all integrations
-- Standardized authentication mechanisms
-- Comprehensive API documentation
-- Webhook support for real-time updates
-
-**4. Security-by-Design**
-- End-to-end encryption for data in transit
-- Role-based access control (RBAC)
-- Multi-tenant architecture with data isolation
-- Audit logging and compliance tracking
+**TIP Application (Separate Machine):**
+- **Threat Intelligence Processing**: TI feed management and analysis
+- **Elasticsearch Database**: Threat intelligence data storage
+- **TI Dashboard**: Threat intelligence visualization and analysis
 
 ---
 
-## Integration Architecture Framework
+## CSAM and TIP Integration
+
+### Integration Architecture
+
+The SOAR platform integrates with CSAM and TIP applications deployed on separate machines, pulling data through secure API connections to provide unified dashboards and centralized management.
+
+```mermaid
+sequenceDiagram
+    participant SOAR as SOAR Platform
+    participant CSAM as CSAM Application
+    participant TIP as TIP Application
+    participant TI_FEED as TI Feeds
+    participant VULN as Vulnerability Scanners
+    
+    Note over SOAR,VULN: Data Integration Flow
+    
+    TI_FEED->>TIP: Real-time TI Data
+    TIP->>TIP: Process & Store in Elasticsearch
+    SOAR->>TIP: Pull TI Data via API
+    TIP->>SOAR: Structured TI Information
+    
+    VULN->>CSAM: Scan Results
+    CSAM->>CSAM: Process & Store in Elasticsearch
+    SOAR->>CSAM: Pull Asset/Vuln Data via API
+    CSAM->>SOAR: Asset & Vulnerability Information
+    
+    Note over SOAR,VULN: Dashboard & Investigation
+    
+    SOAR->>SOAR: Combine Data for Unified View
+    SOAR->>SOAR: Execute Investigation Playbooks
+    SOAR->>SOAR: Enrich Cases with TI Data
+```
+
+### Key Integration Features
+
+**CSAM Integration:**
+- Asset inventory management and tracking
+- Vulnerability assessment data aggregation
+- Cloud asset scanning through integrated scanners
+- Real-time vulnerability dashboard updates
+- Automated vulnerability prioritization
+
+**TIP Integration:**
+- Threat intelligence feed management
+- IOC (Indicators of Compromise) processing
+- Threat actor and campaign tracking
+- Intelligence enrichment for investigations
+- Custom threat intelligence dashboards
+
+---
+
+## Threat Intelligence Integration
+
+### Supported TI Feed Types
+
+The platform supports integration with various threat intelligence sources:
+
+**Open Source Feeds:**
+- MISP (Malware Information Sharing Platform)
+- OpenCTI (Open Cyber Threat Intelligence)
+- VirusTotal Community feeds
+- Government CERT feeds
+
+**Commercial Feeds:**
+- Recorded Future
+- ThreatConnect
+- ThreatMon
+- Anomali
+
+### TI Data Processing Flow
+
+```mermaid
+graph LR
+    subgraph "TI Feed Sources"
+        OPENSOURCE[Open Source Feeds<br/>MISP, OpenCTI]
+        COMMERCIAL[Commercial Feeds<br/>Recorded Future, etc.]
+    end
+    
+    subgraph "TIP Application"
+        TI_PROCESSOR[TI Data Processor<br/>Normalization & Validation]
+        TI_STORAGE[(Elasticsearch<br/>TI Data Storage)]
+        TI_DASHBOARD[TI Dashboard<br/>Visualization & Analysis]
+    end
+    
+    subgraph "SOAR Platform"
+        INTEGRATION[Integration API<br/>Data Pull Service]
+        ENRICHMENT[Case Enrichment<br/>TI Correlation]
+        INVESTIGATION[Investigation Engine<br/>Automated Analysis]
+    end
+    
+    OPENSOURCE --> TI_PROCESSOR
+    COMMERCIAL --> TI_PROCESSOR
+    TI_PROCESSOR --> TI_STORAGE
+    TI_STORAGE --> TI_DASHBOARD
+    
+    TI_STORAGE --> INTEGRATION
+    INTEGRATION --> ENRICHMENT
+    ENRICHMENT --> INVESTIGATION
+```
+
+---
+
+## Investigation and Enrichment
+
+### Automated Investigation Capabilities
+
+The SOAR platform performs automated investigations by correlating threat intelligence data with security events and enriching cases with contextual information.
+
+**Investigation Process:**
+1. **Data Collection**: Pull relevant TI data from TIP application
+2. **IOC Matching**: Correlate indicators with security events
+3. **Context Enrichment**: Add threat actor, campaign, and TTP information
+4. **Risk Assessment**: Calculate threat severity and impact
+5. **Playbook Execution**: Trigger appropriate response workflows
+
+### Case Enrichment Features
+
+- **Threat Actor Attribution**: Link incidents to known threat groups
+- **Campaign Tracking**: Identify related attack campaigns
+- **IOC Validation**: Verify indicators against multiple TI sources
+- **Timeline Analysis**: Correlate events across time periods
+- **Impact Assessment**: Evaluate potential business impact
+
+---
+
+## Vulnerability Management
+
+### Cloud Asset Vulnerability Scanning
+
+The SOAR platform integrates with vulnerability scanners to provide comprehensive cloud asset security assessment through the CSAM application.
+
+```mermaid
+graph TB
+    subgraph "Vulnerability Scanning Workflow"
+        SCAN_TRIGGER[Scan Trigger<br/>Scheduled/On-demand]
+        ASSET_DISCOVERY[Asset Discovery<br/>Cloud Resources]
+        VULN_SCAN[Vulnerability Scan<br/>Application Security]
+        RESULT_PROCESSING[Result Processing<br/>Risk Prioritization]
+    end
+    
+    subgraph "CSAM Integration"
+        CSAM_STORAGE[(Elasticsearch<br/>Vuln Data Storage)]
+        CSAM_DASH[CSAM Dashboard<br/>Vulnerability View]
+        ASSET_INVENTORY[Asset Inventory<br/>Resource Tracking]
+    end
+    
+    subgraph "SOAR Integration"
+        SOAR_PULL[Data Pull Service<br/>API Integration]
+        VULN_DASHBOARD[Unified Dashboard<br/>Centralized View]
+        REMEDIATION[Remediation Playbooks<br/>Automated Response]
+    end
+    
+    SCAN_TRIGGER --> ASSET_DISCOVERY
+    ASSET_DISCOVERY --> VULN_SCAN
+    VULN_SCAN --> RESULT_PROCESSING
+    RESULT_PROCESSING --> CSAM_STORAGE
+    
+    CSAM_STORAGE --> CSAM_DASH
+    CSAM_STORAGE --> ASSET_INVENTORY
+    CSAM_STORAGE --> SOAR_PULL
+    
+    SOAR_PULL --> VULN_DASHBOARD
+    VULN_DASHBOARD --> REMEDIATION
+```
+
+### Vulnerability Management Features
+
+**Asset Management:**
+- Cloud resource inventory and classification
+- Application security assessment
+- Vulnerability prioritization and scoring
+- Compliance tracking and reporting
+
+**Integration Capabilities:**
+- Automated scanning schedules
+- Real-time vulnerability data updates
+- Centralized dashboard views
+- Automated remediation workflows
+
+---
+
+## Conclusion
+
+The SOAR platform provides a centralized orchestration layer that integrates CSAM and TIP applications to deliver unified security operations. By combining threat intelligence feeds, vulnerability management, and automated investigation capabilities, organizations can achieve comprehensive security visibility and response automation.
+
+### Key Benefits
+
+- **Unified Management**: Single platform for security operations coordination
+- **Enhanced Intelligence**: Combined threat intelligence and vulnerability data
+- **Automated Response**: Playbook-driven incident response and remediation
+- **Centralized Dashboards**: Consolidated view of security posture
+- **Scalable Architecture**: Distributed applications with centralized orchestration
+
+*This document provides an overview of the SOAR platform's integration architecture and capabilities for security operations management.*
 
 ### Supported SIEM and Security Platforms
 
