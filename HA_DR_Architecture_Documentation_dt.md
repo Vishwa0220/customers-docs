@@ -31,14 +31,14 @@ Both approaches use the existing single-server replica-set design locally (per s
 graph TB
     subgraph "SOAR DC (Primary Site)"
         DC_SERVER[DC Server]
-        DC_MONGO[MongoDB Replica Set (single-server: 27017/27018/27019)]
+        DC_MONGO[MongoDB Replica Set (3 instances on port 27017:<br/>Primary, Secondary, Arbiter)]
         DC_APP[Securaa UI & SOAR Services (HTTPS: 443)]
         DC_BACKUP[Backup Agent / Cron]
     end
 
     subgraph "SOAR DR (Disaster Recovery Site)"
         DR_SERVER[DR Server]
-        DR_MONGO[MongoDB Replica Set (single-server: 27017/27018/27019)]
+        DR_MONGO[MongoDB Replica Set (3 instances on port 27017:<br/>Primary, Secondary, Arbiter)]
         DR_APP[Securaa UI & SOAR Services]
         DR_RESTORE[Restore Agent / Cron]
     end
@@ -68,13 +68,16 @@ graph TB
 
 ### 1. Single-Server MongoDB Replica Set Architecture (per site)
 
-Each site runs a MongoDB replica set on a single server (3 mongod processes: primary + 2 secondaries on ports 27017, 27018, 27019). This provides local process-level HA, automatic elections, and quick recovery from process failures.
+Each site runs a MongoDB replica set on a single server with 3 mongod processes: 1 Primary (data + operations), 1 Secondary (data replica), and 1 Arbiter (voting only, no data). All three instances run on port 27017. This provides local process-level HA, automatic elections, and quick recovery from process failures.
 
 Key properties:
-- Ports: Primary 27017, Secondary1 27018, Secondary2 27019
+- **Primary (Port 27017)**: Handles all read and write operations; replicates data to Secondary
+- **Secondary (Port 27017)**: Maintains a copy of data; participates in elections; becomes Primary on failover
+- **Arbiter (Port 27017)**: Participates in elections only; does not store data; acts as tiebreaker
 - Local election and failover within ~15–35 seconds
-- Read scaling via secondaries
-- Local redundancy (3 copies on same server)
+- **All operations (read + write) performed on Primary only**
+- When Secondary becomes Primary, all read/write operations switch to the new Primary
+- **All three MongoDB instances use port 27017**
 
 ### 2. Cross‑Site High Availability (two supported mechanisms)
 
@@ -90,29 +93,27 @@ Both modes are described in the Disaster Recovery Setup section below.
 ```mermaid
 graph TB
     subgraph "Single Server (DC or DR)"
-        subgraph "MongoDB Replica Set - 3 Processes"
-            PRIMARY[Primary mongod<br/>Port: 27017<br/>Accepts Writes<br/>Replicates to Secondaries]
-            SECONDARY1[Secondary mongod<br/>Port: 27018<br/>Receives Oplog<br/>Serves Reads]
-            SECONDARY2[Secondary mongod<br/>Port: 27019<br/>Receives Oplog<br/>Serves Reads]
+        subgraph "MongoDB Replica Set - 3 Processes on Port 27017"
+            PRIMARY[Primary mongod<br/>Port: 27017<br/>ALL Read & Write Operations<br/>Replicates to Secondary]
+            SECONDARY[Secondary mongod<br/>Port: 27017<br/>Data Replica<br/>Standby for Election]
+            ARBITER[Arbiter mongod<br/>Port: 27017<br/>No Data Storage<br/>Voting Only]
             
-            PRIMARY -->|Oplog Stream| SECONDARY1
-            PRIMARY -->|Oplog Stream| SECONDARY2
-            SECONDARY1 -.->|Heartbeat| PRIMARY
-            SECONDARY2 -.->|Heartbeat| PRIMARY
-            SECONDARY1 -.->|Heartbeat| SECONDARY2
+            PRIMARY -->|Oplog Replication| SECONDARY
+            PRIMARY -.->|Heartbeat| SECONDARY
+            PRIMARY -.->|Heartbeat| ARBITER
+            SECONDARY -.->|Heartbeat| ARBITER
         end
         
         APP[SOAR Application<br/>Securaa UI<br/>SOAR Services]
         
-        APP -->|Write Operations| PRIMARY
-        APP -.->|Read Operations| SECONDARY1
-        APP -.->|Read Operations| SECONDARY2
+        APP -->|ALL Read Operations| PRIMARY
+        APP -->|ALL Write Operations| PRIMARY
     end
     
     subgraph "Failover Scenario"
         FAIL[Primary Failure Detected]
-        ELECT[Election Process<br/>15-35 seconds]
-        NEWPRIMARY[Secondary Promoted<br/>to New Primary]
+        ELECT[Election Process<br/>Secondary + Arbiter Vote<br/>15-35 seconds]
+        NEWPRIMARY[Secondary becomes Primary<br/>ALL Read/Write switch to new Primary]
         
         FAIL --> ELECT
         ELECT --> NEWPRIMARY
@@ -120,11 +121,13 @@ graph TB
     
     classDef primary fill:#4CAF50,color:#fff
     classDef secondary fill:#2196F3,color:#fff
+    classDef arbiter fill:#9E9E9E,color:#fff
     classDef app fill:#FF9800,color:#fff
     classDef failover fill:#f44336,color:#fff
     
     class PRIMARY,NEWPRIMARY primary
-    class SECONDARY1,SECONDARY2 secondary
+    class SECONDARY secondary
+    class ARBITER arbiter
     class APP app
     class FAIL,ELECT failover
 ```
@@ -229,18 +232,20 @@ Notes and operational considerations:
 ```mermaid
 sequenceDiagram
     participant DC_APP as DC Application
-    participant DC_PRIMARY as DC MongoDB Primary
-    participant DC_SEC as DC MongoDB Secondaries
+    participant DC_PRIMARY as DC MongoDB Primary (Port 27017)
+    participant DC_SEC as DC MongoDB Secondary (Port 27017)
+    participant DC_ARB as DC Arbiter (Port 27017)
     participant OPLOG as Oplog Stream
-    participant DR_MONGO as DR MongoDB
+    participant DR_MONGO as DR MongoDB (Port 27017)
     participant HEALTH as Health Check Service
     participant DR_APP as DR Application (Standby)
     
     Note over DC_APP,DR_APP: Normal Operations - Continuous Replication
     
     loop Real-time Operations
-        DC_APP->>DC_PRIMARY: Write Operations
-        DC_PRIMARY->>DC_SEC: Replicate locally (27018/27019)
+        DC_APP->>DC_PRIMARY: ALL Read & Write Operations
+        DC_PRIMARY->>DC_SEC: Replicate to Secondary (oplog)
+        DC_PRIMARY->>DC_ARB: Heartbeat (no data)
         DC_PRIMARY->>OPLOG: Generate oplog entries
         OPLOG->>DR_MONGO: Stream oplog (port 27017)
         DR_MONGO->>DR_MONGO: Apply operations (~1 min lag)
@@ -412,39 +417,39 @@ flowchart TD
 
 ### 3. Local Site Failover (MongoDB replica set)
 
-- Within each server, the 3-node replica set offers automatic election on mongod process failure (15–35 seconds).
+- Within each server, the 3-node replica set (1 Primary, 1 Secondary, 1 Arbiter) offers automatic election on Primary failure (15–35 seconds).
 
 #### Local MongoDB Replica Set Failover Flow
 
 ```mermaid
 flowchart TD
-    A[MongoDB Replica Set<br/>Normal Operations] --> B[Primary: 27017<br/>Secondary1: 27018<br/>Secondary2: 27019]
+    A[MongoDB Replica Set<br/>Normal Operations] --> B[All 3 instances on Port 27017:<br/>Primary, Secondary, Arbiter]
     
     B --> C{Primary<br/>Process Fails?}
     C -->|No| A
     
-    C -->|Yes| D[Secondaries Detect<br/>Missing Heartbeat]
+    C -->|Yes| D[Secondary + Arbiter Detect<br/>Missing Heartbeat]
     D --> E[10-15 seconds:<br/>Failure Detection]
     
-    E --> F[Secondary Nodes<br/>Initiate Election]
-    F --> G[Nodes Vote for<br/>New Primary]
+    E --> F[Secondary Initiates Election<br/>Arbiter Participates]
+    F --> G[Secondary + Arbiter Vote<br/>for New Primary]
     G --> H[5-20 seconds:<br/>Election Process]
     
     H --> I{Majority<br/>Achieved?}
     I -->|No| J[Retry Election]
     J --> F
     
-    I -->|Yes| K[Secondary1 or Secondary2<br/>Promoted to Primary]
-    K --> L[New Primary Accepts<br/>Write Operations]
+    I -->|Yes| K[Secondary Promoted<br/>to New Primary]
+    K --> L[New Primary (Port 27017)<br/>Accepts ALL Read/Write]
     
     L --> M[Application Auto-Reconnects<br/>to New Primary]
-    M --> N[Failed Process Detected]
+    M --> N[Failed Primary Detected]
     
-    N --> O{Process Can<br/>Restart?}
+    N --> O{Old Primary Can<br/>Restart?}
     O -->|Yes| P[Restart mongod Process]
     P --> Q[Rejoins as Secondary]
-    Q --> R[Sync Latest Data<br/>from New Primary]
-    R --> S[Replica Set Healthy<br/>All 3 Nodes Active]
+    Q --> R[Syncs Latest Data<br/>from New Primary]
+    R --> S[Replica Set Healthy<br/>Primary + Secondary + Arbiter]
     
     O -->|No| T[Manual Intervention<br/>Required]
     T --> U[Admin Investigates<br/>Root Cause]
@@ -535,7 +540,7 @@ graph TB
         A[SOAR Application] --> B[DC MongoDB Primary<br/>Port 27017]
         B --> C[Write to Database]
         C --> D[Generate Oplog<br/>Entry]
-        D --> E[Local Replication<br/>to 27018 & 27019]
+        D --> E[Local Replication<br/>to Secondary & Arbiter<br/>All on Port 27017]
     end
     
     subgraph "Oplog Streaming"
@@ -547,7 +552,7 @@ graph TB
     end
     
     subgraph "DR Site - Near Real-Time"
-        I --> J[DR MongoDB<br/>Receives Oplog]
+        I --> J[DR MongoDB<br/>Receives Oplog<br/>Port 27017]
         J --> K[Apply Operations<br/>~1 minute lag]
         K --> L[Update DR Data]
         L --> M[Maintain Standby<br/>State]
@@ -573,21 +578,22 @@ graph TB
 
 ```mermaid
 graph LR
-    A[Write Operation<br/>at DC] -->|0 seconds| B[DC Primary<br/>Commits]
-    B -->|< 1 second| C[Local Secondaries<br/>27018/27019]
-    B -->|Network Latency| D[Oplog Transmission]
-    D -->|10-60 seconds| E[DR MongoDB<br/>Receives Oplog]
-    E -->|Apply Time| F[DR Data Updated]
+    A[Write Operation<br/>at DC] -->|0 seconds| B[DC Primary<br/>Commits<br/>Port 27017]
+    B -->|< 1 second| C[Local Secondary<br/>Replicates<br/>Port 27017]
+    B -->|Heartbeat only| D[Arbiter<br/>No data<br/>Port 27017]
+    B -->|Network Latency| E[Oplog Transmission]
+    E -->|10-60 seconds| F[DR MongoDB<br/>Receives Oplog<br/>Port 27017]
+    F -->|Apply Time| G[DR Data Updated]
     
-    G[Typical Total Lag] -.-> H[~1 minute]
+    H[Typical Total Lag] -.-> I[~1 minute]
     
-    I[Network Issues?] -.-> J[Oplog Buffered<br/>at DC]
-    J -.-> K[Resumes When<br/>Network Restored]
+    J[Network Issues?] -.-> K[Oplog Buffered<br/>at DC]
+    K -.-> L[Resumes When<br/>Network Restored]
     
     style B fill:#90EE90
-    style F fill:#87CEEB
-    style H fill:#FFE4B5
-    style J fill:#FFA500
+    style G fill:#87CEEB
+    style I fill:#FFE4B5
+    style K fill:#FFA500
 ```
 
 ### Data Integrity and Validation
@@ -774,6 +780,70 @@ graph TB
     style HS1 fill:#FF6347,color:#fff
     style FO1 fill:#9370DB,color:#fff
 ```
+
+---
+
+## MongoDB Replica Set Architecture Explained
+
+### Understanding the Primary-Secondary-Arbiter Configuration
+
+Each site (DC and DR) operates a MongoDB replica set with three mongod processes on a single server:
+
+#### Component Roles
+
+**Primary (Port 27017):**
+- Handles **ALL** read operations from applications
+- Handles **ALL** write operations from applications  
+- Replicates data changes to the Secondary via oplog
+- Sends heartbeat signals to Secondary and Arbiter
+- Only one Primary exists at any time
+
+**Secondary (Port 27017):**
+- Maintains a **complete copy** of all data from Primary
+- Continuously applies oplog entries from Primary to stay synchronized
+- **Does NOT serve read operations** in this configuration (all reads go to Primary)
+- Participates in elections when Primary fails
+- Becomes the new Primary if elected during failover
+- Acts as data redundancy and failover candidate
+
+**Arbiter (Port 27017):**
+- **Does NOT store any data** (no database files)
+- Participates in elections only (voting member)
+- Provides tiebreaker vote in 2-member scenarios
+- Consumes minimal resources (CPU, memory, disk)
+- Sends/receives heartbeat signals only
+- Cannot become Primary
+
+**Important Note:** All three MongoDB instances (Primary, Secondary, Arbiter) run on port 27017. They are differentiated by their replica set member configuration and roles, not by different ports.
+
+### Operation Flow
+
+**Normal Operations (All traffic to Primary on Port 27017):**
+```
+Application → Primary (Port 27017) → [ALL Reads + Writes]
+Primary → Secondary (Port 27017) → [Oplog replication]
+Primary ↔ Arbiter (Port 27017) → [Heartbeat only]
+```
+
+**Failover Scenario (Primary fails):**
+```
+1. Primary (Port 27017) fails → No heartbeat detected
+2. Secondary (Port 27017) + Arbiter (Port 27017) → Initiate election
+3. Secondary receives majority vote → Promoted to Primary
+4. Application → New Primary (Port 27017) → [ALL Reads + Writes]
+5. Old Primary restarts → Rejoins as Secondary (Port 27017)
+```
+
+### Key Characteristics
+
+- **Single Port Configuration**: All three replica set members use port 27017
+- **Single Point of Read/Write**: All operations always go to the current Primary (never split between nodes)
+- **Automatic Failover**: Secondary automatically promoted when Primary fails (15-35 seconds)
+- **Data Redundancy**: 2 copies of data (Primary + Secondary); Arbiter has none
+- **Election Quorum**: Requires 2 out of 3 votes (Secondary + Arbiter can elect new Primary)
+- **Zero Data Loss**: Secondary stays synchronized; no data loss on failover with proper write concerns
+
+This design provides high availability while maintaining operational simplicity on a single server per site, with all MongoDB instances using the standard port 27017.
 
 ---
 
