@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The Zona Services solution implements a robust High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document describes two supported HA mechanisms between the Data Center (DC) and the Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (periodic incremental backups; default interval: 30 minutes) and (2) Hot Sync (oplog-based near real-time replication). While both provide business continuity, Hot Sync delivers faster replication and higher operational reliability than periodic backup/restore.
+The Securaa solution implements a robust High Availability (HA) and Disaster Recovery (DR) architecture designed to ensure continuous business operations, data protection, and minimal downtime. This document describes two supported HA mechanisms between the Data Center (DC) and the Disaster Recovery (DR) site: (1) DC–DR Incremental Backup & Restore (periodic incremental backups; default interval: 30 minutes) and (2) Hot Sync (oplog-based near real-time replication). While both provide business continuity, Hot Sync delivers faster replication and higher operational reliability than periodic backup/restore.
 
 ## Table of Contents
 
@@ -29,37 +29,42 @@ Both approaches use the existing single-server replica-set design locally (per s
 
 ```mermaid
 graph TB
-    subgraph "SOAR DC (Primary Site)"
-        DC_SERVER[DC Server]
-        DC_MONGO[MongoDB Replica Set (3 instances on port 27017:<br/>Primary, Secondary, Arbiter)]
-        DC_APP[Securaa UI & SOAR Services (HTTPS: 443)]
-        DC_BACKUP[Backup Agent / Cron]
+    subgraph DC["<b>SOAR DC (Primary Site)</b>"]
+        DC_SERVER["<b>DC Server</b>"]
+        DC_MONGO["<b>MongoDB Replica Set</b><br/>(3 instances on port 27017)<br/>Primary, Secondary, Arbiter"]
+        DC_APP["<b>Securaa UI & SOAR Services</b><br/>(HTTPS: 443)"]
+        DC_BACKUP["<b>Backup Agent / Cron</b>"]
     end
 
-    subgraph "SOAR DR (Disaster Recovery Site)"
-        DR_SERVER[DR Server]
-        DR_MONGO[MongoDB Replica Set (3 instances on port 27017:<br/>Primary, Secondary, Arbiter)]
-        DR_APP[Securaa UI & SOAR Services]
-        DR_RESTORE[Restore Agent / Cron]
+    subgraph DR["<b>SOAR DR (Disaster Recovery Site)</b>"]
+        DR_SERVER["<b>DR Server</b>"]
+        DR_MONGO["<b>MongoDB Replica Set</b><br/>(3 instances on port 27017)<br/>Primary, Secondary, Arbiter"]
+        DR_APP["<b>Securaa UI & SOAR Services</b>"]
+        DR_RESTORE["<b>Restore Agent / Cron</b>"]
     end
+
+    UserAccess["<b>User Access</b><br/>HTTPS (443)"]
 
     %% Backup & Restore path
-    DC_BACKUP -->|SCP (port 22) incremental archives, default every 30m| DR_RESTORE
+    DC_BACKUP -->|"<b>SCP Transfer</b><br/>(port 22)<br/>Incremental archives<br/>every 30 min"| DR_RESTORE
     DR_RESTORE --> DR_MONGO
     DR_RESTORE --> DR_SERVER
 
     %% Hot Sync path
-    DC_MONGO -->|Oplog replication (port 27017) — near real-time| DR_MONGO
-    DC_SERVER -->|Directory sync via SCP (port 22) at configurable interval| DR_SERVER
+    DC_MONGO -->|"<b>Oplog Replication</b><br/>(port 27017)<br/>Near real-time"| DR_MONGO
+    DC_SERVER -->|"<b>Directory Sync</b><br/>(SCP port 22)<br/>Configurable interval"| DR_SERVER
 
     %% Access
-    UserAccess[User Access: HTTPS (443)] --> DC_APP
+    UserAccess --> DC_APP
     UserAccess --> DR_APP
 
-    classDef dc fill:#e8f5e8
-    classDef dr fill:#fff2e8
-    class DC_SERVER,DC_MONGO,DC_APP,DC_BACKUP dc
-    class DR_SERVER,DR_MONGO,DR_APP,DR_RESTORE dr
+    classDef dcStyle fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
+    classDef drStyle fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
+    classDef userStyle fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
+    
+    class DC_SERVER,DC_MONGO,DC_APP,DC_BACKUP dcStyle
+    class DR_SERVER,DR_MONGO,DR_APP,DR_RESTORE drStyle
+    class UserAccess userStyle
 ```
 
 ---
@@ -92,44 +97,44 @@ Both modes are described in the Disaster Recovery Setup section below.
 
 ```mermaid
 graph TB
-    subgraph "Single Server (DC or DR)"
-        subgraph "MongoDB Replica Set - 3 Processes on Port 27017"
-            PRIMARY[Primary mongod<br/>Port: 27017<br/>ALL Read & Write Operations<br/>Replicates to Secondary]
-            SECONDARY[Secondary mongod<br/>Port: 27017<br/>Data Replica<br/>Standby for Election]
-            ARBITER[Arbiter mongod<br/>Port: 27017<br/>No Data Storage<br/>Voting Only]
+    subgraph SERVER["<b>Single Server (DC or DR)</b>"]
+        subgraph REPLICA["<b>MongoDB Replica Set - 3 Processes on Port 27017</b>"]
+            PRIMARY["<b>Primary mongod</b><br/>Port: 27017<br/>✓ ALL Read Operations<br/>✓ ALL Write Operations<br/>✓ Replicates to Secondary"]
+            SECONDARY["<b>Secondary mongod</b><br/>Port: 27017<br/>✓ Data Replica<br/>✓ Standby for Election<br/>✓ Sync from Primary"]
+            ARBITER["<b>Arbiter mongod</b><br/>Port: 27017<br/>✗ No Data Storage<br/>✓ Voting Only<br/>✓ Election Participant"]
             
-            PRIMARY -->|Oplog Replication| SECONDARY
-            PRIMARY -.->|Heartbeat| SECONDARY
-            PRIMARY -.->|Heartbeat| ARBITER
-            SECONDARY -.->|Heartbeat| ARBITER
+            PRIMARY ==>|"<b>Oplog Replication</b><br/>(Data Sync)"| SECONDARY
+            PRIMARY -.->|"Heartbeat"| SECONDARY
+            PRIMARY -.->|"Heartbeat"| ARBITER
+            SECONDARY -.->|"Heartbeat"| ARBITER
         end
         
-        APP[SOAR Application<br/>Securaa UI<br/>SOAR Services]
+        APP["<b>SOAR Application</b><br/>Securaa UI<br/>SOAR Services"]
         
-        APP -->|ALL Read Operations| PRIMARY
-        APP -->|ALL Write Operations| PRIMARY
+        APP ==>|"<b>ALL Read Operations</b>"| PRIMARY
+        APP ==>|"<b>ALL Write Operations</b>"| PRIMARY
     end
     
-    subgraph "Failover Scenario"
-        FAIL[Primary Failure Detected]
-        ELECT[Election Process<br/>Secondary + Arbiter Vote<br/>15-35 seconds]
-        NEWPRIMARY[Secondary becomes Primary<br/>ALL Read/Write switch to new Primary]
+    subgraph FAILOVER["<b>Failover Scenario</b>"]
+        FAIL["<b>⚠ Primary Failure Detected</b>"]
+        ELECT["<b>Election Process</b><br/>Secondary + Arbiter Vote<br/>⏱ 15-35 seconds"]
+        NEWPRIMARY["<b>✓ Secondary becomes Primary</b><br/>ALL Read/Write operations<br/>switch to new Primary"]
         
         FAIL --> ELECT
         ELECT --> NEWPRIMARY
     end
     
-    classDef primary fill:#4CAF50,color:#fff
-    classDef secondary fill:#2196F3,color:#fff
-    classDef arbiter fill:#9E9E9E,color:#fff
-    classDef app fill:#FF9800,color:#fff
-    classDef failover fill:#f44336,color:#fff
+    classDef primaryStyle fill:#4CAF50,stroke:#2e7d32,stroke-width:3px,color:#fff,font-size:14px
+    classDef secondaryStyle fill:#2196F3,stroke:#1565c0,stroke-width:3px,color:#fff,font-size:14px
+    classDef arbiterStyle fill:#757575,stroke:#424242,stroke-width:3px,color:#fff,font-size:14px
+    classDef appStyle fill:#FF9800,stroke:#e65100,stroke-width:3px,color:#fff,font-size:14px
+    classDef failoverStyle fill:#f44336,stroke:#c62828,stroke-width:3px,color:#fff,font-size:14px
     
-    class PRIMARY,NEWPRIMARY primary
-    class SECONDARY secondary
-    class ARBITER arbiter
-    class APP app
-    class FAIL,ELECT failover
+    class PRIMARY,NEWPRIMARY primaryStyle
+    class SECONDARY secondaryStyle
+    class ARBITER arbiterStyle
+    class APP appStyle
+    class FAIL,ELECT failoverStyle
 ```
 
 ---
@@ -231,46 +236,47 @@ Notes and operational considerations:
 
 ```mermaid
 sequenceDiagram
-    participant DC_APP as DC Application
-    participant DC_PRIMARY as DC MongoDB Primary (Port 27017)
-    participant DC_SEC as DC MongoDB Secondary (Port 27017)
-    participant DC_ARB as DC Arbiter (Port 27017)
-    participant OPLOG as Oplog Stream
-    participant DR_MONGO as DR MongoDB (Port 27017)
-    participant HEALTH as Health Check Service
-    participant DR_APP as DR Application (Standby)
+    autonumber
+    participant APP as 🖥 DC Application
+    participant PRI as 🔵 DC Primary<br/>(Port 27017)
+    participant SEC as 🟢 DC Secondary<br/>(Port 27017)
+    participant ARB as ⚪ DC Arbiter<br/>(Port 27017)
+    participant OPLOG as 📋 Oplog Stream
+    participant DR as 🔷 DR MongoDB<br/>(Port 27017)
+    participant HEALTH as 🏥 Health Check
+    participant DRAPP as 💤 DR App<br/>(Standby)
     
-    Note over DC_APP,DR_APP: Normal Operations - Continuous Replication
+    Note over APP,DRAPP: <b>Normal Operations - Continuous Replication</b>
     
     loop Real-time Operations
-        DC_APP->>DC_PRIMARY: ALL Read & Write Operations
-        DC_PRIMARY->>DC_SEC: Replicate to Secondary (oplog)
-        DC_PRIMARY->>DC_ARB: Heartbeat (no data)
-        DC_PRIMARY->>OPLOG: Generate oplog entries
-        OPLOG->>DR_MONGO: Stream oplog (port 27017)
-        DR_MONGO->>DR_MONGO: Apply operations (~1 min lag)
-        Note over DR_MONGO: Data synchronized<br/>Services inactive
+        APP->>PRI: <b>Read & Write Operations</b>
+        PRI->>SEC: <b>Replicate</b> (oplog sync)
+        PRI->>ARB: Heartbeat (no data)
+        PRI->>OPLOG: Generate oplog entries
+        OPLOG->>DR: <b>Stream oplog</b> (port 27017)
+        DR->>DR: Apply ops (~1 min lag)
+        Note over DR: ✓ Data synchronized<br/>✗ Services inactive
     end
     
-    HEALTH->>DC_APP: Health check ping
-    DC_APP-->>HEALTH: Healthy response
+    HEALTH->>APP: Health check ping
+    APP-->>HEALTH: ✓ Healthy response
     
-    rect rgb(230, 200, 200)
-        Note over DC_APP,DR_APP: DC Failure Scenario
-        DC_APP->>DC_APP: DC Site Failure
+    rect rgb(255, 235, 230)
+        Note over APP,DRAPP: <b>⚠ DC Failure Scenario</b>
+        APP-xAPP: ⚠ DC Site Failure
         
-        HEALTH->>DC_APP: Health check ping
-        DC_APP--xHEALTH: No response
-        HEALTH->>HEALTH: Wait & retry (20 min threshold)
+        HEALTH->>APP: Health check ping
+        APP--xHEALTH: ✗ No response
+        HEALTH->>HEALTH: Wait & retry<br/>(20 min threshold)
         
         alt After 20 minutes downtime
-            HEALTH->>DR_APP: Trigger DR activation
-            DR_APP->>DR_APP: Start services
-            DR_APP->>DR_MONGO: Verify data consistency
-            DR_MONGO-->>DR_APP: Data up-to-date (~1 min behind)
-            DR_APP->>DR_APP: Reconfigure connections
-            DR_APP->>HEALTH: Services active & healthy
-            Note over DR_APP: DR now serves traffic<br/>Failover complete
+            HEALTH->>DRAPP: <b>⚡ Trigger DR activation</b>
+            DRAPP->>DRAPP: Start services
+            DRAPP->>DR: Verify data consistency
+            DR-->>DRAPP: ✓ Data up-to-date<br/>(~1 min behind)
+            DRAPP->>DRAPP: Reconfigure connections
+            DRAPP->>HEALTH: ✓ Services active
+            Note over DRAPP: <b>✓ DR now serves traffic</b><br/>Failover complete
         end
     end
 ```
@@ -359,60 +365,65 @@ Estimated timings:
 
 ```mermaid
 flowchart TD
-    A[DC Site Operating<br/>Oplog Streaming Active] --> B[Health Check Service<br/>Monitors DC]
+    A["🟢 <b>DC Site Operating</b><br/>Oplog Streaming Active"] --> B["🏥 <b>Health Check Service</b><br/>Monitors DC"]
     
-    B --> C{DC Responding?}
-    C -->|Yes| D[Continue Normal<br/>Operations]
+    B --> C{"✓ DC Responding?"}
+    C -->|"Yes"| D["✓ Continue Normal<br/>Operations"]
     D --> B
     
-    C -->|No| E[Start Failure<br/>Detection Timer]
-    E --> F{DC Down for<br/>>20 minutes?}
+    C -->|"No"| E["⏱ <b>Start Detection Timer</b>"]
+    E --> F{"⚠ DC Down > 20 min?"}
     
-    F -->|No - Retry| G[Continue Health Checks<br/>Every 30-60 seconds]
-    G --> H{DC Recovered?}
-    H -->|Yes| D
-    H -->|No| F
+    F -->|"No - Retry"| G["🔄 Continue Health Checks<br/>(every 30-60 sec)"]
+    G --> H{"✓ DC Recovered?"}
+    H -->|"Yes"| D
+    H -->|"No"| F
     
-    F -->|Yes| I[Trigger Automated<br/>DR Activation]
+    F -->|"Yes"| I["⚡ <b>Trigger Automated</b><br/><b>DR Activation</b>"]
     
-    I --> J[Verify DR MongoDB<br/>Data Consistency]
-    J --> K{Data Lag<br/><5 minutes?}
+    I --> J["🔍 Verify DR MongoDB<br/>Data Consistency"]
+    J --> K{"Data Lag < 5 min?"}
     
-    K -->|No| L[Wait for Final<br/>Oplog Sync if Possible]
-    L --> M[Accept Data Loss<br/>Beyond RPO]
+    K -->|"No"| L["⏳ Wait for Final<br/>Oplog Sync if Possible"]
+    L --> M["⚠ Accept Data Loss<br/>Beyond RPO"]
     
-    K -->|Yes| M
-    M --> N[Promote DR MongoDB<br/>to Writable]
-    N --> O[Start SOAR Application<br/>Services on DR]
-    O --> P[Update Connection<br/>Strings & Config]
-    P --> Q[Run Service Health<br/>Checks]
+    K -->|"Yes"| M
+    M --> N["📝 Promote DR MongoDB<br/>to Writable"]
+    N --> O["🚀 Start SOAR Services<br/>on DR"]
+    O --> P["⚙ Update Connection<br/>Strings & Config"]
+    P --> Q["✅ Run Service<br/>Health Checks"]
     
-    Q --> R{All Services<br/>Healthy?}
-    R -->|No| S[Restart Failed<br/>Services]
+    Q --> R{"All Services<br/>Healthy?"}
+    R -->|"No"| S["🔄 Restart Failed<br/>Services"]
     S --> Q
     
-    R -->|Yes| T[Update DNS/Load Balancer<br/>to DR Site]
-    T --> U[Send Notifications<br/>to Users/Admins]
-    U --> V[Monitor DR<br/>Operations]
+    R -->|"Yes"| T["🌐 Update DNS/LB<br/>to DR Site"]
+    T --> U["📢 Send Notifications<br/>to Users/Admins"]
+    U --> V["📊 Monitor DR<br/>Operations"]
     
-    V --> W{DC Site<br/>Restored?}
-    W -->|No| V
-    W -->|Yes| X[Coordinate Failback]
-    X --> Y{Use DC or<br/>Continue DR?}
+    V --> W{"🔧 DC Site<br/>Restored?"}
+    W -->|"No"| V
+    W -->|"Yes"| X["📋 Coordinate Failback"]
+    X --> Y{"Use DC or<br/>Continue DR?"}
     
-    Y -->|Failback to DC| Z[Reverse Sync<br/>DR to DC]
-    Z --> AA[Redirect Traffic<br/>to DC]
-    AA --> AB[DR Returns to<br/>Standby Mode]
+    Y -->|"Failback to DC"| Z["🔄 Reverse Sync<br/>DR → DC"]
+    Z --> AA["🔀 Redirect Traffic<br/>to DC"]
+    AA --> AB["💤 DR Returns to<br/>Standby Mode"]
     
-    Y -->|Stay on DR| AC[Make DR the<br/>New Primary]
-    AC --> AD[Reconfigure DC<br/>as New DR]
+    Y -->|"Stay on DR"| AC["🔄 Make DR the<br/>New Primary"]
+    AC --> AD["⚙ Reconfigure DC<br/>as New DR"]
     
-    style A fill:#90EE90
-    style C fill:#FFE4B5
-    style I fill:#FFB6C1
-    style V fill:#87CEEB
-    style AB fill:#90EE90
-    style AD fill:#90EE90
+    classDef normalOps fill:#d4edda,stroke:#155724,stroke-width:2px,color:#000
+    classDef warning fill:#fff3cd,stroke:#856404,stroke-width:2px,color:#000
+    classDef critical fill:#f8d7da,stroke:#721c24,stroke-width:2px,color:#000
+    classDef active fill:#cfe2ff,stroke:#084298,stroke-width:2px,color:#000
+    classDef success fill:#d1e7dd,stroke:#0a3622,stroke-width:2px,color:#000
+    
+    class A,D,AB,AD normalOps
+    class E,F,G,L warning
+    class I,M critical
+    class V,AC active
+    class T,U,AA success
 ```
 
 ### 3. Local Site Failover (MongoDB replica set)
@@ -423,46 +434,51 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[MongoDB Replica Set<br/>Normal Operations] --> B[All 3 instances on Port 27017:<br/>Primary, Secondary, Arbiter]
+    A["🟢 <b>MongoDB Replica Set</b><br/>Normal Operations"] --> B["All 3 instances on Port 27017<br/>🔵 Primary | 🟢 Secondary | ⚪ Arbiter"]
     
-    B --> C{Primary<br/>Process Fails?}
-    C -->|No| A
+    B --> C{"⚠ Primary<br/>Process Fails?"}
+    C -->|"No"| A
     
-    C -->|Yes| D[Secondary + Arbiter Detect<br/>Missing Heartbeat]
-    D --> E[10-15 seconds:<br/>Failure Detection]
+    C -->|"Yes"| D["🔔 Secondary + Arbiter<br/>Detect Missing Heartbeat"]
+    D --> E["⏱ 10-15 seconds<br/>Failure Detection"]
     
-    E --> F[Secondary Initiates Election<br/>Arbiter Participates]
-    F --> G[Secondary + Arbiter Vote<br/>for New Primary]
-    G --> H[5-20 seconds:<br/>Election Process]
+    E --> F["🗳 Secondary Initiates Election<br/>Arbiter Participates"]
+    F --> G["✋ Secondary + Arbiter<br/>Vote for New Primary"]
+    G --> H["⏱ 5-20 seconds<br/>Election Process"]
     
-    H --> I{Majority<br/>Achieved?}
-    I -->|No| J[Retry Election]
+    H --> I{"Majority<br/>Achieved?"}
+    I -->|"No"| J["🔄 Retry Election"]
     J --> F
     
-    I -->|Yes| K[Secondary Promoted<br/>to New Primary]
-    K --> L[New Primary (Port 27017)<br/>Accepts ALL Read/Write]
+    I -->|"Yes"| K["🎯 <b>Secondary Promoted</b><br/>to New Primary"]
+    K --> L["✓ New Primary Port 27017<br/>Accepts ALL Read/Write"]
     
-    L --> M[Application Auto-Reconnects<br/>to New Primary]
-    M --> N[Failed Primary Detected]
+    L --> M["🔌 Application<br/>Auto-Reconnects to New Primary"]
+    M --> N["🔍 Failed Primary Detected"]
     
-    N --> O{Old Primary Can<br/>Restart?}
-    O -->|Yes| P[Restart mongod Process]
-    P --> Q[Rejoins as Secondary]
-    Q --> R[Syncs Latest Data<br/>from New Primary]
-    R --> S[Replica Set Healthy<br/>Primary + Secondary + Arbiter]
+    N --> O{"Old Primary<br/>Can Restart?"}
+    O -->|"Yes"| P["🔄 Restart mongod Process"]
+    P --> Q["➕ Rejoins as Secondary"]
+    Q --> R["🔄 Syncs Latest Data<br/>from New Primary"]
+    R --> S["✅ <b>Replica Set Healthy</b><br/>Primary + Secondary + Arbiter"]
     
-    O -->|No| T[Manual Intervention<br/>Required]
-    T --> U[Admin Investigates<br/>Root Cause]
-    U --> V{Can Fix?}
-    V -->|Yes| P
-    V -->|No| W[Run with 2 Nodes<br/>Reduced Redundancy]
+    O -->|"No"| T["⚠ Manual Intervention<br/>Required"]
+    T --> U["🔧 Admin Investigates<br/>Root Cause"]
+    U --> V{"Can Fix?"}
+    V -->|"Yes"| P
+    V -->|"No"| W["⚠ Run with 2 Nodes<br/>Reduced Redundancy"]
     
-    style A fill:#90EE90
-    style C fill:#FFE4B5
-    style D fill:#FFB6C1
-    style K fill:#87CEEB
-    style S fill:#90EE90
-    style W fill:#FFA500
+    classDef normalOps fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
+    classDef warning fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
+    classDef critical fill:#f8d7da,stroke:#721c24,stroke-width:3px,color:#000
+    classDef election fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
+    classDef success fill:#d1e7dd,stroke:#0a3622,stroke-width:3px,color:#000
+    
+    class A,S normalOps
+    class C,D,E,N,O warning
+    class T,U,W critical
+    class F,G,H,I,J election
+    class K,L,M,P,Q,R success
 ```
 
 **Failover Characteristics:**
@@ -536,27 +552,41 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph "DC Site - Real-Time Operations"
-        A[SOAR Application] --> B[DC MongoDB Primary<br/>Port 27017]
-        B --> C[Write to Database]
-        C --> D[Generate Oplog<br/>Entry]
-        D --> E[Local Replication<br/>to Secondary & Arbiter<br/>All on Port 27017]
+    subgraph DC["<b>🏢 DC Site - Real-Time Operations</b>"]
+        A["🖥 <b>SOAR Application</b>"] --> B["🔵 <b>DC MongoDB Primary</b><br/>Port 27017"]
+        B --> C["✍ Write to Database"]
+        C --> D["📋 Generate Oplog Entry"]
+        D --> E["🔄 Local Replication<br/>to Secondary & Arbiter<br/>All on Port 27017"]
     end
     
-    subgraph "Oplog Streaming"
-        D --> F[Oplog Stream<br/>Buffer]
-        F --> G{Network<br/>Available?}
-        G -->|No| H[Buffer Oplog<br/>Up to Window Size]
+    subgraph STREAM["<b>🌐 Oplog Streaming</b>"]
+        D --> F["📦 Oplog Stream Buffer"]
+        F --> G{"🔌 Network<br/>Available?"}
+        G -->|"No"| H["💾 Buffer Oplog<br/>Up to Window Size"]
         H --> G
-        G -->|Yes| I[Stream to DR<br/>Port 27017]
+        G -->|"Yes"| I["📤 Stream to DR<br/>Port 27017"]
     end
     
-    subgraph "DR Site - Near Real-Time"
-        I --> J[DR MongoDB<br/>Receives Oplog<br/>Port 27017]
-        J --> K[Apply Operations<br/>~1 minute lag]
-        K --> L[Update DR Data]
-        L --> M[Maintain Standby<br/>State]
-        M --> N{DC Available?}
+    subgraph DR["<b>🏢 DR Site - Near Real-Time</b>"]
+        I --> J["🔷 <b>DR MongoDB</b><br/>Receives Oplog<br/>Port 27017"]
+        J --> K["⚙ Apply Operations<br/>(~1 minute lag)"]
+        K --> L["💾 Update DR Data"]
+        L --> M["💤 Maintain Standby State"]
+        M --> N{"✓ DC Available?"}
+        N -->|"Yes"| J
+        N -->|"No"| O["⚡ Activate DR Services"]
+    end
+    
+    classDef dcStyle fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
+    classDef streamStyle fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
+    classDef drStyle fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
+    classDef alertStyle fill:#f8d7da,stroke:#721c24,stroke-width:3px,color:#000
+    
+    class A,B,C,D,E dcStyle
+    class F,G,H,I streamStyle
+    class J,K,L,M drStyle
+    class O alertStyle
+```
         N -->|Yes| J
         N -->|No| O[Health Check<br/>Triggers Activation]
         O --> P[Promote to Active<br/>Accept Writes]
@@ -578,22 +608,27 @@ graph TB
 
 ```mermaid
 graph LR
-    A[Write Operation<br/>at DC] -->|0 seconds| B[DC Primary<br/>Commits<br/>Port 27017]
-    B -->|< 1 second| C[Local Secondary<br/>Replicates<br/>Port 27017]
-    B -->|Heartbeat only| D[Arbiter<br/>No data<br/>Port 27017]
-    B -->|Network Latency| E[Oplog Transmission]
-    E -->|10-60 seconds| F[DR MongoDB<br/>Receives Oplog<br/>Port 27017]
-    F -->|Apply Time| G[DR Data Updated]
+    A["✍ <b>Write Operation</b><br/>at DC"] -->|"⚡ 0 seconds"| B["🔵 <b>DC Primary</b><br/>Commits<br/>Port 27017"]
+    B -->|"⚡ < 1 second"| C["🟢 Local Secondary<br/>Replicates<br/>Port 27017"]
+    B -->|"💓 Heartbeat only"| D["⚪ Arbiter<br/>No data<br/>Port 27017"]
+    B -->|"🌐 Network Latency"| E["📋 Oplog Transmission"]
+    E -->|"⏱ 10-60 seconds"| F["🔷 <b>DR MongoDB</b><br/>Receives Oplog<br/>Port 27017"]
+    F -->|"⚙ Apply Time"| G["💾 DR Data Updated"]
     
-    H[Typical Total Lag] -.-> I[~1 minute]
+    H["📊 Typical Total Lag"] -.->|"~1 minute"| I["⏱ ~1 minute"]
     
-    J[Network Issues?] -.-> K[Oplog Buffered<br/>at DC]
-    K -.-> L[Resumes When<br/>Network Restored]
+    J["⚠ Network Issues?"] -.-> K["💾 Oplog Buffered<br/>at DC"]
+    K -.->|"🔄 Auto-resume"| L["✓ Resumes When<br/>Network Restored"]
     
-    style B fill:#90EE90
-    style G fill:#87CEEB
-    style I fill:#FFE4B5
-    style K fill:#FFA500
+    classDef writeOps fill:#d4edda,stroke:#155724,stroke-width:2px,color:#000
+    classDef replication fill:#cfe2ff,stroke:#084298,stroke-width:2px,color:#000
+    classDef drOps fill:#fff3cd,stroke:#856404,stroke-width:2px,color:#000
+    classDef buffer fill:#f8d7da,stroke:#721c24,stroke-width:2px,color:#000
+    
+    class A,B,C writeOps
+    class E,F replication
+    class G,I drOps
+    class K buffer
 ```
 
 ### Data Integrity and Validation
@@ -678,107 +713,112 @@ Choose the mode that matches your RPO/RTO, network, and operational requirements
 
 ```mermaid
 flowchart TD
-    A[Choose HA/DR Strategy] --> B{What is your<br/>RPO requirement?}
+    A["🎯 <b>Choose HA/DR Strategy</b>"] --> B{"📊 What is your<br/>RPO requirement?"}
     
-    B -->|< 5 minutes| C[Hot Sync<br/>Recommended]
-    B -->|5-60 minutes| D{Network<br/>Bandwidth Available?}
-    B -->|> 60 minutes| E[Incremental Backup<br/>Recommended]
+    B -->|"< 5 minutes"| C["✅ <b>Hot Sync</b><br/>Recommended"]
+    B -->|"5-60 minutes"| D{"🌐 Network<br/>Bandwidth Available?"}
+    B -->|"> 60 minutes"| E["✅ <b>Incremental Backup</b><br/>Recommended"]
     
-    D -->|High Bandwidth| F{Prefer Automated<br/>Failover?}
-    D -->|Limited Bandwidth| E
+    D -->|"High Bandwidth"| F{"⚙ Prefer Automated<br/>Failover?"}
+    D -->|"Limited Bandwidth"| E
     
-    F -->|Yes| C
-    F -->|No - Manual Control| E
+    F -->|"Yes"| C
+    F -->|"No - Manual Control"| E
     
-    C --> G{Can Tolerate<br/>20min Detection?}
-    G -->|Yes| H[Deploy Hot Sync<br/>Default Configuration]
-    G -->|No| I[Reduce Detection<br/>Threshold to 5-10 min]
+    C --> G{"⏱ Can Tolerate<br/>20min Detection?"}
+    G -->|"Yes"| H["🚀 <b>Deploy Hot Sync</b><br/>Default Configuration"]
+    G -->|"No"| I["⚡ Reduce Detection<br/>Threshold to 5-10 min"]
     
-    E --> J{Need DR for<br/>Read Access?}
-    J -->|Yes| K[Deploy Incremental Backup<br/>Keep DR Active]
-    J -->|No| L[Deploy Incremental Backup<br/>DR Standby Mode]
+    E --> J{"📖 Need DR for<br/>Read Access?"}
+    J -->|"Yes"| K["🚀 <b>Deploy Incremental Backup</b><br/>Keep DR Active"]
+    J -->|"No"| L["🚀 <b>Deploy Incremental Backup</b><br/>DR Standby Mode"]
     
-    H --> M[Configure Oplog<br/>Retention 24-48 hours]
+    H --> M["⚙ Configure Oplog<br/>Retention 24-48 hours"]
     I --> M
-    K --> N[Configure Backup<br/>Interval 15-30 min]
+    K --> N["⚙ Configure Backup<br/>Interval 15-30 min"]
     L --> N
     
-    M --> O[Setup Complete]
+    M --> O["✅ <b>Setup Complete</b>"]
     N --> O
     
-    style A fill:#87CEEB
-    style C fill:#90EE90
-    style E fill:#FFE4B5
-    style H fill:#98FB98
-    style K fill:#DDA0DD
-    style O fill:#90EE90
+    classDef start fill:#cfe2ff,stroke:#084298,stroke-width:3px,color:#000
+    classDef hotSync fill:#d1e7dd,stroke:#0a3622,stroke-width:3px,color:#000
+    classDef backup fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
+    classDef deploy fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
+    classDef success fill:#d1e7dd,stroke:#0a3622,stroke-width:4px,color:#000
+    
+    class A start
+    class C,G,H,I,M hotSync
+    class E,J,K,L,N backup
+    class O success
 ```
 
 ### Complete HA/DR Architecture Summary
 
 ```mermaid
 graph TB
-    subgraph "OVERVIEW"
-        direction TB
-        TITLE[Zona Services HA/DR Architecture]
+    subgraph OVERVIEW["<b>🎯 OVERVIEW</b>"]
+        TITLE["<b>Securaa HA/DR Architecture</b>"]
     end
     
-    subgraph "LOCAL HA - Both Sites"
-        direction LR
-        LHA1[MongoDB Replica Set<br/>3 Processes per Server]
-        LHA2[Auto Failover<br/>15-35 seconds]
-        LHA3[Process-Level<br/>Redundancy]
+    subgraph LHA["<b>🔄 LOCAL HA - Both DC & DR Sites</b>"]
+        LHA1["<b>MongoDB Replica Set</b><br/>3 Processes per Server<br/>Port 27017"]
+        LHA2["<b>Auto Failover</b><br/>⏱ 15-35 seconds"]
+        LHA3["<b>Process-Level Redundancy</b><br/>Primary + Secondary + Arbiter"]
         
         LHA1 --> LHA2 --> LHA3
     end
     
-    subgraph "CROSS-SITE OPTION 1: Incremental Backup"
-        direction TB
-        IB1[Every 30 Minutes]
-        IB2[SCP Transfer Port 22]
-        IB3[DR Active State]
-        IB4[RPO: 30 min]
-        IB5[RTO: 30-60 min]
+    subgraph IB["<b>📦 OPTION 1: Incremental Backup & Restore</b>"]
+        IB1["⏱ Every 30 Minutes<br/>(Configurable)"]
+        IB2["🔒 SCP Transfer<br/>Port 22"]
+        IB3["✅ DR Active State<br/>(Services Running)"]
+        IB4["📊 RPO: 30 min"]
+        IB5["⏱ RTO: 30-60 min"]
         
         IB1 --> IB2 --> IB3
         IB4 -.-> IB5
     end
     
-    subgraph "CROSS-SITE OPTION 2: Hot Sync"
-        direction TB
-        HS1[Continuous Oplog<br/>Replication]
-        HS2[Port 27017 Stream]
-        HS3[DR Standby State]
-        HS4[RPO: ~1 min]
-        HS5[RTO: ~20-25 min]
+    subgraph HS["<b>⚡ OPTION 2: Hot Sync (Near Real-Time)</b>"]
+        HS1["🔄 Continuous Oplog<br/>Replication"]
+        HS2["🌐 Port 27017 Stream<br/>Real-time"]
+        HS3["💤 DR Standby State<br/>(Services Inactive)"]
+        HS4["📊 RPO: ~1 min"]
+        HS5["⏱ RTO: ~20-25 min"]
         
         HS1 --> HS2 --> HS3
         HS4 -.-> HS5
     end
     
-    subgraph "FAILOVER PROCESS"
-        direction LR
-        FO1[Detection] --> FO2[Validation]
-        FO2 --> FO3[Activation]
-        FO3 --> FO4[Redirection]
-        FO4 --> FO5[Monitoring]
+    subgraph FO["<b>🚨 FAILOVER PROCESS</b>"]
+        FO1["🔍 Detection"] --> FO2["✓ Validation"]
+        FO2 --> FO3["⚡ Activation"]
+        FO3 --> FO4["🔀 Redirection"]
+        FO4 --> FO5["📊 Monitoring"]
     end
     
     TITLE --> LHA1
     TITLE --> IB1
     TITLE --> HS1
     
-    LHA3 -.->|Combined with| IB1
-    LHA3 -.->|Combined with| HS1
+    LHA3 -.->|"Combined with"| IB1
+    LHA3 -.->|"Combined with"| HS1
     
     IB3 --> FO1
     HS3 --> FO1
     
-    style TITLE fill:#4169E1,color:#fff
-    style LHA1 fill:#32CD32,color:#fff
-    style IB1 fill:#FFD700
-    style HS1 fill:#FF6347,color:#fff
-    style FO1 fill:#9370DB,color:#fff
+    classDef titleStyle fill:#4169e1,stroke:#1e3a8a,stroke-width:4px,color:#fff,font-size:16px
+    classDef localHA fill:#d1e7dd,stroke:#0a3622,stroke-width:3px,color:#000
+    classDef backup fill:#fff3cd,stroke:#856404,stroke-width:3px,color:#000
+    classDef hotSync fill:#d4edda,stroke:#155724,stroke-width:3px,color:#000
+    classDef failover fill:#f8d7da,stroke:#721c24,stroke-width:3px,color:#000
+    
+    class TITLE titleStyle
+    class LHA1,LHA2,LHA3 localHA
+    class IB1,IB2,IB3,IB4,IB5 backup
+    class HS1,HS2,HS3,HS4,HS5 hotSync
+    class FO1,FO2,FO3,FO4,FO5 failover
 ```
 
 ---
