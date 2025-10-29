@@ -390,7 +390,6 @@ Estimated timings:
 #### Hot Sync Failover Flow
 
 ```mermaid
-```mermaid
 flowchart TD
     A["🟢 <b>DC Site Operating</b><br/>Oplog Streaming Active"] --> B["👤 <b>Administrator</b><br/>Monitors DC"]
     
