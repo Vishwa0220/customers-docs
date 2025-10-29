@@ -28,18 +28,18 @@ graph TB
     
     subgraph "TIP Service - Port 7000"
         TIP_API[TIP REST API<br/>zona_tip_batch/tip_services]
-        TIP_ES[(Elasticsearch<br/>Threat Intelligence DB)]
+        TIP_ES[("Elasticsearch<br/>Threat Intelligence DB")]
     end
     
     subgraph "CSAM Service - Port 8229"
         CSAM_API[CSAM REST API<br/>securaa_csam/services]
-        CSAM_ES[(Elasticsearch<br/>Asset & Vulnerability DB)]
+        CSAM_ES[("Elasticsearch<br/>Asset & Vulnerability DB")]
     end
     
     subgraph "External Integrations"
-        SIEM_TOOLS[SIEM Tools<br/>Graylog, Elastic, QRadar<br/>Splunk, Sentinel]
-        TI_FEEDS[TI Feed Sources<br/>Recorded Future, MISP<br/>Abuse.ch, Bambenek]
-        VULN_SCANNERS[Vulnerability Scanners<br/>Nessus, Qualys<br/>Cloud Scanners]
+        SIEM_TOOLS[SIEM Tools<br/>QRadar, Splunk, ArcSight<br/>Sentinel, RSA NetWitness]
+        TI_FEEDS[TI Feed Sources<br/>Recorded Future, VirusTotal<br/>Shodan, PassiveTotal, AlienVault]
+        VULN_SCANNERS[Vulnerability Scanners<br/>Nessus, Nexpose<br/>AWS, Azure]
     end
     
     %% Service Communication
@@ -87,11 +87,14 @@ graph TB
 The SOAR platform integrates with various SIEM tools for security event ingestion and incident management:
 
 #### Enterprise SIEM Solutions
-- **Graylog**: Open-source log management and analysis
-- **Elastic Security**: Elasticsearch-based security analytics
 - **IBM QRadar**: Enterprise SIEM with threat detection
+- **IBM QRadar on Cloud**: Cloud-based QRadar instances
 - **Splunk**: Data platform for security monitoring
+- **ArcSight ESM**: Enterprise security management
 - **Microsoft Sentinel**: Cloud-native SIEM solution
+- **RSA NetWitness**: Network detection and response
+- **Chronicle Security**: Google Cloud SIEM
+- **Elastic Security**: Elasticsearch-based security analytics
 
 #### Integration Methods
 - **REST API**: Direct API integration for event ingestion
@@ -127,15 +130,6 @@ sequenceDiagram
 
 ### SIEM Configuration Examples
 
-**Graylog Integration:**
-```yaml
-Connection_Type: "REST API"
-Endpoint: "https://graylog.company.com:9000/api"
-Authentication: "Bearer Token"
-Data_Format: "JSON"
-Event_Types: ["security_alert", "authentication", "network"]
-```
-
 **QRadar Integration:**
 ```yaml
 Connection_Type: "REST API"
@@ -143,6 +137,15 @@ Endpoint: "https://qradar.company.com/api/siem"
 Authentication: "SEC Token"
 Data_Format: "JSON"
 Offenses: "Auto-import high severity offenses"
+```
+
+**Splunk Integration:**
+```yaml
+Connection_Type: "REST API"
+Endpoint: "https://splunk.company.com:8089/services"
+Authentication: "Bearer Token"
+Data_Format: "JSON"
+Search_Queries: "SPL-based threat hunting"
 ```
 
 ---
@@ -157,7 +160,6 @@ The TIP service processes multiple threat intelligence sources through dedicated
 graph LR
     subgraph "Commercial TI Feeds"
         RF[Recorded Future<br/>tip_batch_rf]
-        THREATMON[ThreatMon<br/>Commercial IOCs]
     end
     
     subgraph "Open Source Feeds"
@@ -165,6 +167,7 @@ graph LR
         ABUSE[Abuse.ch<br/>tip_batch_abuse.ch]
         BAMBENEK[Bambenek<br/>tip_batch_bambenek]
         BLOCKLIST[Blocklist.de<br/>tip_batch_blocklist.de]
+        BOGONS[Team Cymru Bogons<br/>tip_batch_bogons]
     end
     
     subgraph "Specialized Feeds"
@@ -173,9 +176,21 @@ graph LR
         DANGER[Danger.rulez<br/>tip_batch_danger.rulez]
     end
     
+    subgraph "External Intelligence APIs"
+        VIRUSTOTAL[VirusTotal<br/>API Integration]
+        SHODAN[Shodan<br/>API Integration]
+        PASSIVETOTAL[PassiveTotal<br/>API Integration]
+        ALIENVAULT[AlienVault OTX<br/>API Integration]
+        IBMXFORCE[IBM X-Force<br/>API Integration]
+        THREATMINER[ThreatMiner<br/>API Integration]
+        ABUSEIPDB[AbuseIPDB<br/>API Integration]
+        URLSCAN[URLScan.io<br/>API Integration]
+        HYBRIDANALYSIS[Hybrid Analysis<br/>API Integration]
+    end
+    
     subgraph "TIP Service Processing"
         NORMALIZER[Data Normalizer]
-        STORAGE[(Elasticsearch<br/>Indicator Storage)]
+        STORAGE[("Elasticsearch<br/>Indicator Storage")]
         API[TIP REST API<br/>Port 7000]
     end
     
@@ -184,10 +199,19 @@ graph LR
     ABUSE --> NORMALIZER
     BAMBENEK --> NORMALIZER
     BLOCKLIST --> NORMALIZER
+    BOGONS --> NORMALIZER
     FIREBOG --> NORMALIZER
     BOTSCOUT --> NORMALIZER
     DANGER --> NORMALIZER
-    THREATMON --> NORMALIZER
+    VIRUSTOTAL --> NORMALIZER
+    SHODAN --> NORMALIZER
+    PASSIVETOTAL --> NORMALIZER
+    ALIENVAULT --> NORMALIZER
+    IBMXFORCE --> NORMALIZER
+    THREATMINER --> NORMALIZER
+    ABUSEIPDB --> NORMALIZER
+    URLSCAN --> NORMALIZER
+    HYBRIDANALYSIS --> NORMALIZER
     
     NORMALIZER --> STORAGE
     STORAGE --> API
@@ -197,11 +221,11 @@ graph LR
 
 | Indicator Type | Description | Sources |
 |----------------|-------------|---------|
-| **IP Addresses** | Malicious IPs, C2 servers | RF, Abuse.ch, Blocklist.de |
-| **Domain Names** | Malicious domains, DGA domains | RF, MISP, Bambenek |
-| **URLs** | Malicious URLs, phishing sites | RF, MISP, Firebog |
-| **File Hashes** | Malware hashes (MD5, SHA1, SHA256) | RF, MISP, Abuse.ch |
-| **Email Addresses** | Phishing/spam email addresses | RF, MISP, BotScout |
+| **IP Addresses** | Malicious IPs, C2 servers | Recorded Future, Abuse.ch, Blocklist.de, AbuseIPDB |
+| **Domain Names** | Malicious domains, DGA domains | Recorded Future, MISP, Bambenek, Firebog |
+| **URLs** | Malicious URLs, phishing sites | Recorded Future, MISP, URLScan.io, PhishTank |
+| **File Hashes** | Malware hashes (MD5, SHA1, SHA256) | Recorded Future, MISP, Abuse.ch, VirusTotal, Hybrid Analysis |
+| **Email Addresses** | Phishing/spam email addresses | Recorded Future, MISP, BotScout, HaveIBeenPwned |
 
 ### TI Feed Configuration
 
@@ -245,20 +269,29 @@ The CSAM service integrates with various vulnerability scanners and cloud platfo
 graph TB
     subgraph "Vulnerability Scanners"
         NESSUS[Nessus<br/>Tenable Scanner]
-        QUALYS[Qualys VMDR<br/>Cloud Scanner]
-        OPENVAS[OpenVAS<br/>Open Source Scanner]
-        RAPID7[Rapid7 InsightVM<br/>Scanner]
+        NEXPOSE[Nexpose<br/>Rapid7 Scanner]
     end
     
     subgraph "Cloud Platforms"
-        AWS[AWS Security<br/>Config, Inspector]
-        AZURE[Azure Security<br/>Security Center]
-        GCP[GCP Security<br/>Security Command]
+        AWS[AWS Security<br/>EC2, S3 Integration]
+        AZURE[Azure Security<br/>Compute Integration]
+    end
+    
+    subgraph "Network Security"
+        PALOALTO[Palo Alto<br/>Firewall Management]
+        CHECKPOINT[Check Point<br/>Security Gateway]
+        FORTINET[Fortinet<br/>FortiGate]
+    end
+    
+    subgraph "Endpoint Security"
+        SYMANTEC[Symantec<br/>Endpoint Protection]
+        TRENDMICRO[Trend Micro<br/>Deep Security]
+        DEFENDER[Microsoft Defender<br/>Endpoint Security]
     end
     
     subgraph "CSAM Service - Port 8229"
         ASSET_CTRL[Asset Controller<br/>Data Processing]
-        CSAM_DB[(Elasticsearch<br/>csam_{tenant})]
+        CSAM_DB[("Elasticsearch<br/>csam_{tenant}")]
         DASHBOARD_API[Dashboard API<br/>Metrics & Reports]
     end
     
@@ -268,13 +301,18 @@ graph TB
     end
     
     NESSUS --> ASSET_CTRL
-    QUALYS --> ASSET_CTRL
-    OPENVAS --> ASSET_CTRL
-    RAPID7 --> ASSET_CTRL
+    NEXPOSE --> ASSET_CTRL
     
     AWS --> ASSET_CTRL
     AZURE --> ASSET_CTRL
-    GCP --> ASSET_CTRL
+    
+    PALOALTO --> ASSET_CTRL
+    CHECKPOINT --> ASSET_CTRL
+    FORTINET --> ASSET_CTRL
+    
+    SYMANTEC --> ASSET_CTRL
+    TRENDMICRO --> ASSET_CTRL
+    DEFENDER --> ASSET_CTRL
     
     NVD --> ASSET_CTRL
     VENDOR_FEEDS --> ASSET_CTRL
@@ -286,12 +324,13 @@ graph TB
 ### Asset Management Features
 
 **Cloud Asset Discovery:**
-- **AWS**: EC2, S3, VPC, Security Groups, IAM
-- **Azure**: VMs, Storage, Networks, Security Groups
-- **GCP**: Compute, Storage, Networks, IAM
+- **AWS**: EC2 instances, S3 buckets
+- **Azure**: Virtual machines, compute resources
 
 **Vulnerability Assessment:**
-- **CVSS Scoring**: Risk prioritization based on CVSS scores
+- **Nessus**: Comprehensive vulnerability scanning
+- **Nexpose**: Rapid7 vulnerability management
+- **CVE Database**: National Vulnerability Database integration
 - **Asset Criticality**: Business impact assessment
 - **Patch Management**: Vulnerability remediation tracking
 - **Compliance Mapping**: Regulatory compliance status
@@ -305,6 +344,105 @@ graph TB
 | `/tasks/asset-info` | POST | Asset information tasks |
 | `/assets/export` | POST | Export asset data |
 | `/dashboarddata` | GET | Dashboard metrics |
+
+---
+
+## Comprehensive Integration Matrix
+
+### SIEM & Security Analytics (8 Platforms)
+| Platform | Category | Capabilities |
+|----------|----------|--------------|
+| **IBM QRadar** | Enterprise SIEM | Event correlation, offense management, search queries |
+| **IBM QRadar on Cloud** | Cloud SIEM | Cloud-based threat detection and response |
+| **Splunk Enterprise** | Data Analytics | Log analysis, dashboards, alert management |
+| **ArcSight ESM** | Enterprise SIEM | Real-time correlation, case management |
+| **Microsoft Sentinel** | Cloud SIEM | Azure-native security operations |
+| **RSA NetWitness** | NDR Platform | Network detection and response |
+| **Chronicle Security** | Cloud SIEM | Google Cloud security analytics |
+| **Elastic Security** | Open Source | Elasticsearch-based security monitoring |
+
+### Threat Intelligence Sources (19 Sources)
+| Source | Type | Feed Content |
+|--------|------|--------------|
+| **Recorded Future** | Commercial | Comprehensive threat intelligence |
+| **VirusTotal** | Freemium | File/URL reputation analysis |
+| **Shodan** | Freemium | Internet-connected device intelligence |
+| **PassiveTotal** | Commercial | DNS/WHOIS historical data |
+| **AlienVault OTX** | Open Source | Community threat intelligence |
+| **IBM X-Force** | Commercial | Enterprise threat intelligence |
+| **ThreatMiner** | Open Source | Threat data mining |
+| **AbuseIPDB** | Community | IP address reputation |
+| **URLScan.io** | Freemium | URL analysis and screenshots |
+| **Hybrid Analysis** | Freemium | Malware analysis sandbox |
+| **PhishTank** | Open Source | Phishing URL database |
+| **HaveIBeenPwned** | Freemium | Breach notification service |
+| **MISP Platform** | Open Source | Structured threat sharing |
+| **Abuse.ch** | Open Source | Malware and botnet feeds |
+| **Bambenek** | Open Source | Domain and IP intelligence |
+| **Blocklist.de** | Open Source | Attack source tracking |
+| **Team Cymru Bogons** | Open Source | Invalid IP space tracking |
+| **Firebog** | Open Source | DNS blocking lists |
+| **BotScout** | Open Source | Bot and spam detection |
+
+### Vulnerability Management (8 Tools)
+| Tool | Category | Capabilities |
+|------|----------|--------------|
+| **Nessus** | Vulnerability Scanner | Comprehensive vulnerability assessment |
+| **Nexpose** | Vulnerability Scanner | Rapid7 vulnerability management |
+| **CVE Database** | Vulnerability DB | National Vulnerability Database |
+| **AWS EC2** | Cloud Security | EC2 instance vulnerability scanning |
+| **AWS S3** | Cloud Security | S3 bucket security assessment |
+| **Azure Compute** | Cloud Security | Azure VM vulnerability management |
+| **Azure Security Center** | Cloud Security | Azure security posture management |
+| **Neutrino API** | IP Intelligence | IP geolocation and threat data |
+
+### Network Security (3 Platforms)
+| Platform | Category | Capabilities |
+|----------|----------|--------------|
+| **Palo Alto Networks** | Next-Gen Firewall | Traffic analysis, policy management |
+| **Check Point** | Security Gateway | Firewall management, threat prevention |
+| **Fortinet FortiGate** | UTM Platform | Unified threat management |
+
+### Endpoint Security (3 Solutions)
+| Solution | Category | Capabilities |
+|----------|----------|--------------|
+| **Symantec Endpoint** | Endpoint Protection | Antivirus, threat detection |
+| **Trend Micro Deep Security** | Endpoint Security | Server and workstation protection |
+| **Microsoft Defender** | Endpoint Detection | Windows endpoint security |
+
+### Identity & Access Management (4 Systems)
+| System | Category | Capabilities |
+|--------|----------|--------------|
+| **Active Directory** | Identity Provider | User authentication, directory services |
+| **Microsoft Outlook** | Email Security | Email threat detection |
+| **Azure Active Directory** | Cloud Identity | Cloud-based identity management |
+| **Security Token Service** | Authentication | Token-based authentication |
+
+### Communication & Collaboration (1 Platform)
+| Platform | Category | Capabilities |
+|----------|----------|--------------|
+| **Slack** | Team Communication | Alert notifications, incident collaboration |
+
+### ITSM Integration (1 Platform)
+| Platform | Category | Capabilities |
+|----------|----------|--------------|
+| **ServiceNow** | ITSM Platform | Ticket creation, workflow automation |
+
+### Specialized Security Tools (12 Tools)
+| Tool | Category | Purpose |
+|------|----------|---------|
+| **IPInfo** | IP Intelligence | IP geolocation and ASN data |
+| **Cymon** | Threat Intelligence | IP and domain reputation |
+| **DNSDB** | DNS Intelligence | Historical DNS data |
+| **MXToolbox** | Email Security | Email server analysis |
+| **StackPath IP Info** | IP Intelligence | Enhanced IP data |
+| **URLVoid** | URL Analysis | URL reputation checking |
+| **IPVoid** | IP Analysis | IP reputation analysis |
+| **MalShare** | Malware Samples | Malware sample sharing |
+| **Safe Browsing** | Web Security | Google Safe Browsing API |
+| **Phishing Initiative** | Anti-Phishing | Phishing URL detection |
+| **WhatIsMyBrowser** | Browser Analysis | Browser fingerprinting |
+| **Alexa Traffic** | Web Analytics | Website traffic analysis |
 
 ### Vulnerability Data Structure
 
@@ -485,7 +623,7 @@ graph LR
     
     subgraph "TIP Service (Port 7000)"
         TIP_API[TIP REST API<br/>Search & Management]
-        TIP_STORAGE[(Elasticsearch<br/>Indicator Storage)]
+        TIP_STORAGE[("Elasticsearch<br/>Indicator Storage")]
         BATCH_CONFIG[Batch Configuration<br/>Timing & Sources]
     end
     
@@ -543,7 +681,7 @@ graph TB
     
     subgraph "CSAM Service (Port 8229)"
         DATA_CONTROLLER[Data Controller<br/>Asset Management]
-        CSAM_ELASTIC[(Elasticsearch<br/>https://csamHost:9200)]
+        CSAM_ELASTIC[("Elasticsearch<br/>https://csamHost:9200")]
         DASHBOARD_CTRL[Dashboard Controller<br/>Metrics & Reporting]
         EXPORT_CTRL[Export Controller<br/>Data Export]
     end
