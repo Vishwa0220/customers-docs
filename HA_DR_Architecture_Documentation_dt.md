@@ -104,8 +104,8 @@ Key properties:
 The DR site maintains an identical 3-server MongoDB replica set architecture as the DC site (1 Primary + 1 Secondary with data + 1 Arbiter without data). DR activation is a **manual process** that requires administrator intervention.
 
 - **Manual DR Activation** — Administrators manually activate DR site during DC disasters
-- **Data Synchronization** — Manual periodic backups transferred over SCP (port 22) or manual oplog-based sync
-- **No Automatic Agents** — No automated backup/restore agents; synchronization performed manually or via manual cron jobs
+- **Data Synchronization** —  Periodic backups transferred over SCP (port 22) or oplog-based sync
+- **Automatic Agents** —   Automated backup/restore; synchronization performed via cron jobs
 - **Identical Architecture** — DR site has the same 3-server structure (1 Primary + 1 Secondary data-bearing + 1 Arbiter voting-only)
 
 Both synchronization approaches are described in the Disaster Recovery Setup section below.
