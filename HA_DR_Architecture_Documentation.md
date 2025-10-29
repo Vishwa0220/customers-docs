@@ -89,8 +89,7 @@ graph TB
     %% Primary Site Connections
     LB1 --> APP1
     LB1 --> APP2
-    LB2 --> APP2
-    LB2 --> APP3
+    LB1 --> APP3
     
     APP1 --> MONGO_P
     APP2 --> MONGO_S1
