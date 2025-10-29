@@ -2,297 +2,360 @@
 
 ## Executive Summary
 
-The SOAR (Security Orchestration, Automation and Response) platform serves as a central integration hub where CSAM (Cyber Security Asset Management) and TIP (Threat Intelligence Platform) applications can be integrated. The platform provides unified dashboards and integrations for threat intelligence feeds, investigation capabilities, case enrichment, and automated playbook execution.
+The SOAR (Security Orchestration, Automation and Response) platform serves as a central integration hub that connects with TIP (Threat Intelligence Platform) services and CSAM (Cyber Security Asset Management) services. The platform provides unified dashboards, threat intelligence integration, investigation capabilities, case enrichment, and automated playbook execution.
 
 ## Table of Contents
 
 1. [SOAR Platform Architecture](#soar-platform-architecture)
-2. [CSAM and TIP Integration](#csam-and-tip-integration)
-3. [Threat Intelligence Integration](#threat-intelligence-integration)
-4. [Investigation and Enrichment](#investigation-and-enrichment)
-5. [Vulnerability Management](#vulnerability-management)
+2. [TIP and CSAM Service Integration](#tip-and-csam-service-integration)
+3. [Threat Intelligence Processing](#threat-intelligence-processing)
+4. [Asset and Vulnerability Management](#asset-and-vulnerability-management)
+5. [Integration Patterns](#integration-patterns)
 
 ---
 
 ## SOAR Platform Architecture
 
-### Core Architecture Overview
+### Actual System Architecture
 
-The SOAR platform acts as a central orchestration layer with integrated CSAM and TIP applications deployed on separate machines, connected through secure integrations.
+Based on the codebase analysis, the platform consists of three main services running on different ports:
 
 ```mermaid
 graph TB
     subgraph "SOAR Platform (Main Machine)"
-        SOAR_CORE[SOAR Core Engine<br/>Orchestration & Automation]
-        MONGO_DB[(MongoDB<br/>SOAR Data Storage)]
-        INTEGRATIONS[Integration Layer<br/>API Connectors]
-        PLAYBOOKS[Playbook Engine<br/>Automated Workflows]
+        SOAR_CORE[SOAR Core Services<br/>Port: 443<br/>MongoDB Database]
+        PLAYBOOK_ENGINE[Playbook Engine<br/>Automated Workflows]
+        INTEGRATION_LAYER[Integration Layer<br/>REST API Connectors]
         DASHBOARD[Unified Dashboard<br/>Central Management]
+        MONGO_DB[(MongoDB<br/>SOAR Data Storage)]
     end
     
-    subgraph "CSAM Machine"
-        CSAM_APP[CSAM Application<br/>Asset Management]
-        ELASTIC_CSAM[(Elasticsearch<br/>CSAM Data Store)]
+    subgraph "TIP Service (Same/Different Machine)"
+        TIP_SERVICE[TIP Service<br/>Port: 7000<br/>zona_tip_batch/tip_services]
+        ELASTIC_TIP[(Elasticsearch<br/>TI Data Storage<br/>ESHostURL configured)]
     end
     
-    subgraph "TIP Machine"
-        TIP_APP[TIP Application<br/>Threat Intelligence]
-        ELASTIC_TIP[(Elasticsearch<br/>TI Data Store)]
+    subgraph "CSAM Service (Same/Different Machine)"
+        CSAM_SERVICE[CSAM Service<br/>Port: 8229<br/>securaa_csam/services]
+        ELASTIC_CSAM[(Elasticsearch<br/>CSAM Data Storage<br/>Port: 9200)]
     end
     
     subgraph "External Sources"
-        TI_FEEDS[Threat Intelligence Feeds<br/>Open Source & Commercial<br/>Recorded Future, MISP, etc.]
-        VULN_SCANNERS[Vulnerability Scanners<br/>Cloud Asset Scanning<br/>Application Security]
-        SIEM_SOURCES[SIEM Sources<br/>Graylog, Splunk<br/>Security Events]
+        TI_FEEDS[Threat Intelligence Feeds<br/>Batch Processing<br/>RF, MISP, etc.]
+        VULN_SCANNERS[Vulnerability Scanners<br/>Asset Discovery<br/>Cloud Platforms]
     end
     
     %% Core Connections
     SOAR_CORE --> MONGO_DB
-    SOAR_CORE --> INTEGRATIONS
-    SOAR_CORE --> PLAYBOOKS
+    SOAR_CORE --> PLAYBOOK_ENGINE
+    SOAR_CORE --> INTEGRATION_LAYER
     SOAR_CORE --> DASHBOARD
     
-    %% Integration Connections
-    INTEGRATIONS <--> CSAM_APP
-    INTEGRATIONS <--> TIP_APP
-    CSAM_APP --> ELASTIC_CSAM
-    TIP_APP --> ELASTIC_TIP
+    %% Service Connections via HTTPS
+    INTEGRATION_LAYER <-->|HTTPS tipHost:7000| TIP_SERVICE
+    INTEGRATION_LAYER <-->|HTTPS csamHost:8229| CSAM_SERVICE
+    
+    %% Data Storage
+    TIP_SERVICE --> ELASTIC_TIP
+    CSAM_SERVICE --> ELASTIC_CSAM
     
     %% External Integrations
-    INTEGRATIONS <--> TI_FEEDS
-    INTEGRATIONS <--> VULN_SCANNERS
-    INTEGRATIONS <--> SIEM_SOURCES
-    
-    %% Data Flow for Dashboards
-    ELASTIC_CSAM -.->|Pull Data| DASHBOARD
-    ELASTIC_TIP -.->|Pull Data| DASHBOARD
+    TI_FEEDS --> TIP_SERVICE
+    VULN_SCANNERS --> CSAM_SERVICE
     
     %% Styling
     classDef soarComponent fill:#e8f5e8
-    classDef appComponent fill:#fff2e8
+    classDef serviceComponent fill:#fff2e8
     classDef dataComponent fill:#e8f2ff
     classDef externalComponent fill:#ffe8e8
     
-    class SOAR_CORE,INTEGRATIONS,PLAYBOOKS,DASHBOARD soarComponent
-    class CSAM_APP,TIP_APP appComponent
-    class MONGO_DB,ELASTIC_CSAM,ELASTIC_TIP dataComponent
-    class TI_FEEDS,VULN_SCANNERS,SIEM_SOURCES externalComponent
+    class SOAR_CORE,PLAYBOOK_ENGINE,INTEGRATION_LAYER,DASHBOARD soarComponent
+    class TIP_SERVICE,CSAM_SERVICE serviceComponent
+    class MONGO_DB,ELASTIC_TIP,ELASTIC_CSAM dataComponent
+    class TI_FEEDS,VULN_SCANNERS externalComponent
 ```
 
 ### Key Components
 
 **SOAR Platform (Main Machine):**
-- **MongoDB Database**: Primary data storage for SOAR operations
-- **Integration Layer**: API connectors for external systems
-- **Playbook Engine**: Automated workflow execution
-- **Unified Dashboard**: Central management interface
+- **MongoDB Database**: Primary data storage for SOAR operations, cases, and configurations
+- **Integration Layer**: HTTPS API connectors to TIP and CSAM services
+- **Playbook Engine**: Automated workflow execution with task management
+- **Unified Dashboard**: Central management interface for all services
 
-**CSAM Application (Separate Machine):**
-- **Asset Management**: Cloud and application asset tracking
-- **Elasticsearch Database**: CSAM-specific data storage
-- **Vulnerability Dashboard**: Asset vulnerability visualization
+**TIP Service (Port 7000):**
+- **Service Location**: `zona_tip_batch/tip_services/main.go`
+- **Elasticsearch**: Threat intelligence data storage with configurable ESHostURL
+- **Batch Processing**: Multiple TI feed processors (RF, MISP, abuse.ch, etc.)
+- **REST API**: Search, import, association, and configuration endpoints
 
-**TIP Application (Separate Machine):**
-- **Threat Intelligence Processing**: TI feed management and analysis
-- **Elasticsearch Database**: Threat intelligence data storage
-- **TI Dashboard**: Threat intelligence visualization and analysis
+**CSAM Service (Port 8229):**
+- **Service Location**: `securaa_csam/services/main.go`
+- **Elasticsearch**: Asset and vulnerability data storage (Port 9200)
+- **Asset Management**: Cloud asset tracking and vulnerability assessment
+- **REST API**: Asset data, dashboard, and export endpoints
 
 ---
 
-## CSAM and TIP Integration
+## TIP and CSAM Service Integration
 
 ### Integration Architecture
 
-The SOAR platform integrates with CSAM and TIP applications deployed on separate machines, pulling data through secure API connections to provide unified dashboards and centralized management.
+The SOAR platform integrates with TIP and CSAM services via HTTPS REST API calls. The integration configuration is managed through host configuration parameters.
 
 ```mermaid
 sequenceDiagram
     participant SOAR as SOAR Platform
-    participant CSAM as CSAM Application
-    participant TIP as TIP Application
-    participant TI_FEED as TI Feeds
-    participant VULN as Vulnerability Scanners
+    participant TIP as TIP Service (Port 7000)
+    participant CSAM as CSAM Service (Port 8229)
+    participant ELASTIC_TIP as Elasticsearch (TIP)
+    participant ELASTIC_CSAM as Elasticsearch (CSAM)
     
-    Note over SOAR,VULN: Data Integration Flow
+    Note over SOAR,ELASTIC_CSAM: Threat Intelligence Flow
     
-    TI_FEED->>TIP: Real-time TI Data
-    TIP->>TIP: Process & Store in Elasticsearch
-    SOAR->>TIP: Pull TI Data via API
+    SOAR->>TIP: HTTPS tipHost:7000/search/{userid}/{indicator}/{tiptype}/
+    TIP->>ELASTIC_TIP: Query TI Database
+    ELASTIC_TIP->>TIP: Indicator Data Response
     TIP->>SOAR: Structured TI Information
     
-    VULN->>CSAM: Scan Results
-    CSAM->>CSAM: Process & Store in Elasticsearch
-    SOAR->>CSAM: Pull Asset/Vuln Data via API
-    CSAM->>SOAR: Asset & Vulnerability Information
+    Note over SOAR,ELASTIC_CSAM: Asset Information Flow
     
-    Note over SOAR,VULN: Dashboard & Investigation
+    SOAR->>CSAM: HTTPS csamHost:8229/assets?filterquery=...
+    CSAM->>ELASTIC_CSAM: Query Asset Database
+    ELASTIC_CSAM->>CSAM: Asset & Vulnerability Data
+    CSAM->>SOAR: Asset Information Response
     
-    SOAR->>SOAR: Combine Data for Unified View
-    SOAR->>SOAR: Execute Investigation Playbooks
-    SOAR->>SOAR: Enrich Cases with TI Data
+    Note over SOAR,ELASTIC_CSAM: Playbook Task Execution
+    
+    SOAR->>SOAR: Execute Playbook Task
+    SOAR->>TIP: HTTPS tipHost:7000/[task endpoint]
+    SOAR->>CSAM: HTTPS csamHost:8229/tasks/asset-info
 ```
 
-### Key Integration Features
+### Configuration Parameters
 
-**CSAM Integration:**
-- Asset inventory management and tracking
-- Vulnerability assessment data aggregation
-- Cloud asset scanning through integrated scanners
-- Real-time vulnerability dashboard updates
-- Automated vulnerability prioritization
+**TIP Service Configuration:**
+- **Host**: Configured via `tipHost` parameter
+- **Port**: 7000 (hardcoded in main.go)
+- **Protocol**: HTTPS with TLS certificates
+- **Elasticsearch**: Configurable ESHostURL (host:port)
 
-**TIP Integration:**
-- Threat intelligence feed management
-- IOC (Indicators of Compromise) processing
-- Threat actor and campaign tracking
-- Intelligence enrichment for investigations
-- Custom threat intelligence dashboards
+**CSAM Service Configuration:**
+- **Host**: Configured via `csamHost` parameter  
+- **Port**: 8229 (hardcoded in main.go)
+- **Protocol**: HTTPS with TLS certificates
+- **Elasticsearch**: https://csamHost:9200 (port 9200)
+
+### Service Integration Points
+
+**TIP Service Endpoints (Port 7000):**
+- `/search/{userid}/{indicator}/{tiptype}/` - Indicator search
+- `/datalist/` - Table data retrieval
+- `/settags/{indicator}/{tiptype}/` - Tag management
+- `/gethistory/{userid}` - Search history
+- `/importindicators/` - Indicator import
+- `/addassociates/` - Association management
+- `/exportindicator/` - Data export
+
+**CSAM Service Endpoints (Port 8229):**
+- `/assets` - Asset data retrieval
+- `/assets/{asset-id}/attribute/{attribute-type}` - Asset attributes
+- `/tasks/asset-info` - Asset information tasks
+- `/assets/export` - Asset data export
+- `/vulnerability-details/{cve-id}` - Vulnerability information
+- `/dashboarddata` - Dashboard metrics
 
 ---
 
-## Threat Intelligence Integration
+## Threat Intelligence Processing
 
-### Supported TI Feed Types
+### TIP Service Architecture
 
-The platform supports integration with various threat intelligence sources:
-
-**Open Source Feeds:**
-- MISP (Malware Information Sharing Platform)
-- OpenCTI (Open Cyber Threat Intelligence)
-- VirusTotal Community feeds
-- Government CERT feeds
-
-**Commercial Feeds:**
-- Recorded Future
-- ThreatConnect
-- ThreatMon
-- Anomali
-
-### TI Data Processing Flow
+The TIP service (`zona_tip_batch/tip_services`) processes threat intelligence from multiple sources and stores data in Elasticsearch.
 
 ```mermaid
 graph LR
-    subgraph "TI Feed Sources"
-        OPENSOURCE[Open Source Feeds<br/>MISP, OpenCTI]
-        COMMERCIAL[Commercial Feeds<br/>Recorded Future, etc.]
+    subgraph "TI Batch Processors"
+        RF_BATCH[tip_batch_rf<br/>Recorded Future]
+        ABUSE_BATCH[tip_batch_abuse.ch<br/>Abuse.ch Feeds]
+        MISP_BATCH[tip_batch_local<br/>MISP/Local Feeds]
+        BAMBENEK_BATCH[tip_batch_bambenek<br/>Bambenek Feeds]
     end
     
-    subgraph "TIP Application"
-        TI_PROCESSOR[TI Data Processor<br/>Normalization & Validation]
-        TI_STORAGE[(Elasticsearch<br/>TI Data Storage)]
-        TI_DASHBOARD[TI Dashboard<br/>Visualization & Analysis]
-    end
-    
-    subgraph "SOAR Platform"
-        INTEGRATION[Integration API<br/>Data Pull Service]
-        ENRICHMENT[Case Enrichment<br/>TI Correlation]
-        INVESTIGATION[Investigation Engine<br/>Automated Analysis]
-    end
-    
-    OPENSOURCE --> TI_PROCESSOR
-    COMMERCIAL --> TI_PROCESSOR
-    TI_PROCESSOR --> TI_STORAGE
-    TI_STORAGE --> TI_DASHBOARD
-    
-    TI_STORAGE --> INTEGRATION
-    INTEGRATION --> ENRICHMENT
-    ENRICHMENT --> INVESTIGATION
-```
-
----
-
-## Investigation and Enrichment
-
-### Automated Investigation Capabilities
-
-The SOAR platform performs automated investigations by correlating threat intelligence data with security events and enriching cases with contextual information.
-
-**Investigation Process:**
-1. **Data Collection**: Pull relevant TI data from TIP application
-2. **IOC Matching**: Correlate indicators with security events
-3. **Context Enrichment**: Add threat actor, campaign, and TTP information
-4. **Risk Assessment**: Calculate threat severity and impact
-5. **Playbook Execution**: Trigger appropriate response workflows
-
-### Case Enrichment Features
-
-- **Threat Actor Attribution**: Link incidents to known threat groups
-- **Campaign Tracking**: Identify related attack campaigns
-- **IOC Validation**: Verify indicators against multiple TI sources
-- **Timeline Analysis**: Correlate events across time periods
-- **Impact Assessment**: Evaluate potential business impact
-
----
-
-## Vulnerability Management
-
-### Cloud Asset Vulnerability Scanning
-
-The SOAR platform integrates with vulnerability scanners to provide comprehensive cloud asset security assessment through the CSAM application.
-
-```mermaid
-graph TB
-    subgraph "Vulnerability Scanning Workflow"
-        SCAN_TRIGGER[Scan Trigger<br/>Scheduled/On-demand]
-        ASSET_DISCOVERY[Asset Discovery<br/>Cloud Resources]
-        VULN_SCAN[Vulnerability Scan<br/>Application Security]
-        RESULT_PROCESSING[Result Processing<br/>Risk Prioritization]
-    end
-    
-    subgraph "CSAM Integration"
-        CSAM_STORAGE[(Elasticsearch<br/>Vuln Data Storage)]
-        CSAM_DASH[CSAM Dashboard<br/>Vulnerability View]
-        ASSET_INVENTORY[Asset Inventory<br/>Resource Tracking]
+    subgraph "TIP Service (Port 7000)"
+        TIP_API[TIP REST API<br/>Search & Management]
+        TIP_STORAGE[(Elasticsearch<br/>Indicator Storage)]
+        BATCH_CONFIG[Batch Configuration<br/>Timing & Sources]
     end
     
     subgraph "SOAR Integration"
-        SOAR_PULL[Data Pull Service<br/>API Integration]
-        VULN_DASHBOARD[Unified Dashboard<br/>Centralized View]
-        REMEDIATION[Remediation Playbooks<br/>Automated Response]
+        SEARCH_API[Search Controller<br/>GetIndicatorInfo]
+        TASK_EXEC[Task Execution<br/>Playbook Integration]
+        EXPORT_API[Export Controller<br/>Data Export]
     end
     
-    SCAN_TRIGGER --> ASSET_DISCOVERY
-    ASSET_DISCOVERY --> VULN_SCAN
-    VULN_SCAN --> RESULT_PROCESSING
-    RESULT_PROCESSING --> CSAM_STORAGE
+    RF_BATCH --> TIP_STORAGE
+    ABUSE_BATCH --> TIP_STORAGE
+    MISP_BATCH --> TIP_STORAGE
+    BAMBENEK_BATCH --> TIP_STORAGE
     
-    CSAM_STORAGE --> CSAM_DASH
-    CSAM_STORAGE --> ASSET_INVENTORY
-    CSAM_STORAGE --> SOAR_PULL
+    TIP_STORAGE --> TIP_API
+    TIP_API --> SEARCH_API
+    TIP_API --> TASK_EXEC
+    TIP_API --> EXPORT_API
     
-    SOAR_PULL --> VULN_DASHBOARD
-    VULN_DASHBOARD --> REMEDIATION
+    BATCH_CONFIG --> RF_BATCH
+    BATCH_CONFIG --> ABUSE_BATCH
 ```
 
-### Vulnerability Management Features
+### Elasticsearch Schema
 
-**Asset Management:**
-- Cloud resource inventory and classification
-- Application security assessment
-- Vulnerability prioritization and scoring
-- Compliance tracking and reporting
+**TIP Elasticsearch Configuration:**
+- **Connection**: HTTP/HTTPS configurable via ESHostURL
+- **Authentication**: Basic auth with ESUsername/ESPassword
+- **Index**: Configurable index name (ESIndex constant)
+- **Data Structure**: Indicator data with sources, timestamps, associations
 
-**Integration Capabilities:**
-- Automated scanning schedules
-- Real-time vulnerability data updates
-- Centralized dashboard views
-- Automated remediation workflows
+**Key Data Fields:**
+- `indicator`: The actual indicator value
+- `source`: Source of the intelligence (rf, misp, etc.)
+- `indicator_type`: Type (ip, domain, url, hash, email)
+- `updatedts`: Last update timestamp
+- `firstseen`: First seen timestamp
+- `othersources`: Array of additional sources for same indicator
+
+---
+
+## Asset and Vulnerability Management
+
+### CSAM Service Architecture
+
+The CSAM service (`securaa_csam/services`) manages cloud assets and vulnerability data with Elasticsearch storage.
+
+```mermaid
+graph TB
+    subgraph "Asset Data Sources"
+        CLOUD_SCANNERS[Cloud Scanners<br/>AWS, Azure, GCP]
+        VULN_SCANNERS[Vulnerability Scanners<br/>Nessus, Qualys]
+        IMPORT_DATA[Import Data<br/>CSV/JSON Import]
+    end
+    
+    subgraph "CSAM Service (Port 8229)"
+        DATA_CONTROLLER[Data Controller<br/>Asset Management]
+        CSAM_ELASTIC[(Elasticsearch<br/>https://csamHost:9200)]
+        DASHBOARD_CTRL[Dashboard Controller<br/>Metrics & Reporting]
+        EXPORT_CTRL[Export Controller<br/>Data Export]
+    end
+    
+    subgraph "Asset Management Features"
+        ASSET_QUERY[Asset Queries<br/>Filter & Search]
+        VULN_MGMT[Vulnerability Management<br/>CVE Details]
+        BH_ANALYTICS[Business Hierarchy<br/>Risk Analytics]
+        ALERT_INTEGRATION[Alert Integration<br/>SOAR Cases]
+    end
+    
+    CLOUD_SCANNERS --> DATA_CONTROLLER
+    VULN_SCANNERS --> DATA_CONTROLLER
+    IMPORT_DATA --> DATA_CONTROLLER
+    
+    DATA_CONTROLLER --> CSAM_ELASTIC
+    CSAM_ELASTIC --> DASHBOARD_CTRL
+    CSAM_ELASTIC --> EXPORT_CTRL
+    
+    CSAM_ELASTIC --> ASSET_QUERY
+    CSAM_ELASTIC --> VULN_MGMT
+    CSAM_ELASTIC --> BH_ANALYTICS
+    CSAM_ELASTIC --> ALERT_INTEGRATION
+```
+
+### CSAM Elasticsearch Configuration
+
+**Database Setup:**
+- **Connection**: https://csamHost:9200
+- **Authentication**: Basic auth (ESUsername/ESPassword)
+- **Index Pattern**: `csam_{tenantcode}` for tenant isolation
+- **Configuration Index**: `csam_config_{tenantcode}`
+
+**Asset Data Structure:**
+- **Asset Information**: IP, hostname, OS, business hierarchy
+- **Vulnerability Data**: CVE details, CVSS scores, scan results
+- **History Tracking**: Change history in `csam_{tenantcode}_history`
+- **Compliance Data**: Security compliance and risk ratings
+
+---
+
+## Integration Patterns
+
+### SOAR-TIP Integration
+
+**Search Integration:**
+```yaml
+Endpoint: "https://{tipHost}:7000/search/{userid}/{indicator}/{tiptype}/"
+Method: GET
+Purpose: Real-time indicator lookups from SOAR platform
+Response: Structured indicator data with sources and metadata
+```
+
+**Playbook Task Integration:**
+```yaml
+URL_Construction: "https://" + configobj["tipHost"] + ":7000" + task.RestURL
+Validation: URL must contain ":7000/" for TIP service identification
+Task_Types: Search, import, export, association management
+```
+
+### SOAR-CSAM Integration
+
+**Asset Query Integration:**
+```yaml
+Endpoint: "https://{csamHost}:8229/assets"
+Method: GET
+Parameters: filterquery for asset filtering
+Purpose: Asset discovery and vulnerability assessment
+Response: Asset data with vulnerability information
+```
+
+**Task Execution Integration:**
+```yaml
+URL_Construction: "https://" + configobj["csamHost"] + ":8229" + task.RestURL
+Task_Endpoint: "/tasks/asset-info"
+Purpose: Asset information retrieval for playbook tasks
+Response: Structured asset and vulnerability data
+```
+
+### Service Communication Patterns
+
+**Authentication:**
+- HTTPS with TLS certificates
+- Basic authentication for Elasticsearch
+- API key management for external integrations
+
+**Data Flow:**
+- Pull-based integration (SOAR queries services)
+- RESTful API communication
+- JSON data format
+- Error handling and retry mechanisms
+
+**Configuration Management:**
+- Host configuration via config files
+- Port configuration hardcoded in main.go files
+- Elasticsearch connection strings configurable
+- Service discovery via host:port patterns
 
 ---
 
 ## Conclusion
 
-The SOAR platform provides a centralized orchestration layer that integrates CSAM and TIP applications to deliver unified security operations. By combining threat intelligence feeds, vulnerability management, and automated investigation capabilities, organizations can achieve comprehensive security visibility and response automation.
+The SOAR platform provides a centralized orchestration layer that integrates with specialized TIP and CSAM services. The architecture supports:
 
 ### Key Benefits
 
-- **Unified Management**: Single platform for security operations coordination
-- **Enhanced Intelligence**: Combined threat intelligence and vulnerability data
-- **Automated Response**: Playbook-driven incident response and remediation
-- **Centralized Dashboards**: Consolidated view of security posture
-- **Scalable Architecture**: Distributed applications with centralized orchestration
+- **Service Separation**: TIP and CSAM services run independently with dedicated databases
+- **Scalable Architecture**: Services can be deployed on same or different machines
+- **RESTful Integration**: HTTPS API-based communication between services
+- **Data Isolation**: Elasticsearch databases provide service-specific data storage
+- **Flexible Configuration**: Configurable host settings for different deployment scenarios
 
-*This document provides an overview of the SOAR platform's integration architecture and capabilities for security operations management.*
+*This document reflects the actual implementation based on codebase analysis of zona_tip_batch and securaa_csam services.*
 
 ### Supported SIEM and Security Platforms
 
