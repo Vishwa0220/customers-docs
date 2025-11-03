@@ -39,6 +39,19 @@ This will create `SOAR_Architecture_SIEM_TI_Integration_Documentation.pdf` with:
 - No cut-off images or diagrams
 - Professional styling and formatting
 
+### Testing
+
+To verify the PDF was generated correctly:
+
+```bash
+npm test
+```
+
+This will validate:
+- PDF file exists and has reasonable size
+- All mermaid diagrams are present in source
+- Configuration files are properly set up
+
 ### PDF Generation Features
 
 - **Automatic Mermaid Diagram Rendering**: All mermaid diagrams in the markdown are converted to images in the PDF
