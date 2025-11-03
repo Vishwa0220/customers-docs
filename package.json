@@ -1,0 +1,16 @@
+{
+  "name": "customers-docs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "generate-pdf": "node generate-pdf.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "md-to-pdf": "^5.2.4"
+  }
+}
