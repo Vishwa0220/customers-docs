@@ -8,7 +8,7 @@ This repository contains technical documentation for various security architectu
 - `HA_DR_Architecture_Documentation.md` - High Availability and Disaster Recovery Architecture
 - `HA_DR_Architecture_Documentation_dt3.md` - High Availability and Disaster Recovery Architecture (DT3 variant)
 - `secura-customer-security-documentation.md` - Customer Security Documentation
-- `securaa-information-security-risk-assesment-process.md` - Information Security Risk Assessment Process
+- `securaa-information-security-risk-assessment-process.md` - Information Security Risk Assessment Process
 
 ## Generating PDFs
 
