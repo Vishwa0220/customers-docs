@@ -62,7 +62,7 @@ graph TB
         subgraph DR_HA["<b>SOAR DR HA Setup</b>"]
             DR_PRI["<b>PRIMARY</b><br/>Port: 27017<br/>IP: 203.0.113.10<br/>✓ Data Master"]
             DR_SEC1["<b>SECONDARY(optional)</b><br/>Port: 27017<br/>IP: 203.0.113.11<br/>✓ Data Replica"]
-            DR_SEC2["<b>SECONDARY (Arbiter)</b><br/>Port: 27017<br/>IP: 203.0.113.12<br/>✗ No Data<br/>✓ Voting Only"]
+            DR_SEC2["<b>SECONDARY (Arbiter - if only secondry exist)</b><br/>Port: 27017<br/>IP: 203.0.113.12<br/>✗ No Data<br/>✓ Voting Only"]
             
             DR_PRI ---|"Data Replication"| DR_SEC1
             DR_PRI -.->|"Heartbeat Only"| DR_SEC2
