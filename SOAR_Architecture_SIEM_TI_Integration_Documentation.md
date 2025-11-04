@@ -165,27 +165,17 @@ graph LR
     subgraph "Open Source Feeds"
         MISP[MISP Platform<br/>tip_batch_local]
         ABUSE[Abuse.ch<br/>tip_batch_abuse.ch]
-        BAMBENEK[Bambenek<br/>tip_batch_bambenek]
-        BLOCKLIST[Blocklist.de<br/>tip_batch_blocklist.de]
-        BOGONS[Team Cymru Bogons<br/>tip_batch_bogons]
     end
     
     subgraph "Specialized Feeds"
         FIREBOG[Firebog<br/>tip_batch_firebog]
         BOTSCOUT[BotScout<br/>tip_batch_botscout]
-        DANGER[Danger.rulez<br/>tip_batch_danger.rulez]
     end
     
     subgraph "External Intelligence APIs"
         VIRUSTOTAL[VirusTotal<br/>API Integration]
         SHODAN[Shodan<br/>API Integration]
         PASSIVETOTAL[PassiveTotal<br/>API Integration]
-        ALIENVAULT[AlienVault OTX<br/>API Integration]
-        IBMXFORCE[IBM X-Force<br/>API Integration]
-        THREATMINER[ThreatMiner<br/>API Integration]
-        ABUSEIPDB[AbuseIPDB<br/>API Integration]
-        URLSCAN[URLScan.io<br/>API Integration]
-        HYBRIDANALYSIS[Hybrid Analysis<br/>API Integration]
     end
     
     subgraph "TIP Service Processing"
@@ -197,21 +187,11 @@ graph LR
     RF --> NORMALIZER
     MISP --> NORMALIZER
     ABUSE --> NORMALIZER
-    BAMBENEK --> NORMALIZER
-    BLOCKLIST --> NORMALIZER
-    BOGONS --> NORMALIZER
     FIREBOG --> NORMALIZER
     BOTSCOUT --> NORMALIZER
-    DANGER --> NORMALIZER
     VIRUSTOTAL --> NORMALIZER
     SHODAN --> NORMALIZER
     PASSIVETOTAL --> NORMALIZER
-    ALIENVAULT --> NORMALIZER
-    IBMXFORCE --> NORMALIZER
-    THREATMINER --> NORMALIZER
-    ABUSEIPDB --> NORMALIZER
-    URLSCAN --> NORMALIZER
-    HYBRIDANALYSIS --> NORMALIZER
     
     NORMALIZER --> STORAGE
     STORAGE --> API
