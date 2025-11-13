@@ -84,7 +84,7 @@ This policy provides comprehensive secure coding guidelines for SECURAA developm
 
 ```mermaid
 mindmap
-  root((SECURE CODING<br/>PRINCIPLES))
+  root((SECURE CODING PRINCIPLES))
     Defense in Depth
       Multiple Security Layers
       Fail-Safe Defaults
@@ -969,7 +969,7 @@ graph TB
     end
     
     subgraph "Security Controls"
-        I[API Gateway<br/>KrakenD]
+        I[API Gateway - KrakenD]
         J[JWT Validation]
         K[RBAC Engine]
         L[WAF Rules]
