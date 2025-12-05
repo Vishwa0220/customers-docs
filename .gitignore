@@ -1,0 +1,25 @@
+# Build dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs (keep distribution folder)
+output/
+scripts/
+
+# Package files
+package.json
+package-lock.json

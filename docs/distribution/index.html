@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURAA Security Documentation Portal</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --text-color: #333;
+            --bg-color: #f8f9fa;
+            --card-bg: #fff;
+            --border-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 8px 16px;
+            color: var(--primary-color);
+            text-decoration: none;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Section Headers */
+        .section-header {
+            text-align: center;
+            margin: 50px 0 30px 0;
+        }
+
+        .section-header h2 {
+            font-size: 1.8em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .section-header p {
+            color: #666;
+        }
+
+        /* Document Grid */
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        /* Document Card */
+        .doc-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .doc-card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .doc-card-header h3 {
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .doc-card-header .category {
+            font-size: 0.8em;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .doc-card-body {
+            padding: 20px;
+        }
+
+        .doc-card-body p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .doc-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .doc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .doc-link.pdf {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .doc-link.pdf:hover {
+            background: #c0392b;
+        }
+
+        .doc-link.html {
+            background: #3498db;
+            color: white;
+        }
+
+        .doc-link.html:hover {
+            background: #2980b9;
+        }
+
+        /* Category Colors */
+        .card-sdlc .doc-card-header {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .card-security .doc-card-header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .card-architecture .doc-card-header {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .card-compliance .doc-card-header {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .footer p {
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Quick Links */
+        .quick-links {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .quick-links h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .quick-links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .quick-link-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .quick-link-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .quick-link-item svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+
+        /* Stats Section */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .doc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .nav-container, .footer {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1>SECURAA Security Documentation Portal</h1>
+        <p>Comprehensive security documentation including SDLC processes, architecture guides, compliance frameworks, and best practices</p>
+    </header>
+
+    <!-- Navigation -->
+    <div class="nav-container">
+        <nav>
+            <a href="#sdlc" class="nav-link">SDLC Documentation</a>
+            <a href="#security" class="nav-link">Security Policies</a>
+            <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="#compliance" class="nav-link">Compliance</a>
+            <a href="#all" class="nav-link">All Documents</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">15</div>
+                <div class="stat-label">Documents</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">85</div>
+                <div class="stat-label">Diagrams</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">6</div>
+                <div class="stat-label">SDLC Phases</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">530+</div>
+                <div class="stat-label">Microservices</div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+            <h3>Quick Access - Download All PDFs</h3>
+            <div class="quick-links-grid">
+                <a href="pdf/01_SDLC_Overview.pdf" class="quick-link-item" download>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM12 11l5 5h-3v4h-4v-4H7l5-5z"/></svg>
+                    SDLC Overview
+                </a>
+                <a href="pdf/HA_DR_Architecture_Documentation.pdf" class="quick-link-item" download>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM12 11l5 5h-3v4h-4v-4H7l5-5z"/></svg>
+                    HA/DR Architecture
+                </a>
+                <a href="pdf/SECURAA_SECURE_CODING_POLICY.pdf" class="quick-link-item" download>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM12 11l5 5h-3v4h-4v-4H7l5-5z"/></svg>
+                    Secure Coding Policy
+                </a>
+                <a href="pdf/SOAR_Architecture_SIEM_TI_Integration_Documentation.pdf" class="quick-link-item" download>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM12 11l5 5h-3v4h-4v-4H7l5-5z"/></svg>
+                    SOAR Architecture
+                </a>
+            </div>
+        </div>
+
+        <!-- SDLC Documentation Section -->
+        <section id="sdlc">
+            <div class="section-header">
+                <h2>SDLC Documentation</h2>
+                <p>Secure Software Development Lifecycle process documentation</p>
+            </div>
+
+            <div class="doc-grid">
+                <!-- SDLC Overview -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phase 1</span>
+                        <h3>SDLC Overview</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Executive summary and overview of SECURAA's comprehensive Secure Software Development Lifecycle, including core principles, technology stack, and infrastructure overview.</p>
+                        <div class="doc-links">
+                            <a href="pdf/01_SDLC_Overview.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/01_SDLC_Overview.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requirements Phase -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phase 2</span>
+                        <h3>Requirements Phase</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Security requirements gathering, threat modeling (STRIDE methodology), risk assessment, and compliance requirements documentation.</p>
+                        <div class="doc-links">
+                            <a href="pdf/02_Requirements_Phase.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/02_Requirements_Phase.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Design Phase -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phase 3</span>
+                        <h3>Design Phase</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Secure architecture design, security controls design, data flow analysis, and technology selection guidelines.</p>
+                        <div class="doc-links">
+                            <a href="pdf/03_Design_Phase.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/03_Design_Phase.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Development Phase -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phase 4</span>
+                        <h3>Development Phase</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Git workflow on AWS CodeCommit, branch strategy, secure coding standards, code review process, and pull request guidelines.</p>
+                        <div class="doc-links">
+                            <a href="pdf/04_Development_Phase.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/04_Development_Phase.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testing & Deployment -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phases 5-7</span>
+                        <h3>Testing, Build & Deployment</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>SAST, DAST, penetration testing, AWS CodeBuild integration, Docker container security, ECR image management, and operations.</p>
+                        <div class="doc-links">
+                            <a href="pdf/05_Testing_Build_Deployment_Operations.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/05_Testing_Build_Deployment_Operations.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CI/CD Pipeline -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">SDLC Phase 8</span>
+                        <h3>CI/CD Security Pipeline</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Automated security scanning, build pipeline security, deployment pipeline security, and security gates configuration.</p>
+                        <div class="doc-links">
+                            <a href="pdf/06_CI_CD_Security_Pipeline.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/06_CI_CD_Security_Pipeline.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SDLC Process Overview -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">Process Overview</span>
+                        <h3>SDLC Process Document</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Comprehensive SDLC process documentation covering all phases with detailed workflows and security controls.</p>
+                        <div class="doc-links">
+                            <a href="pdf/securaa-sdlc-process.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/securaa-sdlc-process.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- README -->
+                <div class="doc-card card-sdlc">
+                    <div class="doc-card-header">
+                        <span class="category">Navigation</span>
+                        <h3>SDLC README</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Quick navigation guide for the SDLC documentation suite with links to all sections and usage instructions.</p>
+                        <div class="doc-links">
+                            <a href="pdf/README.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/README.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security Policies Section -->
+        <section id="security">
+            <div class="section-header">
+                <h2>Security Policies & Standards</h2>
+                <p>Security policies, coding standards, and analysis reports</p>
+            </div>
+
+            <div class="doc-grid">
+                <!-- Secure Coding Policy -->
+                <div class="doc-card card-security">
+                    <div class="doc-card-header">
+                        <span class="category">Policy</span>
+                        <h3>Secure Coding Policy</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Comprehensive secure coding standards covering Go, JavaScript, Python, and shell scripting with OWASP Top 10 mitigation guidelines.</p>
+                        <div class="doc-links">
+                            <a href="pdf/SECURAA_SECURE_CODING_POLICY.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/SECURAA_SECURE_CODING_POLICY.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Analysis Report -->
+                <div class="doc-card card-security">
+                    <div class="doc-card-header">
+                        <span class="category">Report</span>
+                        <h3>Code Analysis Report</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Security code analysis findings, vulnerability assessment results, and remediation recommendations.</p>
+                        <div class="doc-links">
+                            <a href="pdf/SECURAA_CODE_ANALYSIS_REPORT.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/SECURAA_CODE_ANALYSIS_REPORT.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Security Documentation -->
+                <div class="doc-card card-security">
+                    <div class="doc-card-header">
+                        <span class="category">Customer Facing</span>
+                        <h3>Customer Security Documentation</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Customer-facing security overview including security features, compliance information, and data protection measures.</p>
+                        <div class="doc-links">
+                            <a href="pdf/secura-customer-security-documentation.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/secura-customer-security-documentation.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section id="architecture">
+            <div class="section-header">
+                <h2>Architecture Documentation</h2>
+                <p>System architecture, HA/DR design, and integration guides</p>
+            </div>
+
+            <div class="doc-grid">
+                <!-- HA/DR Architecture -->
+                <div class="doc-card card-architecture">
+                    <div class="doc-card-header">
+                        <span class="category">Architecture</span>
+                        <h3>HA/DR Architecture</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>High Availability and Disaster Recovery architecture including MongoDB replica sets, failover mechanisms, and data synchronization.</p>
+                        <div class="doc-links">
+                            <a href="pdf/HA_DR_Architecture_Documentation.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/HA_DR_Architecture_Documentation.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HA/DR Architecture DT3 -->
+                <div class="doc-card card-architecture">
+                    <div class="doc-card-header">
+                        <span class="category">Architecture</span>
+                        <h3>HA/DR Architecture (Detailed)</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Extended HA/DR documentation with detailed technical specifications, incremental backup processes, and recovery procedures.</p>
+                        <div class="doc-links">
+                            <a href="pdf/HA_DR_Architecture_Documentation_dt3.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/HA_DR_Architecture_Documentation_dt3.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOAR Architecture -->
+                <div class="doc-card card-architecture">
+                    <div class="doc-card-header">
+                        <span class="category">Integration</span>
+                        <h3>SOAR Architecture & SIEM Integration</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>SOAR platform architecture with SIEM and Threat Intelligence integration documentation covering 722+ integrations.</p>
+                        <div class="doc-links">
+                            <a href="pdf/SOAR_Architecture_SIEM_TI_Integration_Documentation.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/SOAR_Architecture_SIEM_TI_Integration_Documentation.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compliance Section -->
+        <section id="compliance">
+            <div class="section-header">
+                <h2>Compliance & Risk Assessment</h2>
+                <p>Risk assessment frameworks and compliance documentation</p>
+            </div>
+
+            <div class="doc-grid">
+                <!-- Risk Assessment -->
+                <div class="doc-card card-compliance">
+                    <div class="doc-card-header">
+                        <span class="category">Risk Management</span>
+                        <h3>Information Security Risk Assessment</h3>
+                    </div>
+                    <div class="doc-card-body">
+                        <p>Comprehensive risk assessment process documentation including risk identification, analysis, evaluation, and treatment procedures.</p>
+                        <div class="doc-links">
+                            <a href="pdf/securaa-information-security-risk-assesment-process.pdf" class="doc-link pdf" download>
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/></svg>
+                                PDF
+                            </a>
+                            <a href="html/securaa-information-security-risk-assesment-process.html" class="doc-link html" target="_blank">
+                                <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/></svg>
+                                View HTML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- All Documents Section -->
+        <section id="all">
+            <div class="section-header">
+                <h2>Complete Document List</h2>
+                <p>All documentation files with direct download links</p>
+            </div>
+
+            <div class="quick-links">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: white;">
+                            <th style="padding: 12px; text-align: left;">Document Name</th>
+                            <th style="padding: 12px; text-align: center; width: 100px;">PDF</th>
+                            <th style="padding: 12px; text-align: center; width: 100px;">HTML</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">01 - SDLC Overview</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/01_SDLC_Overview.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/01_SDLC_Overview.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">02 - Requirements Phase</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/02_Requirements_Phase.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/02_Requirements_Phase.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">03 - Design Phase</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/03_Design_Phase.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/03_Design_Phase.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">04 - Development Phase</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/04_Development_Phase.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/04_Development_Phase.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">05 - Testing, Build & Deployment</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/05_Testing_Build_Deployment_Operations.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/05_Testing_Build_Deployment_Operations.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">06 - CI/CD Security Pipeline</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/06_CI_CD_Security_Pipeline.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/06_CI_CD_Security_Pipeline.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">HA/DR Architecture Documentation</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/HA_DR_Architecture_Documentation.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/HA_DR_Architecture_Documentation.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">HA/DR Architecture (Detailed)</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/HA_DR_Architecture_Documentation_dt3.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/HA_DR_Architecture_Documentation_dt3.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">SECURAA Code Analysis Report</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/SECURAA_CODE_ANALYSIS_REPORT.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/SECURAA_CODE_ANALYSIS_REPORT.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">SECURAA Secure Coding Policy</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/SECURAA_SECURE_CODING_POLICY.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/SECURAA_SECURE_CODING_POLICY.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">SOAR Architecture & SIEM Integration</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/SOAR_Architecture_SIEM_TI_Integration_Documentation.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/SOAR_Architecture_SIEM_TI_Integration_Documentation.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">Customer Security Documentation</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/secura-customer-security-documentation.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/secura-customer-security-documentation.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">Information Security Risk Assessment</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/securaa-information-security-risk-assesment-process.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/securaa-information-security-risk-assesment-process.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">SDLC Process Document</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/securaa-sdlc-process.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/securaa-sdlc-process.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e0e0e0;">
+                            <td style="padding: 12px;">SDLC README</td>
+                            <td style="padding: 12px; text-align: center;"><a href="pdf/README.pdf" download style="color: #e74c3c;">Download</a></td>
+                            <td style="padding: 12px; text-align: center;"><a href="html/README.html" target="_blank" style="color: #3498db;">View</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p><strong>SECURAA Security Documentation Portal</strong></p>
+        <p>Confidential - For Customer Use Only</p>
+        <p>Generated: December 2025</p>
+        <p>Questions? Contact <a href="mailto:security@securaa.com">security@securaa.com</a></p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Active nav link highlighting
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (window.pageYOffset >= sectionTop - 150) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

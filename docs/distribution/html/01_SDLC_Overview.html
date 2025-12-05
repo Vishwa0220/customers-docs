@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>01 Sdlc Overview</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h3, h4, h5, h6 {
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+
+        code {
+            background-color: #f7f9fc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        blockquote {
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #ecf0f1;
+            font-style: italic;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .diagram {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
+
+        ul, ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            margin: 30px 0;
+        }
+
+        #TOC {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        #TOC h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        #TOC ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #TOC li {
+            padding: 3px 0;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            margin: -30px -30px 30px -30px;
+            text-align: center;
+        }
+
+        .header-section h1 {
+            color: white;
+            border: none;
+            margin: 0;
+        }
+
+        .header-section p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <h1>01 Sdlc Overview</h1>
+        <p>SECURAA Security Documentation</p>
+    </div>
+    <h1 id="securaa-secure-software-development-lifecycle-sdlc">SECURAA
+Secure Software Development Lifecycle (SDLC)</h1>
+<h2
+id="comprehensive-production-ready-sdlc-process-documentation">Comprehensive
+Production-Ready SDLC Process Documentation</h2>
+<hr />
+<h2 id="document-control">Document Control</h2>
+<table>
+<thead>
+<tr class="header">
+<th><strong>Document Title</strong></th>
+<th>SECURAA Secure SDLC Process - Overview</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Document ID</strong></td>
+<td>SECURAA-SDLC-001</td>
+</tr>
+<tr class="even">
+<td><strong>Version</strong></td>
+<td>2.0</td>
+</tr>
+<tr class="odd">
+<td><strong>Date</strong></td>
+<td>November 13, 2025</td>
+</tr>
+<tr class="even">
+<td><strong>Classification</strong></td>
+<td>Customer-Facing - Confidential</td>
+</tr>
+<tr class="odd">
+<td><strong>Owner</strong></td>
+<td>Engineering &amp; Security Team</td>
+</tr>
+<tr class="even">
+<td><strong>Review Cycle</strong></td>
+<td>Quarterly</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This document describes the comprehensive Secure Software Development
+Lifecycle (SDLC) implemented at SECURAA for developing, testing,
+deploying, and maintaining our Security Orchestration, Automation and
+Response (SOAR) platform. Our SDLC integrates security at every phase of
+development, from initial requirements gathering through production
+operations and maintenance.</p>
+<h3 id="key-highlights">Key Highlights</h3>
+<ul>
+<li><strong>Security-First Approach</strong>: Security integrated into
+every phase of development</li>
+<li><strong>Cloud-Native Infrastructure</strong>: Built on AWS services
+(CodeCommit, CodeBuild, ECR, IAM)</li>
+<li><strong>Automated Security</strong>: Continuous security testing and
+vulnerability scanning</li>
+<li><strong>Compliance-Ready</strong>: Aligned with SOC 2, ISO 27001,
+and GDPR requirements</li>
+<li><strong>Microservices Architecture</strong>: 530+ microservices with
+containerized deployment</li>
+<li><strong>Multi-Repository Structure</strong>: Organized codebase
+across specialized repositories</li>
+</ul>
+<h3 id="sdlc-process-overview">SDLC Process Overview</h3>
+<div class="diagram">
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 350.863px; background-color: white;" viewBox="0 0 350.86328125 902" role="graphics-document document" aria-roledescription="flowchart-v2">
+<style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:2.0px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape rect,#my-svg .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+<g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M171.665,62L165.248,66.167C158.831,70.333,145.998,78.667,139.581,86.333C133.164,94,133.164,101,133.164,104.5L133.164,108" id="L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTcxLjY2NTAzOTA2MjUsInkiOjYyfSx7IngiOjEzMy4xNjQwNjI1LCJ5Ijo4N30seyJ4IjoxMzMuMTY0MDYyNSwieSI6MTEyfV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,166L133.164,170.167C133.164,174.333,133.164,182.667,133.164,190.333C133.164,198,133.164,205,133.164,208.5L133.164,212" id="L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjE2Nn0seyJ4IjoxMzMuMTY0MDYyNSwieSI6MTkxfSx7IngiOjEzMy4xNjQwNjI1LCJ5IjoyMTZ9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,270L133.164,274.167C133.164,278.333,133.164,286.667,133.164,294.333C133.164,302,133.164,309,133.164,312.5L133.164,316" id="L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjI3MH0seyJ4IjoxMzMuMTY0MDYyNSwieSI6Mjk1fSx7IngiOjEzMy4xNjQwNjI1LCJ5IjozMjB9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,374L133.164,378.167C133.164,382.333,133.164,390.667,133.164,398.333C133.164,406,133.164,413,133.164,416.5L133.164,420" id="L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjM3NH0seyJ4IjoxMzMuMTY0MDYyNSwieSI6Mzk5fSx7IngiOjEzMy4xNjQwNjI1LCJ5Ijo0MjR9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,478L133.164,482.167C133.164,486.333,133.164,494.667,133.164,502.333C133.164,510,133.164,517,133.164,520.5L133.164,524" id="L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjQ3OH0seyJ4IjoxMzMuMTY0MDYyNSwieSI6NTAzfSx7IngiOjEzMy4xNjQwNjI1LCJ5Ijo1Mjh9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,582L133.164,586.167C133.164,590.333,133.164,598.667,133.164,606.333C133.164,614,133.164,621,133.164,624.5L133.164,628" id="L_F_G_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_G_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjU4Mn0seyJ4IjoxMzMuMTY0MDYyNSwieSI6NjA3fSx7IngiOjEzMy4xNjQwNjI1LCJ5Ijo2MzJ9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,686L133.164,690.167C133.164,694.333,133.164,702.667,133.164,710.333C133.164,718,133.164,725,133.164,728.5L133.164,732" id="L_G_H_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_G_H_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjY4Nn0seyJ4IjoxMzMuMTY0MDYyNSwieSI6NzExfSx7IngiOjEzMy4xNjQwNjI1LCJ5Ijo3MzZ9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M133.164,790L133.164,794.167C133.164,798.333,133.164,806.667,139.022,814.637C144.879,822.607,156.595,830.214,162.453,834.018L168.31,837.822" id="L_H_I_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_H_I_0" data-points="W3sieCI6MTMzLjE2NDA2MjUsInkiOjc5MH0seyJ4IjoxMzMuMTY0MDYyNSwieSI6ODE1fSx7IngiOjE3MS42NjUwMzkwNjI1LCJ5Ijo4NDB9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M254.827,840L261.244,835.833C267.661,831.667,280.494,823.333,286.911,810.5C293.328,797.667,293.328,780.333,293.328,763C293.328,745.667,293.328,728.333,293.328,711C293.328,693.667,293.328,676.333,293.328,659C293.328,641.667,293.328,624.333,293.328,607C293.328,589.667,293.328,572.333,293.328,555C293.328,537.667,293.328,520.333,293.328,503C293.328,485.667,293.328,468.333,293.328,451C293.328,433.667,293.328,416.333,293.328,399C293.328,381.667,293.328,364.333,293.328,347C293.328,329.667,293.328,312.333,293.328,295C293.328,277.667,293.328,260.333,293.328,243C293.328,225.667,293.328,208.333,293.328,191C293.328,173.667,293.328,156.333,293.328,139C293.328,121.667,293.328,104.333,287.47,91.863C281.613,79.393,269.897,71.786,264.04,67.982L258.182,64.178" id="L_I_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_I_A_0" data-points="W3sieCI6MjU0LjgyNzE0ODQzNzUsInkiOjg0MH0seyJ4IjoyOTMuMzI4MTI1LCJ5Ijo4MTV9LHsieCI6MjkzLjMyODEyNSwieSI6NzYzfSx7IngiOjI5My4zMjgxMjUsInkiOjcxMX0seyJ4IjoyOTMuMzI4MTI1LCJ5Ijo2NTl9LHsieCI6MjkzLjMyODEyNSwieSI6NjA3fSx7IngiOjI5My4zMjgxMjUsInkiOjU1NX0seyJ4IjoyOTMuMzI4MTI1LCJ5Ijo1MDN9LHsieCI6MjkzLjMyODEyNSwieSI6NDUxfSx7IngiOjI5My4zMjgxMjUsInkiOjM5OX0seyJ4IjoyOTMuMzI4MTI1LCJ5IjozNDd9LHsieCI6MjkzLjMyODEyNSwieSI6Mjk1fSx7IngiOjI5My4zMjgxMjUsInkiOjI0M30seyJ4IjoyOTMuMzI4MTI1LCJ5IjoxOTF9LHsieCI6MjkzLjMyODEyNSwieSI6MTM5fSx7IngiOjI5My4zMjgxMjUsInkiOjg3fSx7IngiOjI1NC44MjcxNDg0Mzc1LCJ5Ijo2Mn1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_E_F_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_G_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_G_H_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_H_I_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_I_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g></g><g class="nodes"><g class="node default" id="flowchart-A-0" transform="translate(213.24609375, 35)"><rect class="basic label-container" style="fill:#e3f2fd !important" x="-129.6171875" y="-27" width="259.234375" height="54"/><g class="label" style="" transform="translate(-99.6171875, -12)"><rect/><foreignObject width="199.234375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">1. Requirements &amp; Planning</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-B-1" transform="translate(133.1640625, 139)"><rect class="basic label-container" style="fill:#f3e5f5 !important" x="-91.3671875" y="-27" width="182.734375" height="54"/><g class="label" style="" transform="translate(-61.3671875, -12)"><rect/><foreignObject width="122.734375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">2. Secure Design</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-C-3" transform="translate(133.1640625, 243)"><rect class="basic label-container" style="fill:#e8f5e9 !important" x="-113.6015625" y="-27" width="227.203125" height="54"/><g class="label" style="" transform="translate(-83.6015625, -12)"><rect/><foreignObject width="167.203125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">3. Secure Development</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-D-5" transform="translate(133.1640625, 347)"><rect class="basic label-container" style="fill:#fff3e0 !important" x="-95.21875" y="-27" width="190.4375" height="54"/><g class="label" style="" transform="translate(-65.21875, -12)"><rect/><foreignObject width="130.4375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">4. Security Testing</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-E-7" transform="translate(133.1640625, 451)"><rect class="basic label-container" style="fill:#fce4ec !important" x="-88.2421875" y="-27" width="176.484375" height="54"/><g class="label" style="" transform="translate(-58.2421875, -12)"><rect/><foreignObject width="116.484375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">5. Build &amp; CI/CD</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-F-9" transform="translate(133.1640625, 555)"><rect class="basic label-container" style="fill:#e0f2f1 !important" x="-81.5859375" y="-27" width="163.171875" height="54"/><g class="label" style="" transform="translate(-51.5859375, -12)"><rect/><foreignObject width="103.171875" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">6. Deployment</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-G-11" transform="translate(133.1640625, 659)"><rect class="basic label-container" style="fill:#f1f8e9 !important" x="-125.1640625" y="-27" width="250.328125" height="54"/><g class="label" style="" transform="translate(-95.1640625, -12)"><rect/><foreignObject width="190.328125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">7. Operations &amp; Monitoring</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-H-13" transform="translate(133.1640625, 763)"><rect class="basic label-container" style="fill:#ffebee !important" x="-105.1640625" y="-27" width="210.328125" height="54"/><g class="label" style="" transform="translate(-75.1640625, -12)"><rect/><foreignObject width="150.328125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">8. Incident Response</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-I-15" transform="translate(213.24609375, 867)"><rect class="basic label-container" style="fill:#ede7f6 !important" x="-124.28125" y="-27" width="248.5625" height="54"/><g class="label" style="" transform="translate(-94.28125, -12)"><rect/><foreignObject width="188.5625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">9. Maintenance &amp; Updates</span>
+</div>
+</foreignObject></g></g></g></g></g>
+</svg>
+</div>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<p>This comprehensive SDLC documentation is organized into the following
+sections:</p>
+<ol type="1">
+<li><strong>SDLC Overview</strong> (This Document)
+<ul>
+<li>Executive Summary</li>
+<li>SDLC Principles</li>
+<li>Technology Stack</li>
+<li>Infrastructure Overview</li>
+<li>Document Navigation</li>
+</ul></li>
+<li><strong>Requirements &amp; Planning Phase</strong>
+<ul>
+<li>Security Requirements Gathering</li>
+<li>Threat Modeling</li>
+<li>Risk Assessment</li>
+<li>Compliance Requirements</li>
+</ul></li>
+<li><strong>Secure Design Phase</strong>
+<ul>
+<li>Architecture Security Review</li>
+<li>Data Flow Analysis</li>
+<li>Security Controls Design</li>
+<li>Technology Selection</li>
+</ul></li>
+<li><strong>Secure Development Phase</strong>
+<ul>
+<li>Git Workflow on AWS CodeCommit</li>
+<li>Branch Strategy</li>
+<li>Secure Coding Standards</li>
+<li>Code Review Process</li>
+<li>Pull Request Guidelines</li>
+</ul></li>
+<li><strong>Security Testing Phase</strong>
+<ul>
+<li>Static Application Security Testing (SAST)</li>
+<li>Dynamic Application Security Testing (DAST)</li>
+<li>Dependency Vulnerability Scanning</li>
+<li>Penetration Testing</li>
+<li>Security Acceptance Criteria</li>
+</ul></li>
+<li><strong>Build &amp; Deployment Phase</strong>
+<ul>
+<li>AWS CodeBuild Integration</li>
+<li>Docker Container Security</li>
+<li>ECR Image Management</li>
+<li>IAM Security Policies</li>
+<li>Deployment Automation</li>
+</ul></li>
+<li><strong>Operations &amp; Monitoring Phase</strong>
+<ul>
+<li>Security Monitoring</li>
+<li>Log Management</li>
+<li>Performance Monitoring</li>
+<li>Incident Detection</li>
+</ul></li>
+<li><strong>CI/CD Security Pipeline</strong>
+<ul>
+<li>Automated Security Scanning</li>
+<li>Build Pipeline Security</li>
+<li>Deployment Pipeline Security</li>
+</ul></li>
+</ol>
+<hr />
+<h2 id="sdlc-core-principles">SDLC Core Principles</h2>
+<h3 id="security-by-design">1. Security by Design</h3>
+<p>Security is not an afterthought but a fundamental requirement
+integrated from the earliest stages of development.</p>
+<p><strong>Implementation</strong>: - Threat modeling conducted for all
+new features - Security requirements defined alongside functional
+requirements - Security architecture review before implementation begins
+- Secure coding standards enforced through automated tools</p>
+<h3 id="defense-in-depth">2. Defense in Depth</h3>
+<p>Multiple layers of security controls protect against various threat
+vectors.</p>
+<p><strong>Implementation</strong>: - Network security (VPC, security
+groups, NACLs) - Application security (input validation, authentication,
+authorization) - Data security (encryption at rest and in transit) -
+Infrastructure security (IAM policies, least privilege access) -
+Monitoring and detection (logging, alerting, SIEM integration)</p>
+<h3 id="least-privilege">3. Least Privilege</h3>
+<p>Users, services, and applications are granted the minimum permissions
+necessary to perform their functions.</p>
+<p><strong>Implementation</strong>: - IAM roles with minimal required
+permissions - Service accounts with specific scope - Regular access
+reviews and permission audits - Time-bound elevated access for
+administrative tasks</p>
+<h3 id="continuous-security">4. Continuous Security</h3>
+<p>Security is continuously assessed and improved throughout the
+development lifecycle and production operations.</p>
+<p><strong>Implementation</strong>: - Automated security scanning in
+CI/CD pipeline - Regular vulnerability assessments - Continuous
+monitoring and alerting - Security metrics and KPIs tracking - Regular
+security training and awareness</p>
+<h3 id="shift-left-security">5. Shift Left Security</h3>
+<p>Security testing and validation occur as early as possible in the
+development process.</p>
+<p><strong>Implementation</strong>: - Security requirements in planning
+phase - Threat modeling during design - SAST tools during development -
+Pre-commit hooks for security checks - Automated security tests in
+CI/CD</p>
+<h3 id="automation-first">6. Automation First</h3>
+<p>Security processes are automated wherever possible to ensure
+consistency and reduce human error.</p>
+<p><strong>Implementation</strong>: - Automated security scanning (SAST,
+DAST, dependency checks) - Automated compliance checks - Automated
+deployment with security gates - Automated incident detection and
+alerting - Automated remediation for known issues</p>
+<hr />
+<h2 id="technology-stack">Technology Stack</h2>
+<h3 id="development-languages">Development Languages</h3>
+<table>
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 16%" />
+<col style="width: 21%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Language</th>
+<th>Usage</th>
+<th>Version</th>
+<th>Security Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Go</strong></td>
+<td>Backend services, microservices</td>
+<td>1.17+</td>
+<td>GoSec, Nancy, govulncheck</td>
+</tr>
+<tr class="even">
+<td><strong>JavaScript/React</strong></td>
+<td>Frontend UI</td>
+<td>React 18.2+</td>
+<td>ESLint Security, npm audit</td>
+</tr>
+<tr class="odd">
+<td><strong>Python</strong></td>
+<td>Utilities, batch processing</td>
+<td>3.8+</td>
+<td>Bandit, Safety</td>
+</tr>
+<tr class="even">
+<td><strong>Shell Script</strong></td>
+<td>Deployment automation</td>
+<td>Bash</td>
+<td>ShellCheck</td>
+</tr>
+</tbody>
+</table>
+<h3 id="infrastructure-devops">Infrastructure &amp; DevOps</h3>
+<div class="diagram">
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 1419.62px; background-color: white;" viewBox="0 0 1419.625 822" role="graphics-document document" aria-roledescription="flowchart-v2">
+<style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:2.0px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape rect,#my-svg .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+<g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"><g class="cluster" id="subGraph1" data-look="classic"><rect style="" x="886.453125" y="8" width="204.265625" height="436"/><g class="cluster-label" transform="translate(938.9296875, 8)"><foreignObject width="99.3125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Security Tools
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="cluster" id="subGraph0" data-look="classic"><rect style="" x="8" y="464" width="1403.625" height="350"/><g class="cluster-label" transform="translate(642.53125, 464)"><foreignObject width="134.5625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+AWS Infrastructure
+</p>
+</span>
+</div>
+</foreignObject></g></g></g><g class="edgePaths"><path d="M405.406,526L409.573,526C413.74,526,422.073,526,429.764,526.975C437.455,527.95,444.503,529.9,448.027,530.874L451.551,531.849" id="L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6NDA1LjQwNjI1LCJ5Ijo1MjZ9LHsieCI6NDMwLjQwNjI1LCJ5Ijo1MjZ9LHsieCI6NDU1LjQwNjI1LCJ5Ijo1MzIuOTE1NzgzNjAyOTAwMn1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M616.266,584L622.644,586.333C629.021,588.667,641.776,593.333,651.682,596.724C661.587,600.114,668.643,602.228,672.172,603.286L675.7,604.343" id="L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6NjE2LjI2NjAwNjA5NzU2MSwieSI6NTg0fSx7IngiOjY1NC41MzEyNSwieSI6NTk4fSx7IngiOjY3OS41MzEyNSwieSI6NjA1LjQ5MDc0OTgzMDA5ODl9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M803.786,656L813.397,661.667C823.009,667.333,842.231,678.667,856.009,684.333C869.786,690,878.12,690,891.326,695.487C904.532,700.975,922.611,711.95,931.65,717.437L940.689,722.924" id="L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6ODAzLjc4NjM3Mjk1MDgxOTcsInkiOjY1Nn0seyJ4Ijo4NjEuNDUzMTI1LCJ5Ijo2OTB9LHsieCI6ODg2LjQ1MzEyNSwieSI6NjkwfSx7IngiOjk0NC4xMDg3NDQ5NTk2Nzc0LCJ5Ijo3MjV9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1065.719,752L1069.885,752C1074.052,752,1082.385,752,1090.719,752C1099.052,752,1107.385,752,1115.052,752C1122.719,752,1129.719,752,1133.219,752L1136.719,752" id="L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6MTA2NS43MTg3NSwieSI6NzUyfSx7IngiOjEwOTAuNzE4NzUsInkiOjc1Mn0seyJ4IjoxMTE1LjcxODc1LCJ5Ijo3NTJ9LHsieCI6MTE0MC43MTg3NSwieSI6NzUyfV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M126.449,582L136.499,572.667C146.549,563.333,166.65,544.667,180.2,535.333C193.75,526,200.75,526,204.25,526L207.75,526" id="L_F_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_A_0" data-points="W3sieCI6MTI2LjQ0ODc5NTE4MDcyMjksInkiOjU4Mn0seyJ4IjoxODYuNzUsInkiOjUyNn0seyJ4IjoyMTEuNzUsInkiOjUyNn1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M161.75,593.874L165.917,592.895C170.083,591.916,178.417,589.958,202.888,588.979C227.359,588,267.969,588,308.578,588C349.188,588,389.797,588,413.626,587.025C437.455,586.05,444.503,584.1,448.027,583.126L451.551,582.151" id="L_F_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_B_0" data-points="W3sieCI6MTYxLjc1LCJ5Ijo1OTMuODc0MTI1ODc0MTI1OX0seyJ4IjoxODYuNzUsInkiOjU4OH0seyJ4IjozMDguNTc4MTI1LCJ5Ijo1ODh9LHsieCI6NDMwLjQwNjI1LCJ5Ijo1ODh9LHsieCI6NDU1LjQwNjI1LCJ5Ijo1ODEuMDg0MjE2Mzk3MDk5OH1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M161.75,630.608L165.917,632.007C170.083,633.406,178.417,636.203,202.888,637.601C227.359,639,267.969,639,308.578,639C349.188,639,389.797,639,428.779,639C467.76,639,505.115,639,542.469,639C579.823,639,617.177,639,639.357,638.661C661.537,638.323,668.544,637.646,672.047,637.307L675.55,636.968" id="L_F_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_C_0" data-points="W3sieCI6MTYxLjc1LCJ5Ijo2MzAuNjA4MzkxNjA4MzkxNn0seyJ4IjoxODYuNzUsInkiOjYzOX0seyJ4IjozMDguNTc4MTI1LCJ5Ijo2Mzl9LHsieCI6NDMwLjQwNjI1LCJ5Ijo2Mzl9LHsieCI6NTQyLjQ2ODc1LCJ5Ijo2Mzl9LHsieCI6NjU0LjUzMTI1LCJ5Ijo2Mzl9LHsieCI6Njc5LjUzMTI1LCJ5Ijo2MzYuNTgzNjI5MDg3MDY0OX1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M113.045,636L125.329,657.167C137.613,678.333,162.182,720.667,194.77,741.833C227.359,763,267.969,763,308.578,763C349.188,763,389.797,763,428.779,763C467.76,763,505.115,763,542.469,763C579.823,763,617.177,763,653.098,763C689.018,763,723.505,763,757.992,763C792.479,763,826.966,763,848.376,763C869.786,763,878.12,763,885.79,762.623C893.461,762.245,900.468,761.491,903.972,761.113L907.476,760.736" id="L_F_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_D_0" data-points="W3sieCI6MTEzLjA0NDY0Mjg1NzE0Mjg2LCJ5Ijo2MzZ9LHsieCI6MTg2Ljc1LCJ5Ijo3NjN9LHsieCI6MzA4LjU3ODEyNSwieSI6NzYzfSx7IngiOjQzMC40MDYyNSwieSI6NzYzfSx7IngiOjU0Mi40Njg3NSwieSI6NzYzfSx7IngiOjY1NC41MzEyNSwieSI6NzYzfSx7IngiOjc1Ny45OTIxODc1LCJ5Ijo3NjN9LHsieCI6ODYxLjQ1MzEyNSwieSI6NzYzfSx7IngiOjg4Ni40NTMxMjUsInkiOjc2M30seyJ4Ijo5MTEuNDUzMTI1LCJ5Ijo3NjAuMzA3NDI3NTIyMzc0NH1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M348.692,728L362.311,737.167C375.93,746.333,403.168,764.667,435.464,773.833C467.76,783,505.115,783,542.469,783C579.823,783,617.177,783,653.098,783C689.018,783,723.505,783,757.992,783C792.479,783,826.966,783,848.376,783C869.786,783,878.12,783,885.815,781.929C893.511,780.858,900.568,778.716,904.097,777.645L907.626,776.574" id="L_G_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_G_D_0" data-points="W3sieCI6MzQ4LjY5MjI2MzcxOTUxMjIsInkiOjcyOH0seyJ4Ijo0MzAuNDA2MjUsInkiOjc4M30seyJ4Ijo1NDIuNDY4NzUsInkiOjc4M30seyJ4Ijo2NTQuNTMxMjUsInkiOjc4M30seyJ4Ijo3NTcuOTkyMTg3NSwieSI6NzgzfSx7IngiOjg2MS40NTMxMjUsInkiOjc4M30seyJ4Ijo4ODYuNDUzMTI1LCJ5Ijo3ODN9LHsieCI6OTExLjQ1MzEyNSwieSI6Nzc1LjQxMTg0MTE5OTQxODZ9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M343.948,674L358.357,663C372.767,652,401.587,630,424.179,615.276C446.771,600.552,463.136,593.105,471.318,589.381L479.501,585.657" id="L_G_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_G_B_0" data-points="W3sieCI6MzQzLjk0NzU4MDY0NTE2MTMsInkiOjY3NH0seyJ4Ijo0MzAuNDA2MjUsInkiOjYwOH0seyJ4Ijo0ODMuMTQxNTQ0MTE3NjQ3MSwieSI6NTg0fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M591.27,530L601.814,524.167C612.357,518.333,633.444,506.667,661.231,500.833C689.018,495,723.505,495,757.992,495C792.479,495,826.966,495,848.376,495C869.786,495,878.12,495,898.071,429.315C918.023,363.63,949.593,232.26,965.378,166.574L981.163,100.889" id="L_B_H_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_H_0" data-points="W3sieCI6NTkxLjI3MDE2MTI5MDMyMjYsInkiOjUzMH0seyJ4Ijo2NTQuNTMxMjUsInkiOjQ5NX0seyJ4Ijo3NTcuOTkyMTg3NSwieSI6NDk1fSx7IngiOjg2MS40NTMxMjUsInkiOjQ5NX0seyJ4Ijo4ODYuNDUzMTI1LCJ5Ijo0OTV9LHsieCI6OTgyLjA5NzUsInkiOjk3fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M614.509,530L621.179,527.5C627.85,525,641.19,520,665.104,517.5C689.018,515,723.505,515,757.992,515C792.479,515,826.966,515,848.376,515C869.786,515,878.12,515,897.77,463.305C917.419,411.611,948.385,308.221,963.868,256.527L979.352,204.832" id="L_B_I_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_I_0" data-points="W3sieCI6NjE0LjUwODkyODU3MTQyODYsInkiOjUzMH0seyJ4Ijo2NTQuNTMxMjUsInkiOjUxNX0seyJ4Ijo3NTcuOTkyMTg3NSwieSI6NTE1fSx7IngiOjg2MS40NTMxMjUsInkiOjUxNX0seyJ4Ijo4ODYuNDUzMTI1LCJ5Ijo1MTV9LHsieCI6OTgwLjQ5OTE3NTIxOTk0MTMsInkiOjIwMX1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M629.531,557L633.698,557C637.865,557,646.198,557,667.608,557C689.018,557,723.505,557,757.992,557C792.479,557,826.966,557,848.376,557C869.786,557,878.12,557,897.432,515.626C916.744,474.252,947.036,391.504,962.181,350.13L977.327,308.756" id="L_B_J_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_J_0" data-points="W3sieCI6NjI5LjUzMTI1LCJ5Ijo1NTd9LHsieCI6NjU0LjUzMTI1LCJ5Ijo1NTd9LHsieCI6NzU3Ljk5MjE4NzUsInkiOjU1N30seyJ4Ijo4NjEuNDUzMTI1LCJ5Ijo1NTd9LHsieCI6ODg2LjQ1MzEyNSwieSI6NTU3fSx7IngiOjk3OC43MDIxMTY5MzU0ODM5LCJ5IjozMDV9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M836.453,605.491L840.62,604.242C844.786,602.994,853.12,600.497,861.453,599.248C869.786,598,878.12,598,896.896,567.103C915.672,536.205,944.891,474.411,959.5,443.513L974.109,412.616" id="L_C_K_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_K_0" data-points="W3sieCI6ODM2LjQ1MzEyNSwieSI6NjA1LjQ5MDc0OTgzMDA5ODl9LHsieCI6ODYxLjQ1MzEyNSwieSI6NTk4fSx7IngiOjg4Ni40NTMxMjUsInkiOjU5OH0seyJ4Ijo5NzUuODE5MzM1OTM3NSwieSI6NDA5fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_G_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_G_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_H_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_I_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_J_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_K_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g></g><g class="nodes"><g class="node default" id="flowchart-A-0" transform="translate(308.578125, 526)"><rect class="basic label-container" style="fill:#ff9800 !important" x="-96.828125" y="-27" width="193.65625" height="54"/><g class="label" style="" transform="translate(-66.828125, -12)"><rect/><foreignObject width="133.65625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+AWS CodeCommit
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-B-1" transform="translate(542.46875, 557)"><rect class="basic label-container" style="fill:#ff9800 !important" x="-87.0625" y="-27" width="174.125" height="54"/><g class="label" style="" transform="translate(-57.0625, -12)"><rect/><foreignObject width="114.125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+AWS CodeBuild
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-C-3" transform="translate(757.9921875, 629)"><rect class="basic label-container" style="fill:#ff9800 !important" x="-78.4609375" y="-27" width="156.921875" height="54"/><g class="label" style="" transform="translate(-48.4609375, -12)"><rect/><foreignObject width="96.921875" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Amazon ECR
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-D-5" transform="translate(988.5859375, 752)"><rect class="basic label-container" style="fill:#ff9800 !important" x="-77.1328125" y="-27" width="154.265625" height="54"/><g class="label" style="" transform="translate(-47.1328125, -12)"><rect/><foreignObject width="94.265625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Amazon EC2
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-E-7" transform="translate(1263.671875, 752)"><rect class="basic label-container" style="" x="-122.953125" y="-27" width="245.90625" height="54"/><g class="label" style="" transform="translate(-92.953125, -12)"><rect/><foreignObject width="185.90625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Application Load Balancer
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-F-8" transform="translate(97.375, 609)"><rect class="basic label-container" style="fill:#e91e63 !important" x="-64.375" y="-27" width="128.75" height="54"/><g class="label" style="" transform="translate(-34.375, -12)"><rect/><foreignObject width="68.75" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+AWS IAM
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-G-16" transform="translate(308.578125, 701)"><rect class="basic label-container" style="fill:#2196f3 !important" x="-73.28125" y="-27" width="146.5625" height="54"/><g class="label" style="" transform="translate(-43.28125, -12)"><rect/><foreignObject width="86.5625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+CloudWatch
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-H-20" transform="translate(988.5859375, 70)"><rect class="basic label-container" style="" x="-54.4609375" y="-27" width="108.921875" height="54"/><g class="label" style="" transform="translate(-24.4609375, -12)"><rect/><foreignObject width="48.921875" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+GoSec
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-I-21" transform="translate(988.5859375, 174)"><rect class="basic label-container" style="" x="-77.125" y="-27" width="154.25" height="54"/><g class="label" style="" transform="translate(-47.125, -12)"><rect/><foreignObject width="94.25" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+OWASP ZAP
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-J-22" transform="translate(988.5859375, 278)"><rect class="basic label-container" style="" x="-52.6796875" y="-27" width="105.359375" height="54"/><g class="label" style="" transform="translate(-22.6796875, -12)"><rect/><foreignObject width="45.359375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Nancy
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-K-23" transform="translate(988.5859375, 382)"><rect class="basic label-container" style="" x="-75.796875" y="-27" width="151.59375" height="54"/><g class="label" style="" transform="translate(-45.796875, -12)"><rect/><foreignObject width="91.59375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Docker Scan
+</p>
+</span>
+</div>
+</foreignObject></g></g></g></g></g>
+</svg>
+</div>
+<p><strong>Core Infrastructure Components</strong>:</p>
+<ol type="1">
+<li><strong>AWS CodeCommit</strong>
+<ul>
+<li>Private Git repositories</li>
+<li>Branch protection rules</li>
+<li>Pull request workflows</li>
+<li>IAM-based access control</li>
+</ul></li>
+<li><strong>AWS CodeBuild</strong>
+<ul>
+<li>Automated build pipeline</li>
+<li>Security scanning integration</li>
+<li>Docker image building</li>
+<li>Artifact generation (RPM packages)</li>
+</ul></li>
+<li><strong>Amazon ECR (Elastic Container Registry)</strong>
+<ul>
+<li>Private Docker image registry</li>
+<li>Image vulnerability scanning</li>
+<li>Image signing and verification</li>
+<li>Lifecycle policies for image management</li>
+</ul></li>
+<li><strong>AWS IAM (Identity and Access Management)</strong>
+<ul>
+<li>Role-based access control (RBAC)</li>
+<li>Service roles for automation</li>
+<li>Policy-based permissions</li>
+<li>Multi-factor authentication (MFA)</li>
+</ul></li>
+<li><strong>Amazon EC2</strong>
+<ul>
+<li>Application hosting</li>
+<li>Security groups for network isolation</li>
+<li>Encrypted EBS volumes</li>
+<li>Systems Manager for patch management</li>
+</ul></li>
+<li><strong>AWS CloudWatch</strong>
+<ul>
+<li>Application logging</li>
+<li>Metrics collection</li>
+<li>Security event monitoring</li>
+<li>Alerting and notifications</li>
+</ul></li>
+</ol>
+<h3 id="database-storage">Database &amp; Storage</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 22%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Technology</th>
+<th>Purpose</th>
+<th>Security Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>MongoDB 7.0</strong></td>
+<td>Primary database</td>
+<td>Authentication, encryption at rest, TLS</td>
+</tr>
+<tr class="even">
+<td><strong>PostgreSQL</strong></td>
+<td>Relational data</td>
+<td>Role-based access, SSL/TLS, encrypted</td>
+</tr>
+<tr class="odd">
+<td><strong>Amazon S3</strong></td>
+<td>Object storage</td>
+<td>Encryption, versioning, access logging</td>
+</tr>
+<tr class="even">
+<td><strong>InfluxDB</strong></td>
+<td>Time-series metrics</td>
+<td>Authentication, HTTPS</td>
+</tr>
+</tbody>
+</table>
+<h3 id="container-orchestration">Container &amp; Orchestration</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 22%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Technology</th>
+<th>Purpose</th>
+<th>Security Features</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Docker</strong></td>
+<td>Containerization</td>
+<td>Image scanning, rootless containers</td>
+</tr>
+<tr class="even">
+<td><strong>Docker Compose</strong></td>
+<td>Local development</td>
+<td>Network isolation, secrets management</td>
+</tr>
+<tr class="odd">
+<td><strong>Docker Swarm</strong></td>
+<td>Production orchestration</td>
+<td>Encrypted overlay networks, secrets</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="repository-structure">Repository Structure</h2>
+<p>SECURAA’s codebase is organized across multiple specialized
+repositories:</p>
+<h3 id="core-repositories">Core Repositories</h3>
+<h4 id="build_securaa">1. <strong>build_securaa</strong></h4>
+<p><strong>Purpose</strong>: Build automation, deployment scripts, CI/CD
+configuration</p>
+<p><strong>Contents</strong>: - Build scripts
+(<code>build_securaa.sh</code>) - AWS CodeBuild specifications
+(<code>Core_BuildSpec.yaml</code>, <code>Wrapper_BuildSpec.yaml</code>)
+- Deployment automation (<code>deployment_scripts/</code>) - Package
+building (RPM, DEB) - Database migration scripts - Installation
+scripts</p>
+<p><strong>Key Files</strong>:</p>
+<pre><code>build_securaa/
+├── build_securaa.sh              # Main build orchestration
+├── aws_codebuild/
+│   ├── Core_BuildSpec.yaml       # Core services build
+│   └── Wrapper_BuildSpec.yaml    # Integration services build
+├── core_scripts/
+│   ├── functions_aws.sh          # AWS-specific functions
+│   └── docker_ecr_login.sh       # ECR authentication
+├── deployment_scripts/           # Deployment automation
+├── pkg/                          # Package definitions
+└── securaa/                      # Core application code</code></pre>
+<h4 id="zona_services">2. <strong>zona_services</strong></h4>
+<p><strong>Purpose</strong>: Core microservices (530+ services)</p>
+<p><strong>Service Categories</strong>: - User management
+(<code>zona_user</code>) - Integration orchestration
+(<code>zona_integrations</code>) - SIEM connectors
+(<code>zona_siem</code>) - Playbook execution
+(<code>zona_playbook</code>) - Query builder
+(<code>zona_querybuilder</code>) - Custom utilities
+(<code>zona_custom</code>, <code>zona_custom_utils</code>) - API
+management (<code>zona_apis_manager</code>) - SSH client
+(<code>zona_sshclient</code>) - PDF generation (<code>zona_pdf</code>) -
+Health monitoring (<code>zona_primary_server_health_check</code>) -
+Shard management (<code>zona_shard_handler</code>) - SIA APIs
+(<code>zona_sia_apis</code>)</p>
+<p><strong>Architecture</strong>: - Each service is independently
+deployable - Microservices communicate via REST APIs - Service discovery
+and registration - Containerized deployment</p>
+<h4 id="securaa">3. <strong>securaa</strong></h4>
+<p><strong>Purpose</strong>: Core application backend logic</p>
+<p><strong>Components</strong>: - Authentication and authorization - API
+endpoints - Business logic - Database operations - Common utilities</p>
+<h4 id="securaa_lib">4. <strong>securaa_lib</strong></h4>
+<p><strong>Purpose</strong>: Shared security library</p>
+<p><strong>Features</strong>: - Encryption/decryption
+(<code>encrypt_decrypt/</code>) - JWT token management - Cryptographic
+operations (AES-256) - Security utilities - Authentication helpers</p>
+<p><strong>Key Implementation</strong>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode go"><code class="sourceCode go"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// AES-256-CBC encryption</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> CredentialsEncrypt<span class="op">(</span>data <span class="dt">string</span><span class="op">,</span> key <span class="dt">string</span><span class="op">)</span> <span class="op">(</span><span class="dt">string</span><span class="op">,</span> <span class="dt">error</span><span class="op">)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">func</span> CredentialsDecrypt<span class="op">(</span>encrypted <span class="dt">string</span><span class="op">,</span> key <span class="dt">string</span><span class="op">)</span> <span class="op">(</span><span class="dt">string</span><span class="op">,</span> <span class="dt">error</span><span class="op">)</span></span></code></pre></div>
+<h4 id="zona_batch">5. <strong>zona_batch</strong></h4>
+<p><strong>Purpose</strong>: Background batch processing</p>
+<p><strong>Batch Jobs</strong>: - <code>core_process_batch</code> - Core
+data processing - <code>csam_connector</code> - CSAM integration -
+<code>auto_purge_batch</code> - Data retention enforcement -
+<code>report_batch</code> - Report generation - <code>sbot</code> -
+Security bot automation - <code>sla_breach_monitor_batch</code> - SLA
+monitoring</p>
+<h4 id="integrations">6. <strong>integrations</strong></h4>
+<p><strong>Purpose</strong>: Third-party system integrations (722+
+integrations)</p>
+<p><strong>Integration Categories</strong>: - SIEM platforms (Splunk,
+QRadar, LogRhythm, etc.) - Threat intelligence (VirusTotal, AlienVault,
+etc.) - Ticketing systems (ServiceNow, Jira, etc.) - EDR/Endpoint
+security (CrowdStrike, Carbon Black, etc.) - Cloud security (AWS
+Security Hub, Azure Sentinel, etc.) - Network security (Palo Alto,
+Cisco, Fortinet, etc.)</p>
+<p><strong>Integration Structure</strong>:</p>
+<pre><code>integrations/
+├── zona_splunk/
+├── zona_qradar/
+├── zona_servicenow/
+├── zona_virustotal/
+└── ... (722+ integrations)</code></pre>
+<h4 id="zonareact">7. <strong>zonareact</strong></h4>
+<p><strong>Purpose</strong>: Frontend React application</p>
+<p><strong>Features</strong>: - User interface - Dashboard
+visualizations - Case management UI - Playbook designer - Custom widgets
+- Real-time updates</p>
+<p><strong>Technology</strong>: - React 18.2 - Redux for state
+management - Material-UI components - Chart visualizations (Recharts,
+D3) - Markdown editor (Quill)</p>
+<h4 id="securaa_db">8. <strong>securaa_db</strong></h4>
+<p><strong>Purpose</strong>: Database schemas and migrations</p>
+<p><strong>Contents</strong>: - MongoDB initialization scripts - Schema
+definitions - Migration scripts - Seed data - Database versioning</p>
+<h4 id="securaa_pylib">9. <strong>securaa_pylib</strong></h4>
+<p><strong>Purpose</strong>: Python utility libraries</p>
+<p><strong>Components</strong>: - Custom Python utilities - Integration
+helpers - Data processing libraries</p>
+<hr />
+<h2 id="development-workflow-overview">Development Workflow
+Overview</h2>
+<h3 id="git-branching-strategy">Git Branching Strategy</h3>
+<div class="diagram">
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 638.281px; background-color: white;" viewBox="-180.28125 -34.70000076293945 638.28125 392.72332763671875" role="graphics-document document" aria-roledescription="gitGraph">
+<style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .commit-id,#my-svg .commit-msg,#my-svg .branch-label{fill:lightgrey;color:lightgrey;font-family:'trebuchet ms',verdana,arial,sans-serif;font-family:var(--mermaid-font-family);}#my-svg .branch-label0{fill:#ffffff;}#my-svg .commit0{stroke:hsl(240, 100%, 46.2745098039%);fill:hsl(240, 100%, 46.2745098039%);}#my-svg .commit-highlight0{stroke:hsl(60, 100%, 3.7254901961%);fill:hsl(60, 100%, 3.7254901961%);}#my-svg .label0{fill:hsl(240, 100%, 46.2745098039%);}#my-svg .arrow0{stroke:hsl(240, 100%, 46.2745098039%);}#my-svg .branch-label1{fill:black;}#my-svg .commit1{stroke:hsl(60, 100%, 43.5294117647%);fill:hsl(60, 100%, 43.5294117647%);}#my-svg .commit-highlight1{stroke:rgb(0, 0, 160.5);fill:rgb(0, 0, 160.5);}#my-svg .label1{fill:hsl(60, 100%, 43.5294117647%);}#my-svg .arrow1{stroke:hsl(60, 100%, 43.5294117647%);}#my-svg .branch-label2{fill:black;}#my-svg .commit2{stroke:hsl(80, 100%, 46.2745098039%);fill:hsl(80, 100%, 46.2745098039%);}#my-svg .commit-highlight2{stroke:rgb(48.8333333334, 0, 146.5000000001);fill:rgb(48.8333333334, 0, 146.5000000001);}#my-svg .label2{fill:hsl(80, 100%, 46.2745098039%);}#my-svg .arrow2{stroke:hsl(80, 100%, 46.2745098039%);}#my-svg .branch-label3{fill:#ffffff;}#my-svg .commit3{stroke:hsl(210, 100%, 46.2745098039%);fill:hsl(210, 100%, 46.2745098039%);}#my-svg .commit-highlight3{stroke:rgb(146.5000000001, 73.2500000001, 0);fill:rgb(146.5000000001, 73.2500000001, 0);}#my-svg .label3{fill:hsl(210, 100%, 46.2745098039%);}#my-svg .arrow3{stroke:hsl(210, 100%, 46.2745098039%);}#my-svg .branch-label4{fill:black;}#my-svg .commit4{stroke:hsl(180, 100%, 46.2745098039%);fill:hsl(180, 100%, 46.2745098039%);}#my-svg .commit-highlight4{stroke:rgb(146.5000000001, 0, 0);fill:rgb(146.5000000001, 0, 0);}#my-svg .label4{fill:hsl(180, 100%, 46.2745098039%);}#my-svg .arrow4{stroke:hsl(180, 100%, 46.2745098039%);}#my-svg .branch-label5{fill:black;}#my-svg .commit5{stroke:hsl(150, 100%, 46.2745098039%);fill:hsl(150, 100%, 46.2745098039%);}#my-svg .commit-highlight5{stroke:rgb(146.5000000001, 0, 73.2500000001);fill:rgb(146.5000000001, 0, 73.2500000001);}#my-svg .label5{fill:hsl(150, 100%, 46.2745098039%);}#my-svg .arrow5{stroke:hsl(150, 100%, 46.2745098039%);}#my-svg .branch-label6{fill:black;}#my-svg .commit6{stroke:hsl(300, 100%, 46.2745098039%);fill:hsl(300, 100%, 46.2745098039%);}#my-svg .commit-highlight6{stroke:rgb(0, 146.5000000001, 0);fill:rgb(0, 146.5000000001, 0);}#my-svg .label6{fill:hsl(300, 100%, 46.2745098039%);}#my-svg .arrow6{stroke:hsl(300, 100%, 46.2745098039%);}#my-svg .branch-label7{fill:black;}#my-svg .commit7{stroke:hsl(0, 100%, 46.2745098039%);fill:hsl(0, 100%, 46.2745098039%);}#my-svg .commit-highlight7{stroke:rgb(0, 146.5000000001, 146.5000000001);fill:rgb(0, 146.5000000001, 146.5000000001);}#my-svg .label7{fill:hsl(0, 100%, 46.2745098039%);}#my-svg .arrow7{stroke:hsl(0, 100%, 46.2745098039%);}#my-svg .branch{stroke-width:1;stroke:#333333;stroke-dasharray:2;}#my-svg .commit-label{font-size:10px;fill:#000021;}#my-svg .commit-label-bkg{font-size:10px;fill:#ffffde;opacity:0.5;}#my-svg .tag-label{font-size:10px;fill:#131300;}#my-svg .tag-label-bkg{fill:#ECECFF;stroke:hsl(240, 60%, 86.2745098039%);}#my-svg .tag-hole{fill:#333;}#my-svg .commit-merge{stroke:#ECECFF;fill:#ECECFF;}#my-svg .commit-reverse{stroke:#ECECFF;fill:#ECECFF;stroke-width:3;}#my-svg .commit-highlight-inner{stroke:#ECECFF;fill:#ECECFF;}#my-svg .arrow{stroke-width:8;stroke-linecap:round;fill:none;}#my-svg .gitTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+<g/><g class="commit-bullets"/><g class="commit-labels"/><g><line x1="0" y1="0" x2="450" y2="0" class="branch branch0"/><rect class="branchLabelBkg label0" rx="4" ry="4" x="-68.6875" y="-0.5" width="52.6875" height="21" transform="translate(-19, -8.5)"/><g class="branchLabel"><g class="label branch-label0" transform="translate(-78.6875, -9.5)"><text><tspan xml:space="preserve" dy="1em" x="0" class="row">main</tspan></text></g></g><line x1="0" y1="90" x2="450" y2="90" class="branch branch1"/><rect class="branchLabelBkg label1" rx="4" ry="4" x="-59.796875" y="-0.5" width="43.796875" height="21" transform="translate(-19, 81.5)"/><g class="branchLabel"><g class="label branch-label1" transform="translate(-69.796875, 80.5)"><text><tspan xml:space="preserve" dy="1em" x="0" class="row">dev</tspan></text></g></g><line x1="0" y1="180" x2="450" y2="180" class="branch branch2"/><rect class="branchLabelBkg label2" rx="4" ry="4" x="-153.28125" y="-0.5" width="137.28125" height="21" transform="translate(-19, 171.5)"/><g class="branchLabel"><g class="label branch-label2" transform="translate(-163.28125, 170.5)"><text><tspan xml:space="preserve" dy="1em" x="0" class="row">feature/SEC-123</tspan></text></g></g><line x1="0" y1="270" x2="450" y2="270" class="branch branch3"/><rect class="branchLabelBkg label3" rx="4" ry="4" x="-86.578125" y="-0.5" width="70.578125" height="21" transform="translate(-19, 261.5)"/><g class="branchLabel"><g class="label branch-label3" transform="translate(-96.578125, 260.5)"><text><tspan xml:space="preserve" dy="1em" x="0" class="row">release</tspan></text></g></g></g><g class="commit-arrows"><path d="M 10 0 L 10 70 A 20 20, 0, 0, 0, 30 90 L 60 90" class="arrow arrow1"/><path d="M 60 90 L 60 160 A 20 20, 0, 0, 0, 80 180 L 110 180" class="arrow arrow2"/><path d="M 110 180 L 160 180" class="arrow arrow2"/><path d="M 160 180 L 210 180" class="arrow arrow2"/><path d="M 60 90 L 260 90" class="arrow arrow1"/><path d="M 210 180 L 240 180 A 20 20, 0, 0, 0, 260 160 L 260 90" class="arrow arrow2"/><path d="M 260 90 L 310 90" class="arrow arrow1"/><path d="M 10 0 L 360 0" class="arrow arrow0"/><path d="M 310 90 L 340 90 A 20 20, 0, 0, 0, 360 70 L 360 0" class="arrow arrow1"/><path d="M 360 0 L 360 250 A 20 20, 0, 0, 0, 380 270 L 410 270" class="arrow arrow3"/></g><g class="commit-bullets"><circle cx="10" cy="0" r="10" class="commit Initial commit0"/><circle cx="60" cy="90" r="10" class="commit Feature start commit1"/><circle cx="110" cy="180" r="10" class="commit Implement feature commit2"/><circle cx="160" cy="180" r="10" class="commit Add tests commit2"/><circle cx="210" cy="180" r="10" class="commit Fix review comments commit2"/><circle cx="260" cy="90" r="9" class="commit 5-56212cf commit1"/><circle cx="260" cy="90" r="6" class="commit commit-merge 5-56212cf commit1"/><circle cx="310" cy="90" r="10" class="commit Integration testing commit1"/><circle cx="360" cy="0" r="9" class="commit 7-9700516 commit0"/><circle cx="360" cy="0" r="6" class="commit commit-merge 7-9700516 commit0"/><circle cx="410" cy="270" r="10" class="commit Production deploy commit3"/></g><g class="commit-labels"><g transform="translate(-20.176562500000003, 17.9421875) rotate(-45, 0, 0)"><rect class="commit-label-bkg" x="-3.6796875" y="13.5" width="27.359375" height="15"/><text x="-1.6796875" y="25" class="commit-label">Initial</text></g><g transform="translate(-32.92623046875, 29.34978515625) rotate(-45, 50, 90)"><rect class="commit-label-bkg" x="29.54443359375" y="103.5" width="60.9111328125" height="15"/><text x="31.54443359375" y="115" class="commit-label">Feature
+start</text></g><g transform="translate(-42.09298828125, 37.55162109375) rotate(-45, 100, 180)"><rect class="commit-label-bkg" x="67.48291015625" y="193.5" width="85.0341796875" height="15"/><text x="69.48291015625" y="205" class="commit-label">Implement
+feature</text></g><g transform="translate(-27.1471875, 24.1790625) rotate(-45, 150, 180)"><rect class="commit-label-bkg" x="137.1484375" y="193.5" width="45.703125" height="15"/><text x="139.1484375" y="205" class="commit-label">Add
+tests</text></g><g transform="translate(-46.984375, 41.928125) rotate(-45, 200, 180)"><rect class="commit-label-bkg" x="161.046875" y="193.5" width="97.90625" height="15"/><text x="163.046875" y="205" class="commit-label">Fix
+review
+comments</text></g><g transform="translate(-41.51, 37.03) rotate(-45, 300, 90)"><rect class="commit-label-bkg" x="268.25" y="103.5" width="83.5" height="15"/><text x="270.25" y="115" class="commit-label">Integration
+testing</text></g><polygon class="tag-label-bkg" points="332.7685546875,-17.2  &#10;      332.7685546875,-21.2&#10;      340.7685546875,-26.7&#10;      379.2314453125,-26.7&#10;      379.2314453125,-11.7&#10;      340.7685546875,-11.7"/><circle cy="-19.2" cx="336.7685546875" r="1.5" class="tag-hole"/><text y="-16" class="tag-label" x="344.7685546875">v4.010</text><g transform="translate(-41.72375, 37.22125) rotate(-45, 400, 270)"><rect class="commit-label-bkg" x="367.96875" y="283.5" width="84.0625" height="15"/><text x="369.96875" y="295" class="commit-label">Production
+deploy</text></g></g>
+</svg>
+</div>
+<p><strong>Branch Types</strong>: - <code>main</code> - Production-ready
+code - <code>release</code> - Release candidates - <code>dev</code> -
+Development integration branch - <code>feature/*</code> - Feature
+development - <code>bugfix/*</code> - Bug fixes - <code>hotfix/*</code>
+- Production hotfixes</p>
+<h3 id="development-process-flow">Development Process Flow</h3>
+<div class="diagram">
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="max-width: 1681px; background-color: white;" viewBox="-50 -10 1681 969" role="graphics-document document" aria-roledescription="sequence">
+<g><rect x="1430" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="P" rx="3" ry="3" class="actor actor-bottom"/><text x="1505" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1505" dy="0">Production</tspan></text></g><g><rect x="1230" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="ECR" rx="3" ry="3" class="actor actor-bottom"/><text x="1305" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1305" dy="0">ECR
+Registry</tspan></text></g><g><rect x="1030" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="T" rx="3" ry="3" class="actor actor-bottom"/><text x="1105" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1105" dy="0">Testing</tspan></text></g><g><rect x="830" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="R" rx="3" ry="3" class="actor actor-bottom"/><text x="905" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="905" dy="0">Code
+Review</tspan></text></g><g><rect x="630" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="S" rx="3" ry="3" class="actor actor-bottom"/><text x="705" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="705" dy="0">Security
+Scan</tspan></text></g><g><rect x="424" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="CI" rx="3" ry="3" class="actor actor-bottom"/><text x="499" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="499" dy="0">CodeBuild</tspan></text></g><g><rect x="224" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="G" rx="3" ry="3" class="actor actor-bottom"/><text x="299" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="299" dy="0">Git/CodeCommit</tspan></text></g><g><rect x="0" y="883" fill="#eaeaea" stroke="#666" width="150" height="65" name="D" rx="3" ry="3" class="actor actor-bottom"/><text x="75" y="915.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Developer</tspan></text></g><g><line id="actor7" x1="1505" y1="65" x2="1505" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="P"/><g id="root-7"><rect x="1430" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="P" rx="3" ry="3" class="actor actor-top"/><text x="1505" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1505" dy="0">Production</tspan></text></g></g><g><line id="actor6" x1="1305" y1="65" x2="1305" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="ECR"/><g id="root-6"><rect x="1230" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="ECR" rx="3" ry="3" class="actor actor-top"/><text x="1305" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1305" dy="0">ECR
+Registry</tspan></text></g></g><g><line id="actor5" x1="1105" y1="65" x2="1105" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="T"/><g id="root-5"><rect x="1030" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="T" rx="3" ry="3" class="actor actor-top"/><text x="1105" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="1105" dy="0">Testing</tspan></text></g></g><g><line id="actor4" x1="905" y1="65" x2="905" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="R"/><g id="root-4"><rect x="830" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="R" rx="3" ry="3" class="actor actor-top"/><text x="905" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="905" dy="0">Code
+Review</tspan></text></g></g><g><line id="actor3" x1="705" y1="65" x2="705" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="S"/><g id="root-3"><rect x="630" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="S" rx="3" ry="3" class="actor actor-top"/><text x="705" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="705" dy="0">Security
+Scan</tspan></text></g></g><g><line id="actor2" x1="499" y1="65" x2="499" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="CI"/><g id="root-2"><rect x="424" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="CI" rx="3" ry="3" class="actor actor-top"/><text x="499" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="499" dy="0">CodeBuild</tspan></text></g></g><g><line id="actor1" x1="299" y1="65" x2="299" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="G"/><g id="root-1"><rect x="224" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="G" rx="3" ry="3" class="actor actor-top"/><text x="299" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="299" dy="0">Git/CodeCommit</tspan></text></g></g><g><line id="actor0" x1="75" y1="65" x2="75" y2="883" class="actor-line 200" stroke-width="0.5px" stroke="#999" name="D"/><g id="root-0"><rect x="0" y="0" fill="#eaeaea" stroke="#666" width="150" height="65" name="D" rx="3" ry="3" class="actor actor-top"/><text x="75" y="32.5" dominant-baseline="central" alignment-baseline="central" class="actor actor-box" style="text-anchor: middle; font-size: 16px; font-weight: 400;"><tspan x="75" dy="0">Developer</tspan></text></g></g>
+<style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .actor{stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);fill:#ECECFF;}#my-svg text.actor&gt;tspan{fill:black;stroke:none;}#my-svg .actor-line{stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);}#my-svg .innerArc{stroke-width:1.5;stroke-dasharray:none;}#my-svg .messageLine0{stroke-width:1.5;stroke-dasharray:none;stroke:#333;}#my-svg .messageLine1{stroke-width:1.5;stroke-dasharray:2,2;stroke:#333;}#my-svg #arrowhead path{fill:#333;stroke:#333;}#my-svg .sequenceNumber{fill:white;}#my-svg #sequencenumber{fill:#333;}#my-svg #crosshead path{fill:#333;stroke:#333;}#my-svg .messageText{fill:#333;stroke:none;}#my-svg .labelBox{stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);fill:#ECECFF;}#my-svg .labelText,#my-svg .labelText&gt;tspan{fill:black;stroke:none;}#my-svg .loopText,#my-svg .loopText&gt;tspan{fill:black;stroke:none;}#my-svg .loopLine{stroke-width:2px;stroke-dasharray:2,2;stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);fill:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);}#my-svg .note{stroke:#aaaa33;fill:#fff5ad;}#my-svg .noteText,#my-svg .noteText&gt;tspan{fill:black;stroke:none;}#my-svg .activation0{fill:#f4f4f4;stroke:#666;}#my-svg .activation1{fill:#f4f4f4;stroke:#666;}#my-svg .activation2{fill:#f4f4f4;stroke:#666;}#my-svg .actorPopupMenu{position:absolute;}#my-svg .actorPopupMenuPanel{position:absolute;fill:#ECECFF;box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);filter:drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));}#my-svg .actor-man line{stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);fill:#ECECFF;}#my-svg .actor-man circle,#my-svg line{stroke:hsl(259.6261682243, 59.7765363128%, 87.9019607843%);fill:#ECECFF;stroke-width:2px;}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+<g/><defs><symbol id="computer" width="24" height="24"><path transform="scale(.5)" d="M2 2v13h20v-13h-20zm18 11h-16v-9h16v9zm-10.228 6l.466-1h3.524l.467 1h-4.457zm14.228 3h-24l2-6h2.104l-1.33 4h18.45l-1.297-4h2.073l2 6zm-5-10h-14v-7h14v7z"/></symbol></defs><defs><symbol id="database" fill-rule="evenodd" clip-rule="evenodd"><path transform="scale(.5)" d="M12.258.001l.256.004.255.005.253.008.251.01.249.012.247.015.246.016.242.019.241.02.239.023.236.024.233.027.231.028.229.031.225.032.223.034.22.036.217.038.214.04.211.041.208.043.205.045.201.046.198.048.194.05.191.051.187.053.183.054.18.056.175.057.172.059.168.06.163.061.16.063.155.064.15.066.074.033.073.033.071.034.07.034.069.035.068.035.067.035.066.035.064.036.064.036.062.036.06.036.06.037.058.037.058.037.055.038.055.038.053.038.052.038.051.039.05.039.048.039.047.039.045.04.044.04.043.04.041.04.04.041.039.041.037.041.036.041.034.041.033.042.032.042.03.042.029.042.027.042.026.043.024.043.023.043.021.043.02.043.018.044.017.043.015.044.013.044.012.044.011.045.009.044.007.045.006.045.004.045.002.045.001.045v17l-.001.045-.002.045-.004.045-.006.045-.007.045-.009.044-.011.045-.012.044-.013.044-.015.044-.017.043-.018.044-.02.043-.021.043-.023.043-.024.043-.026.043-.027.042-.029.042-.03.042-.032.042-.033.042-.034.041-.036.041-.037.041-.039.041-.04.041-.041.04-.043.04-.044.04-.045.04-.047.039-.048.039-.05.039-.051.039-.052.038-.053.038-.055.038-.055.038-.058.037-.058.037-.06.037-.06.036-.062.036-.064.036-.064.036-.066.035-.067.035-.068.035-.069.035-.07.034-.071.034-.073.033-.074.033-.15.066-.155.064-.16.063-.163.061-.168.06-.172.059-.175.057-.18.056-.183.054-.187.053-.191.051-.194.05-.198.048-.201.046-.205.045-.208.043-.211.041-.214.04-.217.038-.22.036-.223.034-.225.032-.229.031-.231.028-.233.027-.236.024-.239.023-.241.02-.242.019-.246.016-.247.015-.249.012-.251.01-.253.008-.255.005-.256.004-.258.001-.258-.001-.256-.004-.255-.005-.253-.008-.251-.01-.249-.012-.247-.015-.245-.016-.243-.019-.241-.02-.238-.023-.236-.024-.234-.027-.231-.028-.228-.031-.226-.032-.223-.034-.22-.036-.217-.038-.214-.04-.211-.041-.208-.043-.204-.045-.201-.046-.198-.048-.195-.05-.19-.051-.187-.053-.184-.054-.179-.056-.176-.057-.172-.059-.167-.06-.164-.061-.159-.063-.155-.064-.151-.066-.074-.033-.072-.033-.072-.034-.07-.034-.069-.035-.068-.035-.067-.035-.066-.035-.064-.036-.063-.036-.062-.036-.061-.036-.06-.037-.058-.037-.057-.037-.056-.038-.055-.038-.053-.038-.052-.038-.051-.039-.049-.039-.049-.039-.046-.039-.046-.04-.044-.04-.043-.04-.041-.04-.04-.041-.039-.041-.037-.041-.036-.041-.034-.041-.033-.042-.032-.042-.03-.042-.029-.042-.027-.042-.026-.043-.024-.043-.023-.043-.021-.043-.02-.043-.018-.044-.017-.043-.015-.044-.013-.044-.012-.044-.011-.045-.009-.044-.007-.045-.006-.045-.004-.045-.002-.045-.001-.045v-17l.001-.045.002-.045.004-.045.006-.045.007-.045.009-.044.011-.045.012-.044.013-.044.015-.044.017-.043.018-.044.02-.043.021-.043.023-.043.024-.043.026-.043.027-.042.029-.042.03-.042.032-.042.033-.042.034-.041.036-.041.037-.041.039-.041.04-.041.041-.04.043-.04.044-.04.046-.04.046-.039.049-.039.049-.039.051-.039.052-.038.053-.038.055-.038.056-.038.057-.037.058-.037.06-.037.061-.036.062-.036.063-.036.064-.036.066-.035.067-.035.068-.035.069-.035.07-.034.072-.034.072-.033.074-.033.151-.066.155-.064.159-.063.164-.061.167-.06.172-.059.176-.057.179-.056.184-.054.187-.053.19-.051.195-.05.198-.048.201-.046.204-.045.208-.043.211-.041.214-.04.217-.038.22-.036.223-.034.226-.032.228-.031.231-.028.234-.027.236-.024.238-.023.241-.02.243-.019.245-.016.247-.015.249-.012.251-.01.253-.008.255-.005.256-.004.258-.001.258.001zm-9.258 20.499v.01l.001.021.003.021.004.022.005.021.006.022.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.023.018.024.019.024.021.024.022.025.023.024.024.025.052.049.056.05.061.051.066.051.07.051.075.051.079.052.084.052.088.052.092.052.097.052.102.051.105.052.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.048.144.049.147.047.152.047.155.047.16.045.163.045.167.043.171.043.176.041.178.041.183.039.187.039.19.037.194.035.197.035.202.033.204.031.209.03.212.029.216.027.219.025.222.024.226.021.23.02.233.018.236.016.24.015.243.012.246.01.249.008.253.005.256.004.259.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.021.224-.024.22-.026.216-.027.212-.028.21-.031.205-.031.202-.034.198-.034.194-.036.191-.037.187-.039.183-.04.179-.04.175-.042.172-.043.168-.044.163-.045.16-.046.155-.046.152-.047.148-.048.143-.049.139-.049.136-.05.131-.05.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.053.083-.051.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.05.023-.024.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.023.01-.022.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.127l-.077.055-.08.053-.083.054-.085.053-.087.052-.09.052-.093.051-.095.05-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.045-.118.044-.12.043-.122.042-.124.042-.126.041-.128.04-.13.04-.132.038-.134.038-.135.037-.138.037-.139.035-.142.035-.143.034-.144.033-.147.032-.148.031-.15.03-.151.03-.153.029-.154.027-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.01-.179.008-.179.008-.181.006-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.006-.179-.008-.179-.008-.178-.01-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.027-.153-.029-.151-.03-.15-.03-.148-.031-.146-.032-.145-.033-.143-.034-.141-.035-.14-.035-.137-.037-.136-.037-.134-.038-.132-.038-.13-.04-.128-.04-.126-.041-.124-.042-.122-.042-.12-.044-.117-.043-.116-.045-.113-.045-.112-.046-.109-.047-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.05-.093-.052-.09-.051-.087-.052-.085-.053-.083-.054-.08-.054-.077-.054v4.127zm0-5.654v.011l.001.021.003.021.004.021.005.022.006.022.007.022.009.022.01.022.011.023.012.023.013.023.015.024.016.023.017.024.018.024.019.024.021.024.022.024.023.025.024.024.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.052.11.051.114.051.119.052.123.05.127.051.131.05.135.049.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.044.171.042.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.022.23.02.233.018.236.016.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.012.241-.015.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.048.139-.05.136-.049.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.051.051-.049.023-.025.023-.024.021-.025.02-.024.019-.024.018-.024.017-.024.015-.023.014-.023.013-.024.012-.022.01-.023.01-.023.008-.022.006-.022.006-.022.004-.021.004-.022.001-.021.001-.021v-4.139l-.077.054-.08.054-.083.054-.085.052-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.049-.105.048-.106.047-.109.047-.111.046-.114.045-.115.044-.118.044-.12.044-.122.042-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.035-.143.033-.144.033-.147.033-.148.031-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.025-.161.024-.162.023-.163.022-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.011-.178.009-.179.009-.179.007-.181.007-.182.005-.182.004-.184.003-.184.002h-.37l-.184-.002-.184-.003-.182-.004-.182-.005-.181-.007-.179-.007-.179-.009-.178-.009-.176-.011-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.022-.162-.023-.161-.024-.159-.025-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.031-.146-.033-.145-.033-.143-.033-.141-.035-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.04-.126-.041-.124-.042-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.047-.105-.048-.102-.049-.1-.049-.097-.05-.095-.051-.093-.051-.09-.051-.087-.053-.085-.052-.083-.054-.08-.054-.077-.054v4.139zm0-5.666v.011l.001.02.003.022.004.021.005.022.006.021.007.022.009.023.01.022.011.023.012.023.013.023.015.023.016.024.017.024.018.023.019.024.021.025.022.024.023.024.024.025.052.05.056.05.061.05.066.051.07.051.075.052.079.051.084.052.088.052.092.052.097.052.102.052.105.051.11.052.114.051.119.051.123.051.127.05.131.05.135.05.139.049.144.048.147.048.152.047.155.046.16.045.163.045.167.043.171.043.176.042.178.04.183.04.187.038.19.037.194.036.197.034.202.033.204.032.209.03.212.028.216.027.219.025.222.024.226.021.23.02.233.018.236.017.24.014.243.012.246.01.249.008.253.006.256.003.259.001.26-.001.257-.003.254-.006.25-.008.247-.01.244-.013.241-.014.237-.016.233-.018.231-.02.226-.022.224-.024.22-.025.216-.027.212-.029.21-.03.205-.032.202-.033.198-.035.194-.036.191-.037.187-.039.183-.039.179-.041.175-.042.172-.043.168-.044.163-.045.16-.045.155-.047.152-.047.148-.048.143-.049.139-.049.136-.049.131-.051.126-.05.123-.051.118-.052.114-.051.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.052.07-.051.065-.051.06-.051.056-.05.051-.049.023-.025.023-.025.021-.024.02-.024.019-.024.018-.024.017-.024.015-.023.014-.024.013-.023.012-.023.01-.022.01-.023.008-.022.006-.022.006-.022.004-.022.004-.021.001-.021.001-.021v-4.153l-.077.054-.08.054-.083.053-.085.053-.087.053-.09.051-.093.051-.095.051-.097.05-.1.049-.102.048-.105.048-.106.048-.109.046-.111.046-.114.046-.115.044-.118.044-.12.043-.122.043-.124.042-.126.041-.128.04-.13.039-.132.039-.134.038-.135.037-.138.036-.139.036-.142.034-.143.034-.144.033-.147.032-.148.032-.15.03-.151.03-.153.028-.154.028-.156.027-.158.026-.159.024-.161.024-.162.023-.163.023-.165.021-.166.02-.167.019-.169.018-.169.017-.171.016-.173.015-.173.014-.175.013-.175.012-.177.01-.178.01-.179.009-.179.007-.181.006-.182.006-.182.004-.184.003-.184.001-.185.001-.185-.001-.184-.001-.184-.003-.182-.004-.182-.006-.181-.006-.179-.007-.179-.009-.178-.01-.176-.01-.176-.012-.175-.013-.173-.014-.172-.015-.171-.016-.17-.017-.169-.018-.167-.019-.166-.02-.165-.021-.163-.023-.162-.023-.161-.024-.159-.024-.157-.026-.156-.027-.155-.028-.153-.028-.151-.03-.15-.03-.148-.032-.146-.032-.145-.033-.143-.034-.141-.034-.14-.036-.137-.036-.136-.037-.134-.038-.132-.039-.13-.039-.128-.041-.126-.041-.124-.041-.122-.043-.12-.043-.117-.044-.116-.044-.113-.046-.112-.046-.109-.046-.106-.048-.105-.048-.102-.048-.1-.05-.097-.049-.095-.051-.093-.051-.09-.052-.087-.052-.085-.053-.083-.053-.08-.054-.077-.054v4.153zm8.74-8.179l-.257.004-.254.005-.25.008-.247.011-.244.012-.241.014-.237.016-.233.018-.231.021-.226.022-.224.023-.22.026-.216.027-.212.028-.21.031-.205.032-.202.033-.198.034-.194.036-.191.038-.187.038-.183.04-.179.041-.175.042-.172.043-.168.043-.163.045-.16.046-.155.046-.152.048-.148.048-.143.048-.139.049-.136.05-.131.05-.126.051-.123.051-.118.051-.114.052-.11.052-.106.052-.101.052-.096.052-.092.052-.088.052-.083.052-.079.052-.074.051-.07.052-.065.051-.06.05-.056.05-.051.05-.023.025-.023.024-.021.024-.02.025-.019.024-.018.024-.017.023-.015.024-.014.023-.013.023-.012.023-.01.023-.01.022-.008.022-.006.023-.006.021-.004.022-.004.021-.001.021-.001.021.001.021.001.021.004.021.004.022.006.021.006.023.008.022.01.022.01.023.012.023.013.023.014.023.015.024.017.023.018.024.019.024.02.025.021.024.023.024.023.025.051.05.056.05.06.05.065.051.07.052.074.051.079.052.083.052.088.052.092.052.096.052.101.052.106.052.11.052.114.052.118.051.123.051.126.051.131.05.136.05.139.049.143.048.148.048.152.048.155.046.16.046.163.045.168.043.172.043.175.042.179.041.183.04.187.038.191.038.194.036.198.034.202.033.205.032.21.031.212.028.216.027.22.026.224.023.226.022.231.021.233.018.237.016.241.014.244.012.247.011.25.008.254.005.257.004.26.001.26-.001.257-.004.254-.005.25-.008.247-.011.244-.012.241-.014.237-.016.233-.018.231-.021.226-.022.224-.023.22-.026.216-.027.212-.028.21-.031.205-.032.202-.033.198-.034.194-.036.191-.038.187-.038.183-.04.179-.041.175-.042.172-.043.168-.043.163-.045.16-.046.155-.046.152-.048.148-.048.143-.048.139-.049.136-.05.131-.05.126-.051.123-.051.118-.051.114-.052.11-.052.106-.052.101-.052.096-.052.092-.052.088-.052.083-.052.079-.052.074-.051.07-.052.065-.051.06-.05.056-.05.051-.05.023-.025.023-.024.021-.024.02-.025.019-.024.018-.024.017-.023.015-.024.014-.023.013-.023.012-.023.01-.023.01-.022.008-.022.006-.023.006-.021.004-.022.004-.021.001-.021.001-.021-.001-.021-.001-.021-.004-.021-.004-.022-.006-.021-.006-.023-.008-.022-.01-.022-.01-.023-.012-.023-.013-.023-.014-.023-.015-.024-.017-.023-.018-.024-.019-.024-.02-.025-.021-.024-.023-.024-.023-.025-.051-.05-.056-.05-.06-.05-.065-.051-.07-.052-.074-.051-.079-.052-.083-.052-.088-.052-.092-.052-.096-.052-.101-.052-.106-.052-.11-.052-.114-.052-.118-.051-.123-.051-.126-.051-.131-.05-.136-.05-.139-.049-.143-.048-.148-.048-.152-.048-.155-.046-.16-.046-.163-.045-.168-.043-.172-.043-.175-.042-.179-.041-.183-.04-.187-.038-.191-.038-.194-.036-.198-.034-.202-.033-.205-.032-.21-.031-.212-.028-.216-.027-.22-.026-.224-.023-.226-.022-.231-.021-.233-.018-.237-.016-.241-.014-.244-.012-.247-.011-.25-.008-.254-.005-.257-.004-.26-.001-.26.001z"/></symbol></defs><defs><symbol id="clock" width="24" height="24"><path transform="scale(.5)" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.848 12.459c.202.038.202.333.001.372-1.907.361-6.045 1.111-6.547 1.111-.719 0-1.301-.582-1.301-1.301 0-.512.77-5.447 1.125-7.445.034-.192.312-.181.343.014l.985 6.238 5.394 1.011z"/></symbol></defs><defs><marker id="arrowhead" refX="7.9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M -1 0 L 10 5 L 0 10 z"/></marker></defs><defs><marker id="crosshead" markerWidth="15" markerHeight="8" orient="auto" refX="4" refY="4.5"><path fill="none" stroke="#000000" stroke-width="1pt" d="M 1,2 L 6,7 M 6,2 L 1,7" style="stroke-dasharray: 0, 0;"/></marker></defs><defs><marker id="filled-head" refX="15.5" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"/></marker></defs><defs><marker id="sequencenumber" refX="15" refY="15" markerWidth="60" markerHeight="40" orient="auto"><circle cx="15" cy="15" r="6"/></marker></defs><text x="186" y="80" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">1.
+Create feature
+branch</text><line x1="76" y1="109" x2="295" y2="109" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="186" y="124" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">2.
+Commit
+code</text><line x1="76" y1="153" x2="295" y2="153" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="398" y="168" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">3.
+Trigger
+build</text><line x1="300" y1="199" x2="495" y2="199" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="601" y="214" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">4.
+Run security
+scans</text><line x1="500" y1="245" x2="701" y2="245" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="604" y="260" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">5.
+Security
+results</text><line x1="704" y1="291" x2="503" y2="291" class="messageLine1" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="500" y="306" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">6.
+Run unit
+tests</text><path d="M 500,335 C 560,325 560,365 500,355" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="901" y="380" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">7.
+Build &amp; push
+image</text><line x1="500" y1="411" x2="1301" y2="411" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="489" y="426" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">8.
+Create pull
+request</text><line x1="76" y1="457" x2="901" y2="457" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="906" y="472" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">9.
+Code
+review</text><path d="M 906,501 C 966,491 966,531 906,521" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="604" y="546" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">10.
+Approve &amp;
+merge</text><line x1="904" y1="577" x2="303" y2="577" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="398" y="592" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">11.
+Build
+release</text><line x1="300" y1="621" x2="495" y2="621" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="801" y="636" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">12.
+Run integration
+tests</text><line x1="500" y1="667" x2="1101" y2="667" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="1106" y="682" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">13.
+Security
+testing</text><path d="M 1106,713 C 1166,703 1166,743 1106,733" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/><text x="1304" y="758" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">14.
+Deploy to
+production</text><line x1="1106" y1="789" x2="1501" y2="789" class="messageLine1" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="stroke-dasharray: 3, 3; fill: none;"/><text x="1506" y="804" text-anchor="middle" dominant-baseline="middle" alignment-baseline="middle" class="messageText" dy="1em" style="font-size: 16px; font-weight: 400;">15.
+Health
+checks</text><path d="M 1506,833 C 1566,823 1566,863 1506,853" class="messageLine0" stroke-width="2" stroke="none" marker-end="url(#arrowhead)" style="fill: none;"/>
+</svg>
+</div>
+<hr />
+<h2 id="security-gates">Security Gates</h2>
+<p>Each phase of the SDLC includes mandatory security gates that must be
+passed before proceeding:</p>
+<h3 id="phase-security-gates">Phase Security Gates</h3>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 32%" />
+<col style="width: 16%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Phase</th>
+<th>Security Gate</th>
+<th>Tools</th>
+<th>Pass Criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Requirements</strong></td>
+<td>Security requirements defined</td>
+<td>Threat modeling</td>
+<td>All security requirements documented</td>
+</tr>
+<tr class="even">
+<td><strong>Design</strong></td>
+<td>Security architecture review</td>
+<td>Manual review</td>
+<td>Architecture approved by security team</td>
+</tr>
+<tr class="odd">
+<td><strong>Development</strong></td>
+<td>Code security scan</td>
+<td>GoSec, ESLint</td>
+<td>No critical/high vulnerabilities</td>
+</tr>
+<tr class="even">
+<td><strong>Development</strong></td>
+<td>Dependency scan</td>
+<td>Nancy, npm audit</td>
+<td>No known vulnerabilities</td>
+</tr>
+<tr class="odd">
+<td><strong>Testing</strong></td>
+<td>SAST scan</td>
+<td>GoSec, Bandit</td>
+<td>Security issues addressed</td>
+</tr>
+<tr class="even">
+<td><strong>Testing</strong></td>
+<td>DAST scan</td>
+<td>OWASP ZAP</td>
+<td>No high-risk findings</td>
+</tr>
+<tr class="odd">
+<td><strong>Build</strong></td>
+<td>Container scan</td>
+<td>Docker scan, Trivy</td>
+<td>No critical vulnerabilities in images</td>
+</tr>
+<tr class="even">
+<td><strong>Build</strong></td>
+<td>Compliance check</td>
+<td>Custom scripts</td>
+<td>Passes compliance requirements</td>
+</tr>
+<tr class="odd">
+<td><strong>Deployment</strong></td>
+<td>Security approval</td>
+<td>Manual</td>
+<td>Security team sign-off</td>
+</tr>
+<tr class="even">
+<td><strong>Production</strong></td>
+<td>Security monitoring</td>
+<td>CloudWatch, SIEM</td>
+<td>Monitoring active and alerting</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="compliance-alignment">Compliance Alignment</h2>
+<p>Our SDLC is designed to support compliance with major security and
+privacy frameworks:</p>
+<h3 id="soc-2-type-ii-alignment">SOC 2 Type II Alignment</h3>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Trust Service Criteria</th>
+<th>SDLC Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>CC6.1</strong> - Logical Access Controls</td>
+<td>IAM roles, branch protection, code review</td>
+</tr>
+<tr class="even">
+<td><strong>CC6.6</strong> - Encryption at Rest</td>
+<td>Encrypted databases, S3 encryption</td>
+</tr>
+<tr class="odd">
+<td><strong>CC6.7</strong> - Encryption in Transit</td>
+<td>TLS/HTTPS enforcement</td>
+</tr>
+<tr class="even">
+<td><strong>CC7.2</strong> - Security Monitoring</td>
+<td>CloudWatch, security logging, SIEM</td>
+</tr>
+<tr class="odd">
+<td><strong>CC8.1</strong> - Change Management</td>
+<td>Git workflow, pull requests, deployment approval</td>
+</tr>
+</tbody>
+</table>
+<h3 id="iso-270012022-alignment">ISO 27001:2022 Alignment</h3>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Control</th>
+<th>SDLC Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>A.8.1</strong> - Inventory of Assets</td>
+<td>Repository documentation, service registry</td>
+</tr>
+<tr class="even">
+<td><strong>A.8.3</strong> - Media Handling</td>
+<td>Encrypted storage, access logging</td>
+</tr>
+<tr class="odd">
+<td><strong>A.14.2</strong> - Security in Development</td>
+<td>Secure SDLC, security testing</td>
+</tr>
+<tr class="even">
+<td><strong>A.14.2.5</strong> - Secure Development Principles</td>
+<td>Secure coding standards, code review</td>
+</tr>
+<tr class="odd">
+<td><strong>A.18.1.3</strong> - Protection of Records</td>
+<td>Audit logging, log retention</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gdpr-compliance">GDPR Compliance</h3>
+<table>
+<colgroup>
+<col style="width: 38%" />
+<col style="width: 61%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>SDLC Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Data Protection by Design</strong></td>
+<td>Privacy requirements in design phase</td>
+</tr>
+<tr class="even">
+<td><strong>Data Minimization</strong></td>
+<td>Data flow analysis, only collect necessary data</td>
+</tr>
+<tr class="odd">
+<td><strong>Security of Processing</strong></td>
+<td>Encryption, access controls, security testing</td>
+</tr>
+<tr class="even">
+<td><strong>Data Breach Notification</strong></td>
+<td>Incident response, security monitoring</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="metrics-kpis">Metrics &amp; KPIs</h2>
+<p>We track key performance indicators to measure SDLC
+effectiveness:</p>
+<h3 id="security-metrics">Security Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Target</th>
+<th>Measurement Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Critical vulnerabilities</strong></td>
+<td>0</td>
+<td>Continuous</td>
+</tr>
+<tr class="even">
+<td><strong>High vulnerabilities</strong></td>
+<td>&lt; 5</td>
+<td>Weekly</td>
+</tr>
+<tr class="odd">
+<td><strong>Mean time to remediation (Critical)</strong></td>
+<td>&lt; 24 hours</td>
+<td>Per incident</td>
+</tr>
+<tr class="even">
+<td><strong>Mean time to remediation (High)</strong></td>
+<td>&lt; 7 days</td>
+<td>Per incident</td>
+</tr>
+<tr class="odd">
+<td><strong>Security test coverage</strong></td>
+<td>&gt; 80%</td>
+<td>Monthly</td>
+</tr>
+<tr class="even">
+<td><strong>Failed security scans</strong></td>
+<td>&lt; 5%</td>
+<td>Per build</td>
+</tr>
+<tr class="odd">
+<td><strong>Dependency vulnerabilities</strong></td>
+<td>0 critical</td>
+<td>Weekly</td>
+</tr>
+</tbody>
+</table>
+<h3 id="development-metrics">Development Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Target</th>
+<th>Measurement Frequency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Build success rate</strong></td>
+<td>&gt; 95%</td>
+<td>Daily</td>
+</tr>
+<tr class="even">
+<td><strong>Code review completion time</strong></td>
+<td>&lt; 48 hours</td>
+<td>Per PR</td>
+</tr>
+<tr class="odd">
+<td><strong>Deployment frequency</strong></td>
+<td>Multiple per week</td>
+<td>Weekly</td>
+</tr>
+<tr class="even">
+<td><strong>Change failure rate</strong></td>
+<td>&lt; 10%</td>
+<td>Monthly</td>
+</tr>
+<tr class="odd">
+<td><strong>Mean time to recovery</strong></td>
+<td>&lt; 1 hour</td>
+<td>Per incident</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="roles-responsibilities">Roles &amp; Responsibilities</h2>
+<h3 id="development-team">Development Team</h3>
+<p><strong>Responsibilities</strong>: - Follow secure coding standards -
+Write security-focused unit tests - Participate in code reviews -
+Address security findings promptly - Complete security training</p>
+<h3 id="security-team">Security Team</h3>
+<p><strong>Responsibilities</strong>: - Define security requirements -
+Conduct threat modeling - Review security architecture - Perform
+security testing - Approve production deployments - Respond to security
+incidents</p>
+<h3 id="devops-team">DevOps Team</h3>
+<p><strong>Responsibilities</strong>: - Maintain CI/CD pipeline - Manage
+AWS infrastructure - Configure security tools - Monitor system health -
+Automate security checks</p>
+<h3 id="qa-team">QA Team</h3>
+<p><strong>Responsibilities</strong>: - Execute security test cases -
+Perform DAST scanning - Validate security requirements - Document
+security issues - Verify remediation</p>
+<hr />
+<h2 id="document-navigation">Document Navigation</h2>
+<p>This SDLC documentation is organized into multiple documents for easy
+navigation:</p>
+<ol type="1">
+<li><strong>01_SDLC_Overview.md</strong> (This Document) - Executive
+summary and overview</li>
+<li><strong>02_Requirements_Phase.md</strong> - Security requirements
+and threat modeling</li>
+<li><strong>03_Design_Phase.md</strong> - Secure architecture and design
+review</li>
+<li><strong>04_Development_Phase.md</strong> - Coding standards, Git
+workflow, code review</li>
+<li><strong>05_Testing_Phase.md</strong> - Security testing, SAST, DAST,
+penetration testing</li>
+<li><strong>06_Build_Deployment_Phase.md</strong> - AWS CodeBuild, ECR,
+IAM, deployment</li>
+<li><strong>07_Operations_Monitoring.md</strong> - Production operations
+and security monitoring</li>
+<li><strong>08_CI_CD_Security_Pipeline.md</strong> - Automated security
+in CI/CD</li>
+</ol>
+<hr />
+<h2 id="version-history">Version History</h2>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 18%" />
+<col style="width: 25%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.0</td>
+<td>October 2024</td>
+<td>Security Team</td>
+<td>Initial SDLC documentation</td>
+</tr>
+<tr class="even">
+<td>2.0</td>
+<td>November 13, 2025</td>
+<td>Security &amp; Engineering</td>
+<td>Comprehensive update with AWS infrastructure</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="contact-information">Contact Information</h2>
+<p><strong>Document Owner</strong>: Engineering &amp; Security
+Leadership<br />
+<strong>Security Team</strong>: security@securaa.com<br />
+<strong>Engineering Team</strong>: engineering@securaa.com</p>
+<p><strong>For Questions or Feedback</strong>: - Slack: #security-sdlc -
+Email: sdlc-feedback@securaa.com</p>
+<hr />
+<p><em>This document is confidential and intended for customer-facing
+purposes to demonstrate SECURAA’s commitment to secure software
+development practices.</em></p>
+
+</body>
+</html>

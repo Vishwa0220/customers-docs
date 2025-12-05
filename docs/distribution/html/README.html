@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Readme</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h3, h4, h5, h6 {
+            color: #7f8c8d;
+            margin-top: 20px;
+        }
+
+        code {
+            background-color: #f7f9fc;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: #2d3436;
+            color: #dfe6e9;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.85em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        blockquote {
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #ecf0f1;
+            font-style: italic;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .diagram {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .diagram svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 20px auto;
+        }
+
+        ul, ol {
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid #ecf0f1;
+            margin: 30px 0;
+        }
+
+        #TOC {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        #TOC h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        #TOC ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #TOC li {
+            padding: 3px 0;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            margin: -30px -30px 30px -30px;
+            text-align: center;
+        }
+
+        .header-section h1 {
+            color: white;
+            border: none;
+            margin: 0;
+        }
+
+        .header-section p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <h1>Readme</h1>
+        <p>SECURAA Security Documentation</p>
+    </div>
+    <h1
+id="securaa-secure-software-development-lifecycle-sdlc-documentation">SECURAA
+Secure Software Development Lifecycle (SDLC) Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>This directory contains comprehensive documentation of SECURAA’s
+Secure Software Development Lifecycle (SDLC). These documents
+demonstrate our commitment to security-first development practices and
+provide transparency to our customers about how we build and maintain
+secure software.</p>
+<hr />
+<h2 id="document-suite">Document Suite</h2>
+<h3 id="core-sdlc-documents">📄 Core SDLC Documents</h3>
+<table>
+<colgroup>
+<col style="width: 32%" />
+<col style="width: 41%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Document</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong><a
+href="01_SDLC_Overview.md">01_SDLC_Overview.md</a></strong></td>
+<td>Executive summary, principles, technology stack, and process
+overview</td>
+<td>✅ Complete</td>
+</tr>
+<tr class="even">
+<td><strong><a
+href="02_Requirements_Phase.md">02_Requirements_Phase.md</a></strong></td>
+<td>Security requirements gathering, threat modeling, risk
+assessment</td>
+<td>✅ Complete</td>
+</tr>
+<tr class="odd">
+<td><strong><a
+href="03_Design_Phase.md">03_Design_Phase.md</a></strong></td>
+<td>Secure architecture design, security controls, infrastructure
+design</td>
+<td>✅ Complete</td>
+</tr>
+<tr class="even">
+<td><strong><a
+href="04_Development_Phase.md">04_Development_Phase.md</a></strong></td>
+<td>Secure coding, Git workflow on AWS CodeCommit, code review</td>
+<td>🚧 In Progress</td>
+</tr>
+<tr class="odd">
+<td><strong><a
+href="05_Testing_Phase.md">05_Testing_Phase.md</a></strong></td>
+<td>Security testing, SAST, DAST, penetration testing</td>
+<td>📝 Planned</td>
+</tr>
+<tr class="even">
+<td><strong><a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></strong></td>
+<td>AWS CodeBuild, ECR, container security, IAM, deployment</td>
+<td>📝 Planned</td>
+</tr>
+<tr class="odd">
+<td><strong><a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></strong></td>
+<td>Production operations, monitoring, incident response</td>
+<td>📝 Planned</td>
+</tr>
+<tr class="even">
+<td><strong><a
+href="08_CI_CD_Security_Pipeline.md">06_CI_CD_Security_Pipeline.md</a></strong></td>
+<td>Automated security in CI/CD, security gates, scan integration</td>
+<td>📝 Planned</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quick-navigation">Quick Navigation</h2>
+<h3 id="by-development-phase">By Development Phase</h3>
+<div class="diagram">
+<svg id="my-svg" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 2013.23px; background-color: white;" viewBox="0 0 2013.234375 392" role="graphics-document document" aria-roledescription="flowchart-v2">
+<style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .cluster-label span{color:#333;}#my-svg .cluster-label span p{background-color:transparent;}#my-svg .label text,#my-svg span{fill:#333;color:#333;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon,#my-svg .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#my-svg .rough-node .label text,#my-svg .node .label text,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-anchor:middle;}#my-svg .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#my-svg .rough-node .label,#my-svg .node .label,#my-svg .image-shape .label,#my-svg .icon-shape .label{text-align:center;}#my-svg .node.clickable{cursor:pointer;}#my-svg .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#my-svg .arrowheadPath{fill:#333333;}#my-svg .edgePath .path{stroke:#333333;stroke-width:2.0px;}#my-svg .flowchart-link{stroke:#333333;fill:none;}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster span{color:#333;}#my-svg div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#my-svg .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#my-svg rect.text{fill:none;stroke-width:0;}#my-svg .icon-shape,#my-svg .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#my-svg .icon-shape p,#my-svg .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#my-svg .icon-shape rect,#my-svg .image-shape rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#my-svg .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#my-svg .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style>
+<g><marker id="my-svg_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><marker id="my-svg_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"/></marker><g class="root"><g class="clusters"/><g class="edgePaths"><path d="M115.014,114L127.946,126.833C140.879,139.667,166.744,165.333,196.295,178.167C225.846,191,259.083,191,275.702,191L292.32,191" id="L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTE1LjAxMzU5Njc1NDgwNzcsInkiOjExNH0seyJ4IjoxOTIuNjA5Mzc1LCJ5IjoxOTF9LHsieCI6Mjk2LjMyMDMxMjUsInkiOjE5MX1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M406.133,209L423.418,214.667C440.703,220.333,475.273,231.667,501.322,237.333C527.37,243,544.896,243,553.659,243L562.422,243" id="L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6NDA2LjEzMjgxMjUsInkiOjIwOS4wMDAwOTg1MDc2MDk3Mn0seyJ4Ijo1MDkuODQzNzUsInkiOjI0M30seyJ4Ijo1NjYuNDIxODc1LCJ5IjoyNDN9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M712.993,270L723.708,274.167C734.423,278.333,755.852,286.667,782.667,290.833C809.482,295,841.682,295,857.783,295L873.883,295" id="L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6NzEyLjk5MzM4OTQyMzA3NjksInkiOjI3MH0seyJ4Ijo3NzcuMjgxMjUsInkiOjI5NX0seyJ4Ijo4NzcuODgyODEyNSwieSI6Mjk1fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M988.586,313.456L1005.353,319.047C1022.12,324.637,1055.654,335.819,1080.368,341.409C1105.083,347,1120.979,347,1128.927,347L1136.875,347" id="L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6OTg4LjU4NTkzNzUsInkiOjMxMy40NTYwNjY1MjY0MDAxNX0seyJ4IjoxMDg5LjE4NzUsInkiOjM0N30seyJ4IjoxMTQwLjg3NSwieSI6MzQ3fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1272.974,320L1287.064,312.333C1301.154,304.667,1329.335,289.333,1368.719,246.873C1408.103,204.412,1458.691,134.824,1483.984,100.03L1509.278,65.235" id="L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6MTI3Mi45NzM4ODY5ODYzMDEzLCJ5IjozMjB9LHsieCI6MTM1Ny41MTU2MjUsInkiOjI3NH0seyJ4IjoxNTExLjYzMDAzMzk5NTgxNiwieSI6NjJ9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1462.125,31.021L1444.69,30.017C1427.255,29.014,1392.385,27.007,1352.59,26.003C1312.794,25,1268.073,25,1223.352,25C1178.63,25,1133.909,25,1085.556,25C1037.203,25,985.219,25,933.234,25C881.25,25,829.266,25,780.987,25C732.708,25,688.135,25,643.563,25C598.99,25,554.417,25,505.694,25C456.971,25,404.099,25,351.227,25C298.354,25,245.482,25,209.759,30.494C174.036,35.988,155.462,46.976,146.175,52.469L136.888,57.963" id="L_F_A_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_A_0" data-points="W3sieCI6MTQ2Mi4xMjUsInkiOjMxLjAyMDk1NDE3OTU5NDQwNX0seyJ4IjoxMzU3LjUxNTYyNSwieSI6MjV9LHsieCI6MTIyMy4zNTE1NjI1LCJ5IjoyNX0seyJ4IjoxMDg5LjE4NzUsInkiOjI1fSx7IngiOjkzMy4yMzQzNzUsInkiOjI1fSx7IngiOjc3Ny4yODEyNSwieSI6MjV9LHsieCI6NjQzLjU2MjUsInkiOjI1fSx7IngiOjUwOS44NDM3NSwieSI6MjV9LHsieCI6MzUxLjIyNjU2MjUsInkiOjI1fSx7IngiOjE5Mi42MDkzNzUsInkiOjI1fSx7IngiOjEzMy40NDU0Mzg1MDgwNjQ1LCJ5Ijo2MH1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M167.609,87L171.776,87C175.943,87,184.276,87,191.943,87C199.609,87,206.609,87,210.109,87L213.609,87" id="L_A_A1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_A_A1_0" data-points="W3sieCI6MTY3LjYwOTM3NSwieSI6ODd9LHsieCI6MTkyLjYwOTM3NSwieSI6ODd9LHsieCI6MjE3LjYwOTM3NSwieSI6ODd9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M406.133,173L423.418,167.333C440.703,161.667,475.273,150.333,496.059,144.667C516.844,139,523.844,139,527.344,139L530.844,139" id="L_B_B1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_B_B1_0" data-points="W3sieCI6NDA2LjEzMjgxMjUsInkiOjE3Mi45OTk5MDE0OTIzOTAyOH0seyJ4Ijo1MDkuODQzNzUsInkiOjEzOX0seyJ4Ijo1MzQuODQzNzUsInkiOjEzOX1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M712.993,216L723.708,211.833C734.423,207.667,755.852,199.333,770.067,195.167C784.281,191,791.281,191,794.781,191L798.281,191" id="L_C_C1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_C_C1_0" data-points="W3sieCI6NzEyLjk5MzM4OTQyMzA3NjksInkiOjIxNn0seyJ4Ijo3NzcuMjgxMjUsInkiOjE5MX0seyJ4Ijo4MDIuMjgxMjUsInkiOjE5MX1d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M988.586,276.544L1005.353,270.953C1022.12,265.363,1055.654,254.181,1075.921,248.591C1096.188,243,1103.188,243,1106.688,243L1110.188,243" id="L_D_D1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_D_D1_0" data-points="W3sieCI6OTg4LjU4NTkzNzUsInkiOjI3Ni41NDM5MzM0NzM1OTk4NX0seyJ4IjoxMDg5LjE4NzUsInkiOjI0M30seyJ4IjoxMTE0LjE4NzUsInkiOjI0M31d" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1305.828,353.147L1314.443,353.79C1323.057,354.432,1340.286,355.716,1352.401,356.358C1364.516,357,1371.516,357,1375.016,357L1378.516,357" id="L_E_E1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_E_E1_0" data-points="W3sieCI6MTMwNS44MjgxMjUsInkiOjM1My4xNDc0NDA3NTAwMTQ1NH0seyJ4IjoxMzU3LjUxNTYyNSwieSI6MzU3fSx7IngiOjEzODIuNTE1NjI1LCJ5IjozNTd9XQ==" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/><path d="M1600.391,35L1617.826,35C1635.26,35,1670.13,35,1691.065,35C1712,35,1719,35,1722.5,35L1726,35" id="L_F_F1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style=";" data-edge="true" data-et="edge" data-id="L_F_F1_0" data-points="W3sieCI6MTYwMC4zOTA2MjUsInkiOjM1fSx7IngiOjE3MDUsInkiOjM1fSx7IngiOjE3MzAsInkiOjM1fV0=" marker-end="url(#my-svg_flowchart-v2-pointEnd)"/></g><g class="edgeLabels"><g class="edgeLabel"><g class="label" data-id="L_A_B_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_C_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_D_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_E_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_E_F_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_A_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_A_A1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_B_B1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_C_C1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_D_D1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_E_E1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g><g class="edgeLabel"><g class="label" data-id="L_F_F1_0" transform="translate(0, 0)"><foreignObject width="0" height="0">
+<div class="labelBkg" data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="edgeLabel"></span>
+</div>
+</foreignObject></g></g></g><g class="nodes"><g class="node default" id="flowchart-A-0" transform="translate(87.8046875, 87)"><rect class="basic label-container" style="fill:#e3f2fd !important" x="-79.8046875" y="-27" width="159.609375" height="54"/><g class="label" style="" transform="translate(-49.8046875, -12)"><rect/><foreignObject width="99.609375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Requirements
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-B-1" transform="translate(351.2265625, 191)"><rect class="basic label-container" style="fill:#f3e5f5 !important" x="-54.90625" y="-27" width="109.8125" height="54"/><g class="label" style="" transform="translate(-24.90625, -12)"><rect/><foreignObject width="49.8125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Design
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-C-3" transform="translate(643.5625, 243)"><rect class="basic label-container" style="fill:#e8f5e9 !important" x="-77.140625" y="-27" width="154.28125" height="54"/><g class="label" style="" transform="translate(-47.140625, -12)"><rect/><foreignObject width="94.28125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Development
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-D-5" transform="translate(933.234375, 295)"><rect class="basic label-container" style="fill:#fff3e0 !important" x="-55.3515625" y="-27" width="110.703125" height="54"/><g class="label" style="" transform="translate(-25.3515625, -12)"><rect/><foreignObject width="50.703125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Testing
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-E-7" transform="translate(1223.3515625, 347)"><rect class="basic label-container" style="fill:#fce4ec !important" x="-82.4765625" y="-27" width="164.953125" height="54"/><g class="label" style="" transform="translate(-52.4765625, -12)"><rect/><foreignObject width="104.953125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Build &amp; Deploy
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-F-9" transform="translate(1531.2578125, 35)"><rect class="basic label-container" style="fill:#f1f8e9 !important" x="-69.1328125" y="-27" width="138.265625" height="54"/><g class="label" style="" transform="translate(-39.1328125, -12)"><rect/><foreignObject width="78.265625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+Operations
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-A1-13" transform="translate(351.2265625, 87)"><rect class="basic label-container" style="" x="-133.6171875" y="-27" width="267.234375" height="54"/><g class="label" style="" transform="translate(-103.6171875, -12)"><rect/><foreignObject width="207.234375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+<span class="nodeLabel">
+<p>
+02_Requirements_Phase.md
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-B1-15" transform="translate(643.5625, 139)"><rect class="basic label-container" style="" x="-108.71875" y="-27" width="217.4375" height="54"/><g class="label" style="" transform="translate(-78.71875, -12)"><rect/><foreignObject width="157.4375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+03_Design_Phase.md
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-C1-17" transform="translate(933.234375, 191)"><rect class="basic label-container" style="" x="-130.953125" y="-27" width="261.90625" height="54"/><g class="label" style="" transform="translate(-100.953125, -12)"><rect/><foreignObject width="201.90625" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+<span class="nodeLabel">
+<p>
+04_Development_Phase.md
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-D1-19" transform="translate(1223.3515625, 243)"><rect class="basic label-container" style="" x="-109.1640625" y="-27" width="218.328125" height="54"/><g class="label" style="" transform="translate(-79.1640625, -12)"><rect/><foreignObject width="158.328125" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">
+<span class="nodeLabel">
+<p>
+05_Testing_Phase.md
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-E1-21" transform="translate(1531.2578125, 357)"><rect class="basic label-container" style="" x="-148.7421875" y="-27" width="297.484375" height="54"/><g class="label" style="" transform="translate(-118.7421875, -12)"><rect/><foreignObject width="237.484375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+<span class="nodeLabel">
+<p>
+06_Build_Deployment_Phase.md
+</p>
+</span>
+</div>
+</foreignObject></g></g><g class="node default" id="flowchart-F1-23" transform="translate(1867.6171875, 35)"><rect class="basic label-container" style="" x="-137.6171875" y="-27" width="275.234375" height="54"/><g class="label" style="" transform="translate(-107.6171875, -12)"><rect/><foreignObject width="215.234375" height="24">
+<div data-xmlns="http://www.w3.org/1999/xhtml"
+style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 200px; text-align: center; width: 200px;">
+<span class="nodeLabel">
+<p>
+07_Operations_Monitoring.md
+</p>
+</span>
+</div>
+</foreignObject></g></g></g></g></g>
+</svg>
+</div>
+<h3 id="by-security-activity">By Security Activity</h3>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Security Activity</th>
+<th>Relevant Documents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Threat Modeling</strong></td>
+<td><a href="02_Requirements_Phase.md">02_Requirements_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>Architecture Security</strong></td>
+<td><a href="03_Design_Phase.md">03_Design_Phase.md</a></td>
+</tr>
+<tr class="odd">
+<td><strong>Secure Coding</strong></td>
+<td><a href="04_Development_Phase.md">04_Development_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>Code Review</strong></td>
+<td><a href="04_Development_Phase.md">04_Development_Phase.md</a></td>
+</tr>
+<tr class="odd">
+<td><strong>SAST/DAST</strong></td>
+<td><a href="05_Testing_Phase.md">05_Testing_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>Container Security</strong></td>
+<td><a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></td>
+</tr>
+<tr class="odd">
+<td><strong>Security Monitoring</strong></td>
+<td><a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>CI/CD Security</strong></td>
+<td><a
+href="08_CI_CD_Security_Pipeline.md">08_CI_CD_Security_Pipeline.md</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="by-aws-service">By AWS Service</h3>
+<table>
+<colgroup>
+<col style="width: 40%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>AWS Service</th>
+<th>Relevant Documents</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>AWS CodeCommit</strong></td>
+<td><a href="04_Development_Phase.md">04_Development_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>AWS CodeBuild</strong></td>
+<td><a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a>, <a
+href="08_CI_CD_Security_Pipeline.md">08_CI_CD_Security_Pipeline.md</a></td>
+</tr>
+<tr class="odd">
+<td><strong>Amazon ECR</strong></td>
+<td><a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>AWS IAM</strong></td>
+<td><a href="03_Design_Phase.md">03_Design_Phase.md</a>, <a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></td>
+</tr>
+<tr class="odd">
+<td><strong>AWS Secrets Manager</strong></td>
+<td><a href="03_Design_Phase.md">03_Design_Phase.md</a>, <a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></td>
+</tr>
+<tr class="even">
+<td><strong>Amazon CloudWatch</strong></td>
+<td><a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="document-structure">Document Structure</h2>
+<p>Each phase document follows a consistent structure:</p>
+<ol type="1">
+<li><strong>Document Control</strong> - Version, date,
+classification</li>
+<li><strong>Phase Overview</strong> - Objectives, duration, key
+activities</li>
+<li><strong>Process Details</strong> - Step-by-step processes with
+examples</li>
+<li><strong>Security Controls</strong> - Specific security measures</li>
+<li><strong>Tools &amp; Templates</strong> - Tools used and available
+templates</li>
+<li><strong>Checklist</strong> - Phase completion checklist</li>
+<li><strong>Exit Criteria</strong> - Requirements to proceed to next
+phase</li>
+</ol>
+<hr />
+<h2 id="sdlc-process-summary">SDLC Process Summary</h2>
+<h3 id="phase-1-requirements-planning">Phase 1: Requirements &amp;
+Planning</h3>
+<p><strong>Duration</strong>: 1-2 weeks | <strong>Document</strong>: <a
+href="02_Requirements_Phase.md">02_Requirements_Phase.md</a></p>
+<ul>
+<li>Gather security requirements</li>
+<li>Conduct threat modeling (STRIDE)</li>
+<li>Perform risk assessment</li>
+<li>Define security acceptance criteria</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - Security requirements document -
+Threat model - Risk assessment - Security acceptance criteria</p>
+<hr />
+<h3 id="phase-2-secure-design">Phase 2: Secure Design</h3>
+<p><strong>Duration</strong>: 1-3 weeks | <strong>Document</strong>: <a
+href="03_Design_Phase.md">03_Design_Phase.md</a></p>
+<ul>
+<li>Design secure architecture</li>
+<li>Define security controls</li>
+<li>Design data protection</li>
+<li>Design API security</li>
+<li>Design infrastructure security</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - Architecture diagrams - Security
+design document - Database security design - API security specifications
+- Infrastructure security design</p>
+<hr />
+<h3 id="phase-3-secure-development">Phase 3: Secure Development</h3>
+<p><strong>Duration</strong>: Ongoing | <strong>Document</strong>: <a
+href="04_Development_Phase.md">04_Development_Phase.md</a></p>
+<ul>
+<li>Follow secure coding standards</li>
+<li>Use Git workflow on AWS CodeCommit</li>
+<li>Implement security controls</li>
+<li>Conduct code reviews</li>
+<li>Run pre-commit security checks</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - Secure source code - Code review
+approvals - Unit tests with security focus - Development
+documentation</p>
+<hr />
+<h3 id="phase-4-security-testing">Phase 4: Security Testing</h3>
+<p><strong>Duration</strong>: 1-2 weeks | <strong>Document</strong>: <a
+href="05_Testing_Phase.md">05_Testing_Phase.md</a></p>
+<ul>
+<li>Static Application Security Testing (SAST)</li>
+<li>Dynamic Application Security Testing (DAST)</li>
+<li>Dependency vulnerability scanning</li>
+<li>Security acceptance testing</li>
+<li>Penetration testing</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - SAST reports - DAST reports -
+Vulnerability scan results - Security test results - Penetration test
+report</p>
+<hr />
+<h3 id="phase-5-build-deployment">Phase 5: Build &amp; Deployment</h3>
+<p><strong>Duration</strong>: Continuous | <strong>Document</strong>: <a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></p>
+<ul>
+<li>AWS CodeBuild pipeline execution</li>
+<li>Docker image building and scanning</li>
+<li>Push to Amazon ECR</li>
+<li>Security gate validation</li>
+<li>Deployment automation</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - Secure Docker images - Build
+artifacts (RPM packages) - Deployment packages - Deployment
+documentation</p>
+<hr />
+<h3 id="phase-6-operations-monitoring">Phase 6: Operations &amp;
+Monitoring</h3>
+<p><strong>Duration</strong>: Continuous | <strong>Document</strong>: <a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></p>
+<ul>
+<li>Security monitoring</li>
+<li>Log analysis</li>
+<li>Incident detection and response</li>
+<li>Performance monitoring</li>
+<li>Security patching</li>
+</ul>
+<p><strong>Key Deliverables</strong>: - Monitoring dashboards - Security
+alerts - Incident reports - Performance metrics - Patch management
+records</p>
+<hr />
+<h2 id="technology-stack">Technology Stack</h2>
+<h3 id="development">Development</h3>
+<ul>
+<li><strong>Backend</strong>: Go 1.17+ (530+ microservices)</li>
+<li><strong>Frontend</strong>: React 18.2, Redux</li>
+<li><strong>Scripting</strong>: Python 3.8+, Bash</li>
+<li><strong>Database</strong>: MongoDB 7.0, PostgreSQL</li>
+</ul>
+<h3 id="aws-infrastructure">AWS Infrastructure</h3>
+<ul>
+<li><strong>Version Control</strong>: AWS CodeCommit</li>
+<li><strong>CI/CD</strong>: AWS CodeBuild</li>
+<li><strong>Container Registry</strong>: Amazon ECR</li>
+<li><strong>Compute</strong>: Amazon EC2</li>
+<li><strong>Security</strong>: AWS IAM, AWS Secrets Manager, AWS
+KMS</li>
+<li><strong>Monitoring</strong>: Amazon CloudWatch</li>
+<li><strong>Networking</strong>: AWS VPC, ALB, Security Groups</li>
+</ul>
+<h3 id="security-tools">Security Tools</h3>
+<ul>
+<li><strong>SAST</strong>: GoSec, ESLint Security Plugin, Bandit</li>
+<li><strong>Dependency Scanning</strong>: Nancy, npm audit,
+govulncheck</li>
+<li><strong>DAST</strong>: OWASP ZAP</li>
+<li><strong>Container Scanning</strong>: Docker Scan, Trivy, AWS ECR
+Scanning</li>
+<li><strong>Secrets Detection</strong>: git-secrets, TruffleHog</li>
+</ul>
+<hr />
+<h2 id="repository-structure">Repository Structure</h2>
+<pre><code>SECURAA Platform Repositories:
+├── build_securaa/          # Build automation, CI/CD configs
+├── zona_services/          # Core microservices (530+ services)
+├── securaa/               # Main application backend
+├── securaa_lib/           # Shared security library
+├── zona_batch/            # Background batch processing
+├── integrations/          # Third-party integrations (722+)
+├── zonareact/             # Frontend React application
+├── securaa_db/            # Database schemas and migrations
+└── securaa_pylib/         # Python utility libraries</code></pre>
+<hr />
+<h2 id="security-principles">Security Principles</h2>
+<h3 id="security-by-design">1. Security by Design</h3>
+<p>Security is built into every phase, not added as an afterthought.</p>
+<h3 id="defense-in-depth">2. Defense in Depth</h3>
+<p>Multiple layers of security controls protect against various
+threats.</p>
+<h3 id="least-privilege">3. Least Privilege</h3>
+<p>Minimum necessary permissions for users and services.</p>
+<h3 id="continuous-security">4. Continuous Security</h3>
+<p>Ongoing security assessment and improvement.</p>
+<h3 id="shift-left-security">5. Shift Left Security</h3>
+<p>Security testing as early as possible in development.</p>
+<h3 id="automation-first">6. Automation First</h3>
+<p>Automated security checks ensure consistency.</p>
+<hr />
+<h2 id="compliance-alignment">Compliance Alignment</h2>
+<p>Our SDLC supports compliance with:</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 33%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Framework</th>
+<th>Key Controls</th>
+<th>Documentation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>SOC 2 Type II</strong></td>
+<td>CC6.1, CC6.6, CC6.7, CC7.2, CC8.1</td>
+<td>All SDLC phases</td>
+</tr>
+<tr class="even">
+<td><strong>ISO 27001:2022</strong></td>
+<td>A.8.1, A.8.3, A.14.2, A.14.2.5, A.18.1.3</td>
+<td>All SDLC phases</td>
+</tr>
+<tr class="odd">
+<td><strong>GDPR</strong></td>
+<td>Data protection by design, security of processing</td>
+<td>Requirements, Design phases</td>
+</tr>
+<tr class="even">
+<td><strong>OWASP Top 10</strong></td>
+<td>A01-A10 coverage</td>
+<td>Testing, Development phases</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="key-metrics-kpis">Key Metrics &amp; KPIs</h2>
+<h3 id="security-metrics">Security Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Target</th>
+<th>Tracking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Critical Vulnerabilities</strong></td>
+<td>0</td>
+<td>Continuous</td>
+</tr>
+<tr class="even">
+<td><strong>High Vulnerabilities</strong></td>
+<td>&lt; 5</td>
+<td>Weekly</td>
+</tr>
+<tr class="odd">
+<td><strong>Mean Time to Remediation (Critical)</strong></td>
+<td>&lt; 24 hours</td>
+<td>Per incident</td>
+</tr>
+<tr class="even">
+<td><strong>Security Test Coverage</strong></td>
+<td>&gt; 80%</td>
+<td>Monthly</td>
+</tr>
+<tr class="odd">
+<td><strong>Failed Security Scans</strong></td>
+<td>&lt; 5%</td>
+<td>Per build</td>
+</tr>
+</tbody>
+</table>
+<h3 id="development-metrics">Development Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Target</th>
+<th>Tracking</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Build Success Rate</strong></td>
+<td>&gt; 95%</td>
+<td>Daily</td>
+</tr>
+<tr class="even">
+<td><strong>Code Review Completion Time</strong></td>
+<td>&lt; 48 hours</td>
+<td>Per PR</td>
+</tr>
+<tr class="odd">
+<td><strong>Deployment Frequency</strong></td>
+<td>Multiple per week</td>
+<td>Weekly</td>
+</tr>
+<tr class="even">
+<td><strong>Change Failure Rate</strong></td>
+<td>&lt; 10%</td>
+<td>Monthly</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="related-documentation">Related Documentation</h2>
+<h3 id="additional-security-documents">Additional Security
+Documents</h3>
+<ul>
+<li><strong><a
+href="../SECURAA_SECURE_CODING_POLICY.md">SECURAA_SECURE_CODING_POLICY.md</a></strong>
+- Comprehensive secure coding standards</li>
+<li><strong><a
+href="../SECURAA_CODE_ANALYSIS_REPORT.md">SECURAA_CODE_ANALYSIS_REPORT.md</a></strong>
+- Security code analysis findings</li>
+<li><strong><a
+href="../SECURAA_INFORMATION_SECURITY_POLICIES_AND_PROCEDURES.md">SECURAA_INFORMATION_SECURITY_POLICIES_AND_PROCEDURES.md</a></strong>
+- Information security policies</li>
+<li><strong><a
+href="../SECURAA_INFORMATION_SECURITY_RISK_ASSESSMENT_PROCESS.md">SECURAA_INFORMATION_SECURITY_RISK_ASSESSMENT_PROCESS.md</a></strong>
+- Risk assessment framework</li>
+<li><strong><a
+href="../SECURAA_CUSTOMER_SECURITY_DOCUMENTATION.md">SECURAA_CUSTOMER_SECURITY_DOCUMENTATION.md</a></strong>
+- Customer-facing security overview</li>
+</ul>
+<hr />
+<h2 id="how-to-use-this-documentation">How to Use This
+Documentation</h2>
+<h3 id="for-developers">For Developers</h3>
+<ol type="1">
+<li>Review <strong><a
+href="04_Development_Phase.md">04_Development_Phase.md</a></strong> for
+secure coding practices</li>
+<li>Follow Git workflow on AWS CodeCommit</li>
+<li>Use provided code review checklists</li>
+<li>Run security scans before committing</li>
+</ol>
+<h3 id="for-security-team">For Security Team</h3>
+<ol type="1">
+<li>Use <strong><a
+href="02_Requirements_Phase.md">02_Requirements_Phase.md</a></strong>
+for threat modeling</li>
+<li>Conduct design reviews using <strong><a
+href="03_Design_Phase.md">03_Design_Phase.md</a></strong></li>
+<li>Define security test cases from <strong><a
+href="05_Testing_Phase.md">05_Testing_Phase.md</a></strong></li>
+<li>Monitor using <strong><a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></strong></li>
+</ol>
+<h3 id="for-devops-team">For DevOps Team</h3>
+<ol type="1">
+<li>Configure CI/CD using <strong><a
+href="08_CI_CD_Security_Pipeline.md">08_CI_CD_Security_Pipeline.md</a></strong></li>
+<li>Manage deployments with <strong><a
+href="06_Build_Deployment_Phase.md">06_Build_Deployment_Phase.md</a></strong></li>
+<li>Set up monitoring from <strong><a
+href="07_Operations_Monitoring.md">07_Operations_Monitoring.md</a></strong></li>
+</ol>
+<h3 id="for-product-managers">For Product Managers</h3>
+<ol type="1">
+<li>Start with <strong><a
+href="01_SDLC_Overview.md">01_SDLC_Overview.md</a></strong> for process
+overview</li>
+<li>Define security requirements using <strong><a
+href="02_Requirements_Phase.md">02_Requirements_Phase.md</a></strong></li>
+<li>Review security acceptance criteria before release</li>
+</ol>
+<h3 id="for-customers">For Customers</h3>
+<ol type="1">
+<li>Read <strong><a
+href="01_SDLC_Overview.md">01_SDLC_Overview.md</a></strong> for our
+security commitment</li>
+<li>Review compliance alignment for your requirements</li>
+<li>Understand our security testing approach</li>
+</ol>
+<hr />
+<h2 id="document-maintenance">Document Maintenance</h2>
+<h3 id="version-control">Version Control</h3>
+<ul>
+<li>All documents are version controlled in Git</li>
+<li>Major updates require security team review</li>
+<li>Quarterly review cycle</li>
+</ul>
+<h3 id="update-process">Update Process</h3>
+<ol type="1">
+<li>Propose changes via pull request</li>
+<li>Security team review</li>
+<li>Engineering leadership approval</li>
+<li>Merge and publish</li>
+</ol>
+<h3 id="feedback">Feedback</h3>
+<p>We welcome feedback on these documents: - <strong>Email</strong>:
+sdlc-feedback@securaa.com - <strong>Slack</strong>: #security-sdlc -
+<strong>JIRA</strong>: Create ticket in SECURITY project</p>
+<hr />
+<h2 id="document-history">Document History</h2>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 18%" />
+<col style="width: 25%" />
+<col style="width: 28%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Changes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1.0</td>
+<td>October 2024</td>
+<td>Security Team</td>
+<td>Initial SDLC documentation</td>
+</tr>
+<tr class="even">
+<td>2.0</td>
+<td>November 13, 2025</td>
+<td>Security &amp; Engineering</td>
+<td>Comprehensive update with AWS infrastructure, multi-document
+structure</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="contact-information">Contact Information</h2>
+<p><strong>Document Owners</strong>: - <strong>Security Team</strong>:
+security@securaa.com - <strong>Engineering Team</strong>:
+engineering@securaa.com - <strong>DevOps Team</strong>:
+devops@securaa.com</p>
+<p><strong>For Security Concerns</strong>: - <strong>Email</strong>:
+security@securaa.com - <strong>Emergency</strong>:
+security-oncall@securaa.com - <strong>Bug Bounty</strong>:
+bugbounty@securaa.com</p>
+<hr />
+<h2 id="license-confidentiality">License &amp; Confidentiality</h2>
+<p>These documents are: - <strong>Confidential</strong>: Intended for
+customers under NDA - <strong>Customer-Facing</strong>: Can be shared
+with customers - <strong>Not Public</strong>: Not for public
+distribution - <strong>Proprietary</strong>: © 2025 SECURAA. All rights
+reserved.</p>
+<hr />
+<h2 id="next-steps">Next Steps</h2>
+<ol type="1">
+<li><strong>Start Here</strong>: <a
+href="01_SDLC_Overview.md">01_SDLC_Overview.md</a></li>
+<li><strong>Learn Process</strong>: Follow documents 02-08 in
+sequence</li>
+<li><strong>Apply Knowledge</strong>: Use checklists and templates in
+your projects</li>
+<li><strong>Continuous Improvement</strong>: Provide feedback and
+suggestions</li>
+</ol>
+<hr />
+<p><em>Last Updated: November 13, 2025</em><br />
+<em>Document Suite Version: 2.0</em><br />
+<em>Maintained by: SECURAA Security &amp; Engineering Teams</em></p>
+
+</body>
+</html>
