@@ -17,9 +17,11 @@ from weasyprint import HTML, CSS
 def preprocess_html_for_svgs(html_content):
     """
     Preprocess HTML to fix SVG rendering in WeasyPrint PDFs.
-    Sets explicit height attributes based on viewBox to ensure proper scaling.
+    - Replaces width="100%" with explicit pixel width
+    - Sets explicit height based on viewBox aspect ratio
+    - Ensures text elements render correctly
     """
-    def fix_svg(match):
+    def fix_svg_tag(match):
         svg_tag = match.group(0)
 
         # Extract viewBox dimensions
@@ -32,6 +34,8 @@ def preprocess_html_for_svgs(html_content):
             return svg_tag
 
         try:
+            vb_x = float(parts[0])
+            vb_y = float(parts[1])
             vb_width = float(parts[2])
             vb_height = float(parts[3])
         except ValueError:
@@ -40,36 +44,28 @@ def preprocess_html_for_svgs(html_content):
         if vb_width == 0 or vb_height == 0:
             return svg_tag
 
-        # Calculate aspect ratio
-        aspect_ratio = vb_width / vb_height
-
         # A4 usable width is about 170mm = ~642px at 96dpi
-        # We want to scale SVG to fit width while maintaining readable text
-        target_width = 642  # pixels
+        target_width = 600  # slightly smaller to ensure margin
 
-        # Calculate height that maintains aspect ratio
-        calculated_height = target_width / aspect_ratio
+        # Calculate height maintaining aspect ratio
+        scale = target_width / vb_width
+        target_height = int(vb_height * scale)
 
-        # For very tall diagrams, limit the height per page
-        # For wide diagrams, ensure minimum height for readability
-        if aspect_ratio > 2:
-            # Wide diagram - need minimum height for text readability
-            min_height = max(300, vb_height * 0.4)
-            calculated_height = max(calculated_height, min_height)
+        # Ensure minimum height for readability
+        target_height = max(target_height, 200)
 
-        # Set explicit width and height attributes
-        # Remove existing width/height first
+        # Remove existing width/height attributes (including width="100%")
         svg_tag = re.sub(r'\s+width="[^"]*"', '', svg_tag)
         svg_tag = re.sub(r'\s+height="[^"]*"', '', svg_tag)
 
-        # Add new width and height after the opening <svg
-        svg_tag = svg_tag.replace('<svg ', f'<svg width="{target_width}" height="{int(calculated_height)}" ')
+        # Add explicit width and height
+        svg_tag = svg_tag.replace('<svg ', f'<svg width="{target_width}" height="{target_height}" ')
 
         return svg_tag
 
-    # Find and process all SVG opening tags (but not nested marker SVGs)
-    # Only process top-level SVGs with viewBox
-    html_content = re.sub(r'<svg[^>]*viewBox="[^"]*"[^>]*>', fix_svg, html_content)
+    # Process all SVG opening tags with viewBox
+    html_content = re.sub(r'<svg[^>]*viewBox="[^"]*"[^>]*>', fix_svg_tag, html_content)
+
     return html_content
 
 def regenerate_pdf(html_path, pdf_path):
@@ -104,17 +100,15 @@ def regenerate_pdf(html_path, pdf_path):
                 border-radius: 4px;
                 overflow: visible;
             }
-            /* SVG diagram styling for clarity */
+            /* SVG diagram styling - DO NOT use height: auto as it overrides calculated heights */
             svg {
                 max-width: 100%;
-                height: auto !important;
                 display: block;
                 margin: 0 auto;
             }
             /* Ensure SVG text is crisp and readable */
             svg text {
                 font-family: 'trebuchet ms', verdana, arial, sans-serif;
-                font-size: 14px;
             }
             svg tspan {
                 font-family: 'trebuchet ms', verdana, arial, sans-serif;
