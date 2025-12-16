@@ -18,7 +18,7 @@ def regenerate_pdf(html_path, pdf_path):
     print(f"  Generating: {os.path.basename(pdf_path)}")
 
     try:
-        # Custom CSS to ensure good PDF output
+        # Custom CSS to ensure good PDF output with clear diagrams
         custom_css = CSS(string='''
             @page {
                 size: A4;
@@ -31,18 +31,54 @@ def regenerate_pdf(html_path, pdf_path):
             }
             .diagram {
                 page-break-inside: avoid;
+                margin: 20px 0;
+                padding: 15px;
+                background-color: #fafafa;
+                border: 1px solid #e0e0e0;
+                border-radius: 4px;
             }
+            /* SVG diagram styling for clarity */
             svg {
                 max-width: 100%;
                 height: auto;
+                display: block;
+                margin: 0 auto;
+            }
+            /* Ensure SVG text is crisp and readable */
+            svg text {
+                font-family: 'trebuchet ms', verdana, arial, sans-serif;
+                font-size: 14px;
+            }
+            svg tspan {
+                font-family: 'trebuchet ms', verdana, arial, sans-serif;
+            }
+            /* Make diagram lines clear */
+            svg .flowchart-link,
+            svg .edgePath path {
+                stroke-width: 2px !important;
+            }
+            /* Ensure node boxes are visible */
+            svg .node rect,
+            svg .node circle,
+            svg .node ellipse,
+            svg .node polygon {
+                stroke-width: 1.5px !important;
+            }
+            /* Cluster/subgraph borders */
+            svg .cluster rect {
+                stroke-width: 1.5px !important;
             }
             table {
                 width: 100%;
                 border-collapse: collapse;
+                margin: 15px 0;
             }
             th, td {
                 border: 1px solid #ddd;
                 padding: 8px;
+            }
+            th {
+                background-color: #f8f9fa;
             }
             pre {
                 background-color: #f5f5f5;
@@ -50,6 +86,18 @@ def regenerate_pdf(html_path, pdf_path):
                 font-size: 9pt;
                 overflow-wrap: break-word;
                 white-space: pre-wrap;
+                border-radius: 4px;
+            }
+            code {
+                font-family: 'Consolas', 'Monaco', monospace;
+                font-size: 0.9em;
+            }
+            h1, h2, h3, h4, h5, h6 {
+                page-break-after: avoid;
+            }
+            /* Avoid orphaned headers */
+            h1 + *, h2 + *, h3 + * {
+                page-break-before: avoid;
             }
         ''')
 
