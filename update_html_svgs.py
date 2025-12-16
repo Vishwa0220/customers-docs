@@ -22,6 +22,54 @@ def read_svg_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         return f.read()
 
+def fix_svg_dimensions(svg_content):
+    """
+    Fix SVG dimensions to ensure proper rendering in PDFs.
+    - Remove explicit height that causes over-scaling
+    - Set height to 'auto' to preserve aspect ratio
+    - Keep width at 100% for responsive layout
+    """
+    import re
+
+    # Extract viewBox dimensions to calculate proper height
+    viewbox_match = re.search(r'viewBox="([^"]+)"', svg_content)
+    if viewbox_match:
+        parts = viewbox_match.group(1).split()
+        if len(parts) >= 4:
+            vb_width = float(parts[2])
+            vb_height = float(parts[3])
+
+            # Calculate a reasonable height based on viewBox aspect ratio
+            # Use max-width to constrain, but let height scale naturally
+            # Remove the explicit height attribute that causes scaling issues
+
+            # Replace width="100%" height="XX" with width="100%" (no height)
+            # This lets the SVG maintain its aspect ratio
+            svg_content = re.sub(
+                r'(<svg[^>]*)\s+width="[^"]*"\s+height="[^"]*"',
+                r'\1 width="100%"',
+                svg_content
+            )
+
+            # Also handle case where height comes before width
+            svg_content = re.sub(
+                r'(<svg[^>]*)\s+height="[^"]*"\s+width="[^"]*"',
+                r'\1 width="100%"',
+                svg_content
+            )
+
+            # If max-width style exists, ensure it's reasonable
+            if 'max-width' in svg_content:
+                # Keep existing max-width but add preserveAspectRatio
+                if 'preserveAspectRatio' not in svg_content:
+                    svg_content = re.sub(
+                        r'(<svg[^>]*)(>)',
+                        r'\1 preserveAspectRatio="xMidYMid meet"\2',
+                        svg_content
+                    )
+
+    return svg_content
+
 def update_html_with_svgs(html_path):
     """Update HTML file by replacing inline SVGs with fixed versions."""
     with open(html_path, 'r', encoding='utf-8') as f:
@@ -50,6 +98,8 @@ def update_html_with_svgs(html_path):
         svg_file = svg_files[i]
 
         new_svg_content = read_svg_file(svg_file)
+        # Fix SVG dimensions to prevent over-scaling
+        new_svg_content = fix_svg_dimensions(new_svg_content)
 
         # Reconstruct the diagram div with new SVG
         new_block = match.group(1) + new_svg_content + match.group(3)
